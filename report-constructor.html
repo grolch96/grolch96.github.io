@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Отчет о разработке Конструктора справочников</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Отчет о разработке Конструктора справочников</h1>
+</header>
+<p><strong>1. Назначение</strong></p>
+<p>Инструмент представляет собой <strong>локальный (офлайн)
+конвертер</strong>, который превращает обычные документы Word (.docx)
+или сохраненные веб-страницы (.html) в интерактивные, красиво
+оформленные справочники с поддержкой темной темы, поиска и копирования
+кода.</p>
+<p>Вам больше не нужно вручную верстать HTML: вы пишете текст в Word,
+перетаскиваете файл в окно браузера — и на выходе получаете готовый,
+стильный файл.</p>
+<p><strong>2. Использованные технологии</strong></p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 27%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Технология</th>
+<th>Где применяется</th>
+<th>Зачем нужна</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>HTML5 (File API)</strong></td>
+<td>Вся страница, drag-and-drop</td>
+<td>Чтение локальных файлов с диска без отправки на сервер (полная
+конфиденциальность)</td>
+</tr>
+<tr class="even">
+<td><strong>JavaScript (Vanilla)</strong></td>
+<td>Парсинг HTML, генерация блоков, скачивание</td>
+<td>Разбор структуры документа, отделение текста от кода, создание
+файлов на лету</td>
+</tr>
+<tr class="odd">
+<td><strong>Библиотека </strong>mammoth.js</td>
+<td>Обработка .docx</td>
+<td>Конвертация бинарных файлов Word в чистый HTML (работает локально,
+если файл библиотеки лежит рядом)</td>
+</tr>
+<tr class="even">
+<td><strong>CSS3 (Grid, Flexbox)</strong></td>
+<td>Верстка</td>
+<td>Создание адаптивной сетки, выравнивание элементов, «мягких»
+скруглений и теней</td>
+</tr>
+<tr class="odd">
+<td><strong>CSS-переменные (</strong>:root<strong>)</strong></td>
+<td>Темы</td>
+<td>Мгновенное переключение светлой и темной темы без перезагрузки
+страницы</td>
+</tr>
+<tr class="even">
+<td><strong>Backdrop-filter (CSS)</strong></td>
+<td>Карточки, шапка</td>
+<td>Эффект «матового стекла» (Glassmorphism) — полупрозрачные блоки с
+размытием фона</td>
+</tr>
+<tr class="odd">
+<td>FileReader<strong> (с кодировками)</strong></td>
+<td>Обработка .html</td>
+<td>Автоматическое определение кодировки (UTF-8 или Windows-1251), чтобы
+русский текст не превращался в «кракозябры»</td>
+</tr>
+<tr class="even">
+<td><strong>Blob API</strong></td>
+<td>Кнопка «Скачать HTML»</td>
+<td>Сборка готового файла прямо в браузере и сохранение его на диск</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3. Ключевые фишки и эффекты</strong></p>
+<ol type="1">
+<li><p><strong>Три независимых слоя контента:</strong></p>
+<ul>
+<li><p>.report-layer — текст, таблицы, картинки (стеклянная карточка с
+розовым акцентом).</p></li>
+<li><p>.terminal-layer — блоки кода с подсветкой синтаксиса
+(команды show выделяются желтым, комментарии — зеленым).</p></li>
+<li><p>.ui-layer — панель поиска (появляется только после загрузки
+файла).</p></li>
+</ul></li>
+<li><p><strong>Автоматическая очистка от стилей
+Word:</strong> инструмент принудительно убирает белые фоны и черные
+буквы, которые Word вшивает в текст. Благодаря этому документ органично
+вписывается в нашу тему.</p></li>
+<li><p><strong>Умный поиск:</strong> при вводе текста в строку поиска
+скрываются карточки и блоки кода, в которых нет совпадений.</p></li>
+<li><p><strong>Кнопка «Копировать»:</strong> в каждом блоке кода есть
+кнопка, которая копирует чистые команды (без лишних символов и
+комментариев).</p></li>
+<li><p><strong>Ночная и дневная темы:</strong> плавный переход,
+сохранение выбора в браузере (localStorage), адаптация всех цветов
+(включая таблицы и код) под выбранный режим.</p></li>
+<li><p><strong>Офлайн-режим:</strong> скрипт не обращается к внешним
+серверам (если библиотека mammoth.js лежит в папке). Все данные
+обрабатываются на вашем компьютере.</p></li>
+</ol>
+<p><strong>4. Как это работает (по шагам)</strong></p>
+<ol type="1">
+<li><p><strong>Загрузка:</strong> вы перетаскиваете .docx (или .html из
+Word) в зону загрузки.</p></li>
+<li><p><strong>Чтение:</strong> браузер считывает файл (если DOCX —
+подключает библиотеку, если HTML — проверяет кодировку).</p></li>
+<li><p><strong>Парсинг:</strong> скрипт разбивает документ на элементы.
+Блоки &lt;pre&gt; (код) отправляются в терминал, всё остальное — в
+текстовую карточку.</p></li>
+<li><p><strong>Верстка:</strong> элементы оборачиваются в красивые
+контейнеры с эффектами и тенями.</p></li>
+<li><p><strong>Экспорт:</strong> по кнопке «Скачать HTML» создается
+готовый файл, в который вшиваются все стили, скрипты поиска и
+копирования.</p></li>
+</ol>
+<p><strong>5. Итог</strong></p>
+<p>Инструмент решает главную проблему — <strong>разрыв между привычным
+текстовым редактором (Word) и современным веб-дизайном</strong>. Теперь
+вам не нужно быть верстальщиком, чтобы получить красивый, интерактивный
+и удобный справочник. Достаточно написать текст в Word и перетащить файл
+в конструктор.</p>
+</body>
+</html>

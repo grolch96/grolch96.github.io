@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Отчет по лабораторной работе 2 (Advanced Enterprise)</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Отчет по лабораторной работе 2 (Advanced
+Enterprise)</h1>
+</header>
+<p><strong>📋 ОТЧЕТ О ВОССТАНОВЛЕНИИ И РАЗВИТИИ СЕТИ</strong></p>
+<p><strong>Исходное состояние (10 лет назад):</strong> Сеть не работала
+стабильно. Ключевые сервисы (маршрутизация, агрегация, DHCP) были
+сломаны или настроены с ошибками, которые не давали симулятору (или
+реальному оборудованию) работать корректно.</p>
+<p><strong>🔴 1. Восстановление Legacy-сети (Исправление
+ошибок)</strong></p>
+<p>Мы нашли и устранили 6 критических архитектурных ошибок в исходных
+конфигах:</p>
+<table>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 60%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>№</th>
+<th>Что было сломано</th>
+<th>Как исправлено</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>1</strong></td>
+<td><strong>Конфликт IP на Vlan107:</strong> Два свитча (SW2 и SW22)
+имели одинаковый IP 192.168.7.254. Сеть «дёргалась», ARP-таблица сходила
+с ума.</td>
+<td>На SW22 убран IP с Vlan107. Шлюзом оставлен только SW2.</td>
+</tr>
+<tr class="even">
+<td><strong>2</strong></td>
+<td><strong>Фантомный анонс OSPF:</strong> SW2 анонсировал
+сеть 192.168.3.0, которой у него не было (она на SW00).</td>
+<td>Удален ошибочный network из OSPF на SW2.</td>
+</tr>
+<tr class="odd">
+<td><strong>3</strong></td>
+<td><strong>Trunk не настроен:</strong> Линки SW1 ↔︎ SW2 (Fa0/1, Fa0/3)
+работали как Access.</td>
+<td>Явно настроены как Trunk (802.1Q).</td>
+</tr>
+<tr class="even">
+<td><strong>4</strong></td>
+<td><strong>STP без приоритета:</strong> SW11 не имел приоритета STP,
+из-за чего топология выбиралась хаотично.</td>
+<td>Задан priority 28672 для SW11.</td>
+</tr>
+<tr class="odd">
+<td><strong>5</strong></td>
+<td><strong>Отсутствовали SVI:</strong> На L3-свитчах не было шлюзов для
+VLAN 100, 105, 106, 107.</td>
+<td>Созданы все SVI с корректными IP.</td>
+</tr>
+<tr class="even">
+<td><strong>6</strong></td>
+<td><strong>DHCP неполный:</strong> На SW1 не был настроен пул для VLAN
+104.</td>
+<td>Добавлен ip dhcp pool vlan104.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Результат:</strong> Сеть заработала. Появилась стабильная
+L2/L3-связность. С VLAN 107 больше нет конфликтов. SW00 (который был
+изолирован) добавлен в OSPF, и сеть 3.0 стала видна всем.</p>
+<p><strong>🟡 2. Модернизация и исправление багов PT 6.2
+(Advanced-сеть)</strong></p>
+<p>Мы не просто починили старое, а <strong>внедрили новые
+технологии</strong> и обошли ограничения симулятора:</p>
+<table>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 52%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>№</th>
+<th>Что было сделано</th>
+<th>Какие знания это дало (CCNA/CCNP)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>1</strong></td>
+<td><strong>BGP (eBGP):</strong> Настроен стык с провайдером (AS 65001 ↔︎
+AS 65002). ISP анонсирует сеть 8.8.8.8, R1 получает дефолт.</td>
+<td><strong>CCNP ROUTE:</strong> Взаимодействие с провайдером,
+анонсирование префиксов.</td>
+</tr>
+<tr class="even">
+<td><strong>2</strong></td>
+<td><strong>OSPF Multi-Area:</strong> Разделили сеть на Area 0 (ядро),
+Area 1 (SW11), Area 2 (SW22/SW00).</td>
+<td><strong>CCNP ROUTE:</strong> ABR, LSA, межзональная
+маршрутизация.</td>
+</tr>
+<tr class="odd">
+<td><strong>3</strong></td>
+<td><strong>EIGRP + Redistribution:</strong> SW2 переливает маршруты
+между OSPF и EIGRP (метрики подобраны).</td>
+<td><strong>CCNP ROUTE:</strong> Перераспределение маршрутов без
+петель.</td>
+</tr>
+<tr class="even">
+<td><strong>4</strong></td>
+<td><strong>HSRP:</strong> R1 (Active) и R2 (Standby) резервируют
+шлюз 192.168.1.2.</td>
+<td><strong>CCNA/CCNP:</strong> Отказоустойчивость шлюза.</td>
+</tr>
+<tr class="odd">
+<td><strong>5</strong></td>
+<td><strong>NAT/PAT:</strong> На R1 настроен ACL для трансляции всех
+внутренних сетей (192.168.0.0/16) в интернет.</td>
+<td><strong>CCNA:</strong> Трансляция адресов, проверка ACL.</td>
+</tr>
+<tr class="even">
+<td><strong>6</strong></td>
+<td><strong>IPv6 + OSPFv3:</strong> Настроена двухстековая
+маршрутизация. Пинг по IPv6 работает.</td>
+<td><strong>CCNA:</strong> Адресация IPv6, OSPFv3.</td>
+</tr>
+<tr class="odd">
+<td><strong>7</strong></td>
+<td><strong>Rapid-PVST+:</strong> Вместо MSTP (которого нет в PT 6.2)
+настроена балансировка нагрузки через разные root primary для разных
+VLAN.</td>
+<td><strong>CCNP SWITCH:</strong> Оптимизация STP.</td>
+</tr>
+<tr class="even">
+<td><strong>8</strong></td>
+<td><strong>Port Security + DHCP Snooping:</strong> На SW0 включена
+защита (Sticky MAC, Trusted-порты).</td>
+<td><strong>CCNA Security:</strong> Защита L2 от атак.</td>
+</tr>
+<tr class="odd">
+<td><strong>9</strong></td>
+<td><strong>Баги PT 6.2:</strong> Выровняли MTU на R1 (1500),
+задали speed/duplex для LACP.</td>
+<td><strong>Инженерия:</strong> Умение обходить ограничения
+инструментов.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>⚠️ 3. Что мы не реализовали (и почему)</strong></p>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 37%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Технология</th>
+<th>Почему не сделали</th>
+<th>Что нужно для CCNP</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>MSTP</strong></td>
+<td>В PT 6.2 не поддерживается.</td>
+<td>GNS3 + реальные образы IOS.</td>
+</tr>
+<tr class="even">
+<td><strong>QoS</strong></td>
+<td>В PT 6.2 работает ограниченно.</td>
+<td>Теория + GNS3.</td>
+</tr>
+<tr class="odd">
+<td><strong>AAA (RADIUS)</strong></td>
+<td>Нет сервера в PT 6.2.</td>
+<td>Теория + реальный сервер.</td>
+</tr>
+<tr class="even">
+<td><strong>Wireless WLC</strong></td>
+<td>WLC нет в вашей версии PT 6.2.</td>
+<td>Автономная точка доступа (AP) настроена.</td>
+</tr>
+<tr class="odd">
+<td><strong>Automation</strong></td>
+<td>Не настраивается в симуляторе.</td>
+<td>Теория (REST API, SDN, Python).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>🏆 4. Итог: что в активе</strong></p>
+<p><strong>С точки зрения восстановления:</strong> Вы
+взяли <strong>неработающий макет 10-летней давности</strong> и
+превратили его в <strong>полноценную энтерпрайз-сеть</strong>.</p>
+<p><strong>Технический результат:</strong></p>
+<ul>
+<li><blockquote>
+<p><strong>BGP-сессия</strong> с провайдером установлена
+(Established).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>OSPF Multi-Area</strong> работает (соседи FULL, маршруты O
+IA).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>HSRP</strong> работает (R1 Active, R2 Standby).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>NAT</strong> работает (пинг с ПК на 8.8.8.8 — 100%).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>IPv6</strong> работает (пинг по OSPFv3 — 100%).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>EtherChannel</strong> собран (Po1 и Po3 в статусе SU).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>Port Security</strong> защищает порты (Sticky MAC,
+err-disable).</p>
+</blockquote></li>
+</ul>
+<p><strong>Уровень:</strong></p>
+<ul>
+<li><blockquote>
+<p><strong>CCNA 200-301:</strong> ~95% (осталась теория Automation).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>CCNP Enterprise:</strong> ~45% (база ROUTE/SWITCH есть, но не
+хватает глубины BGP, MSTP, QoS).</p>
+</blockquote></li>
+</ul>
+<p><strong>Портфолио:</strong></p>
+<ul>
+<li><blockquote>
+<p><strong>Проект 1:</strong> Legacy (Восстановление).</p>
+</blockquote></li>
+<li><blockquote>
+<p><strong>Проект 2:</strong> Advanced (Проектирование, BGP,
+Multi-Area).</p>
+</blockquote></li>
+</ul>
+<p><strong>Вы не просто «починили сеть». Вы доказали, что умеете
+диагностировать, проектировать и обходить баги симулятора.</strong> Это
+уровень сетевого инженера.</p>
+</body>
+</html>

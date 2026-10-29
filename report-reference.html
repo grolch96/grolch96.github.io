@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Отчет о разработке Справочника Cisco IOS</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Отчет о разработке Справочника Cisco IOS</h1>
+</header>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 11%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Инструмент</th>
+<th>Где</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>HTML5</strong></td>
+<td>Все файлы</td>
+<td>Структура: &lt;details&gt;/&lt;summary&gt; (треугольники-спойлеры), &lt;pre&gt; (код),
+семантика (&lt;header&gt;, &lt;main&gt;, &lt;footer&gt;)</td>
+</tr>
+<tr class="even">
+<td><strong>CSS3</strong></td>
+<td>Все файлы</td>
+<td>Пастельный триколор (бледно-серый / бледно-голубой / розовый),
+CSS-переменные (темы), Flexbox (шапка), Grid (карточки), медиа-запросы
+(мобильная вёрстка)</td>
+</tr>
+<tr class="odd">
+<td><strong>JavaScript (vanilla)</strong></td>
+<td>Все файлы</td>
+<td>Поиск (фильтрация карточек), копирование (с
+очисткой !/::-комментариев), переключение темы (с localStorage),
+«Развернуть всё»</td>
+</tr>
+<tr class="even">
+<td><strong>Без фреймворков</strong></td>
+<td>—</td>
+<td>Никаких React/Vue/Bootstrap/jQuery/серверов. Один .html —
+открывается двойным кликом, работает офлайн</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Файлы (что внутри)</strong></p>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 17%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Файл</th>
+<th>Что реализовано</th>
+<th>Технологии (кратко)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>index.html</td>
+<td>Стартовая страница, 7 карточек</td>
+<td>Сетка, темы, ссылки на все файлы</td>
+</tr>
+<tr class="even">
+<td>cisco-reference.html</td>
+<td>Конспект (Части 0–VIII)</td>
+<td>IP-адресация, IOS, коммутация, маршрутизация, безопасность, NAT,
+мониторинг, добивка CCNA</td>
+</tr>
+<tr class="odd">
+<td>cisco-static-routing.html</td>
+<td>7 вариантов статики</td>
+<td>Next-Hop (внутренний/внешний), Exit-Interface, Fully Specified,
+Floating Static, Default Route, Windows route add, рекурсивный
+маршрут</td>
+</tr>
+<tr class="even">
+<td>cisco-troubleshooting.html</td>
+<td>15 Cisco-сценариев</td>
+<td>Floating Static, PBR, VRF Route Leaking, «шлюз не видит сеть», OSPF,
+BGP, EtherChannel, HSRP, NAT, DHCP Snooping, STP err-disable,
+VLAN/trunk, IPv6 SLAAC, IPsec, «маршрут пропал»</td>
+</tr>
+<tr class="odd">
+<td>cisco-windows.html</td>
+<td>6 Windows-сценариев</td>
+<td>route add (VPN +
+LAN), ipconfig, ping, tracert, nslookup, netstat</td>
+</tr>
+<tr class="even">
+<td>labs1-Base-Legacy_(...).html</td>
+<td>Лаба 1</td>
+<td>VLAN, Trunk, EtherChannel (LACP/PAgP), Rapid-PVST+, OSPF
+(multi-area, MD5), HSRP, NAT/PAT, DHCP</td>
+</tr>
+<tr class="odd">
+<td>labs2-Advanced_Enterprise_(...).html</td>
+<td>Лаба 2 (всё из Лабы 1 + новое)</td>
+<td>+ BGP, EIGRP, Redistribution, MSTP, NTP master, DHCP Snooping,
+Port-Security, WLC/AP</td>
+</tr>
+<tr class="even">
+<td>labs3-IPv6_Enterprise-Secure_WAN_(...).html</td>
+<td>Лаба 3 (две подглавы)</td>
+<td>3A: IPsec + GRE; 3B: IPv6 (SLAAC, DHCPv6, OSPFv3, HSRPv6)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Формат каждой темы (три слоя)</strong></p>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 39%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Слой</th>
+<th>Что внутри</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Кратко</strong></td>
+<td>Принцип (1–2 строки)</td>
+<td>«OSPF — Link-State, алгоритм Дейкстры, Area 0 — ядро»</td>
+</tr>
+<tr class="even">
+<td><strong>Схема</strong></td>
+<td>Визуальная подсказка (ASCII, ваши адреса)</td>
+<td>[R1] --- Area 0 --- [SW1] --- Area 1 --- [SW11]</td>
+</tr>
+<tr class="odd">
+<td><strong>Пример</strong></td>
+<td>Готовый конфиг с кнопкой «Копировать»</td>
+<td>router ospf 1 / network ... area 0 / area 0 authentication</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Покрытие</strong></p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Уровень</th>
+<th>Покрытие</th>
+<th>Комментарий</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>CCNA 200-301</strong></td>
+<td>~95%</td>
+<td>Все 6 доменов (Fundamentals, Access, Connectivity, Services,
+Security, Automation — обзорно)</td>
+</tr>
+<tr class="even">
+<td><strong>CCNP ENCOR/ENARSI</strong></td>
+<td>~50–55%</td>
+<td>База есть (OSPF, EIGRP, BGP, MSTP, HSRP, NAT, ACL, NTP, Syslog,
+troubleshooting). Нет: VRF (детально), multicast, QoS (детально), IP
+SLA, EEM, SD-WAN, VPN (DMVPN), automation (Python/Ansible)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ключевые фишки</strong></p>
+<ul>
+<li><p><strong>Поиск</strong> — фильтрует карточки по всем трём слоям
+(описание, схема, код).</p></li>
+<li><p><strong>Копирование</strong> — чистит !-комментарии (Cisco)
+и ::-комментарии (Windows), удаляет пустые строки в
+начале/конце.</p></li>
+<li><p><strong>Тёмно-серый терминал</strong> #2b2b2b — как в реальной
+консоли (не чёрный, чтобы глаза не уставали).</p></li>
+<li><p><strong>Темы</strong> — светлая/тёмная, запоминается
+в localStorage.</p></li>
+<li><p><strong>Офлайн</strong> — работает без интернета, без сервера,
+без зависимостей.</p></li>
+</ul>
+</body>
+</html>
