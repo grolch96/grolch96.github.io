@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лабораторные работы | grolch96</title>
+    <style>
+        :root { --bg: #f4f4f6; --fg: #1a1a2e; --card: #fff; --accent: #2e7d32; --border: #ddd; }
+        [data-theme="dark"] { --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --accent: #81c784; --border: #444; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--fg); margin: 0; padding: 20px; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: var(--accent); }
+        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: var(--accent); font-weight: bold; }
+        .lab-card { background: var(--card); padding: 30px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .lab-card h2 { margin-top: 0; border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        .tag { display: inline-block; background: rgba(46, 125, 50, 0.1); color: var(--accent); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-right: 5px; margin-bottom: 5px; }
+        ul { padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← На главную</a>
+        <h1>Лабораторные работы</h1>
+
+        <div class="lab-card">
+            <h2>02. Восстановление продвинутой сети (Advanced Recovery)</h2>
+            <div>
+                <span class="tag">BGP</span> <span class="tag">OSPF Multi-Area</span> <span class="tag">EIGRP</span> 
+                <span class="tag">HSRP</span> <span class="tag">NAT/PAT</span> <span class="tag">IPv6</span> <span class="tag">L2 Security</span>
+            </div>
+            <p><strong>Описание:</strong> Проект уровня CCNP Enterprise. Трехуровневая архитектура со стыком с провайдером (eBGP), резервированием шлюза (HSRP), балансировкой нагрузки (Rapid-PVST+) и защитой от атак на канальном уровне (DHCP Snooping, Port-Security).</p>
+            <p><strong>Ключевая задача:</strong> Восстановление сети после серии сбоев, диагностика фантомных маршрутов, решение проблем с MTU в OSPF и настройка Redistribution.</p>
+            
+            <h3>Документация и конфиги:</h3>
+            <ul>
+                <li><a href="#" style="color: var(--accent);">Скачать полный отчет (Markdown)</a> (Скоро)</li>
+                <li><a href="#" style="color: var(--accent);">Скачать конфигурации устройств (.txt)</a> (Скоро)</li>
+            </ul>
+        </div>
+
+        <div class="lab-card">
+            <h2>01. Восстановление базовой сети (Base Legacy Recovery)</h2>
+            <div>
+                <span class="tag">VLAN</span> <span class="tag">LACP / PAgP</span> <span class="tag">OSPFv2</span> 
+                <span class="tag">NAT</span> <span class="tag">DHCP</span> <span class="tag">STP</span>
+            </div>
+            <p><strong>Описание:</strong> Базовая лабораторная работа (CCNA). Настройка сегментации L2 (VLAN, Trunk), агрегация каналов (EtherChannel), защита от петель (STP) и маршрутизация между VLAN с выходом в интернет через NAT.</p>
+            <p><strong>Ключевая задача:</strong> Исправление ошибок конфигурации LACP (сборка каналов), восстановление связности между VLAN и настройка автоматической выдачи адресов (DHCP).</p>
+            
+            <h3>Документация и конфиги:</h3>
+            <ul>
+                <li><a href="#" style="color: var(--accent);">Скачать полный отчет (Markdown)</a> (Скоро)</li>
+                <li><a href="#" style="color: var(--accent);">Скачать конфигурации устройств (.txt)</a> (Скоро)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор Справочника</title>
+<script src="mammoth.js"></script>
+<style>
+  :root {
+    --bg: #f4f4f6; --fg: #1a1a2e; 
+    --card: rgba(255, 255, 255, 0.15);
+    --border: rgba(255, 255, 255, 0.2);
+    --blue: #7fa8d4; --pink: #e8a0a8;
+    --text-shadow: 0 1px 4px rgba(255,255,255,0.9);
+    --bg-overlay: rgba(244, 244, 246, 0.6);
+    --term-bg: #1e1e1e; --term-fg: #d4d4d4;
+    --table-bg: rgba(255,255,255,0.5);
+    --table-row: rgba(0,0,0,0.03);
+  }
+  
+  [data-theme="dark"] {
+    --bg: #2a2a2e; 
+    --fg: #e6edf3; 
+    --card: rgba(255, 255, 255, 0.08); 
+    --border: rgba(255, 255, 255, 0.1); 
+    --blue: #9bc0f0; --pink: #f5b8c2;
+    --text-shadow: 0 1px 4px rgba(0,0,0,0.5); 
+    --bg-overlay: rgba(30, 30, 35, 0.8); 
+    --term-bg: rgba(0, 0, 0, 0.3); 
+    --term-fg: #e0e0e0;
+    --table-bg: rgba(255, 255, 255, 0.05);
+    --table-row: rgba(255, 255, 255, 0.02);
+  }
+  
+  * { box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--fg); margin: 0; padding: 0; line-height: 1.6;
+    background-color: var(--bg);
+    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('bg-demo.jpg');
+    background-size: cover; background-position: center; background-attachment: fixed;
+    transition: color .3s, background .3s;
+  }
+
+  /* ПРОЗРАЧНАЯ ШАПКА */
+  header {
+    position: sticky; top: 0; z-index: 100; 
+    background: rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15); 
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  }
+  [data-theme="dark"] header {
+    background: rgba(30, 30, 35, 0.2);
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+  }
+  header h1 { font-size: 1.4em; margin: 0; flex: 1; text-shadow: 0 2px 5px rgba(0,0,0,0.8); color: #fff; }
+  
+  header button {
+    padding: 10px 18px; border: none; border-radius: 20px; 
+    background: var(--card); color: var(--fg); cursor: pointer;
+    transition: all 0.3s ease; font-weight: 600;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); backdrop-filter: blur(5px);
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  }
+  header button:hover { 
+    background: var(--blue); transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(127, 168, 212, 0.4); 
+  }
+  header button.btn-save { background: #238636; }
+  header button.btn-save:hover { background: #2ea043; }
+  header button.btn-clear { background: #c0392b; }
+  header button.btn-clear:hover { background: #e74c3c; }
+
+  #drop-zone {
+    max-width: 800px; margin: 40px auto; padding: 50px 20px;
+    border: 2px dashed var(--blue); border-radius: 24px; 
+    text-align: center; cursor: pointer;
+    background: var(--card); backdrop-filter: blur(15px);
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+  }
+  #drop-zone.hover { 
+    background: rgba(127, 168, 212, 0.15); border-color: var(--pink); 
+    transform: scale(1.02); box-shadow: 0 15px 50px rgba(127, 168, 212, 0.2);
+  }
+  #drop-zone h2 { margin-top: 0; color: var(--blue); }
+  #drop-zone p { color: var(--fg); opacity: 0.8; }
+  #file-input { display: none; }
+
+  #output-area { max-width: 1100px; margin: 0 auto; padding: 20px; display: none; }
+  
+  /* СЛОЙ ОТЧЕТА */
+  .report-layer {
+    background: var(--card); 
+    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--pink); 
+    border-radius: 20px; 
+    padding: 30px; margin-bottom: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08); 
+    text-shadow: var(--text-shadow);
+    overflow-x: auto;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, max-height 0.3s ease;
+    color: var(--fg) !important;
+    position: relative;
+  }
+  
+  /* СВОРАЧИВАНИЕ ВСЕГО */
+  .report-layer.is-collapsed, .terminal-layer.is-collapsed {
+    max-height: 100px !important;
+    overflow: hidden !important;
+    opacity: 0.8;
+  }
+  .report-layer.is-collapsed::after, .terminal-layer.is-collapsed::after {
+    content: "..."; position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+    background: linear-gradient(transparent, var(--card)); text-align: center; color: var(--fg);
+  }
+
+  [data-theme="dark"] .report-layer {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+  }
+  
+  .report-layer p, 
+  .report-layer span, 
+  .report-layer div:not([class]), 
+  .report-layer li {
+    background-color: transparent !important;
+    color: var(--fg) !important;
+  }
+
+  .report-layer h1, .report-layer h2, .report-layer h3, .report-layer h4 {
+    background-color: transparent !important;
+    color: var(--blue) !important; 
+    font-weight: 700; margin-top: 25px; margin-bottom: 10px; line-height: 1.3;
+  }
+  .report-layer h1 { font-size: 1.8em; }
+  .report-layer h2 { font-size: 1.5em; }
+  .report-layer h3 { font-size: 1.3em; }
+  .report-layer h4 { font-size: 1.1em; color: var(--pink) !important; }
+
+  [data-theme="dark"] .report-layer h1,
+  [data-theme="dark"] .report-layer h2,
+  [data-theme="dark"] .report-layer h3,
+  [data-theme="dark"] .report-layer h4 {
+    color: #ffffff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+  
+  .report-layer table {
+    width: 100% !important; border-collapse: collapse !important; margin: 20px 0 !important;
+    background: var(--table-bg) !important; border-radius: 12px; overflow: hidden;
+  }
+  .report-layer th, .report-layer td {
+    background-color: transparent !important;
+    border: 1px solid var(--border) !important; padding: 12px 15px !important; text-align: left !important;
+    color: var(--fg) !important;
+  }
+  .report-layer th { background: var(--blue) !important; color: #fff !important; font-weight: bold !important; }
+  .report-layer tr:nth-child(even) { background: var(--table-row) !important; }
+  
+  [data-theme="dark"] .report-layer th { color: #1a1a2e !important; }
+  [data-theme="dark"] .report-layer td { border-color: rgba(255,255,255,0.15) !important; }
+
+  .report-layer img {
+    max-width: 100% !important; height: auto !important; border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15); margin: 20px 0;
+    border: none;
+  }
+
+  /* Терминал */
+  .terminal-layer {
+    background: var(--term-bg); color: var(--term-fg);
+    padding: 20px; border-radius: 16px; 
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 14px; overflow-x: auto; margin-bottom: 30px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.2); 
+    border: 1px solid var(--border); position: relative;
+    transition: transform 0.3s ease, max-height 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  .terminal-layer .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: #238636; color: #fff; border: none; padding: 6px 12px;
+    border-radius: 8px; cursor: pointer; font-size: 12px; opacity: 0.8;
+    transition: all 0.2s;
+  }
+  .cmd { color: #dcdcaa; font-weight: bold; }
+  .comment { color: #6a9955; }
+
+  /* Поиск */
+  .ui-layer {
+    max-width: 1100px; margin: 0 auto 25px; padding: 12px;
+    display: none; 
+    gap: 10px; background: var(--card); backdrop-filter: blur(15px);
+    border-radius: 16px; border: 1px solid var(--border);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  }
+  .ui-layer input {
+    flex: 1; padding: 12px 16px; border: none;
+    border-radius: 12px; background: var(--bg); color: var(--fg); font-size: 16px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  .error-box {
+    background: rgba(220, 50, 50, 0.1); color: #e74c3c; padding: 20px;
+    border-radius: 16px; border: 1px solid #e74c3c; margin: 20px auto;
+    max-width: 600px; text-align: center; font-weight: bold;
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <h1>📄 Конструктор Справочника</h1>
+  <button id="theme-btn">🌙 Тема</button>
+  <button class="btn-save" onclick="saveHTML()">💾 Скачать HTML</button>
+  <button class="btn-clear" onclick="resetApp()">✖ Очистить</button>
+  <button onclick="toggleAll()" id="toggle-all-btn" style="background: #7fa8d4;">[-] Свернуть всё</button>
+</header>
+
+<div id="drop-zone" onclick="document.getElementById('file-input').click()">
+  <h2>Перетащите сюда файл</h2>
+  <p style="margin-bottom: 15px;">Форматы: <b>.docx</b> или <b>.html</b></p>
+  
+  <div style="background: rgba(127, 168, 212, 0.15); border-left: 4px solid var(--blue); padding: 12px 16px; border-radius: 8px; text-align: left; margin: 0 auto; max-width: 500px; font-size: 14px; line-height: 1.5;">
+    <strong>💡 Как сохранить файл из Word:</strong><br>
+    Меню <b>Файл</b> → <b>Сохранить как</b> → выберите тип <b>«Веб-страница, фильтрованный HTML (*.htm; *.html)»</b>.<br>
+    <span style="opacity: 0.8; font-size: 12px; display: block; margin-top: 5px;">Это уберет лишний мусорный код и сохранит правильную кодировку.</span>
+  </div>
+
+  <input type="file" id="file-input" accept=".docx, .html, .htm" onchange="handleFile(this.files[0])">
+</div>
+
+<div class="ui-layer" id="ui-layer">
+  <input type="text" id="search-input" placeholder="🔍 Поиск по загруженному тексту..." onkeyup="filterContent()">
+</div>
+
+<div id="output-area"></div>
+
+<script>
+  // === 1. УПРАВЛЕНИЕ ТЕМОЙ ===
+  const themeBtn = document.getElementById('theme-btn');
+  const savedTheme = localStorage.getItem('cisco-theme') || 'light';
+  document.body.dataset.theme = savedTheme;
+  themeBtn.addEventListener('click', () => {
+    const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+    document.body.dataset.theme = next;
+    localStorage.setItem('cisco-theme', next);
+  });
+
+  // === 2. ОБРАБОТКА DRAG & DROP ===
+  const dropZone = document.getElementById('drop-zone');
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('hover'); });
+  dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('hover'); });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('hover');
+    if (e.dataTransfer.files.length) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  // === 3. ЧТЕНИЕ ФАЙЛА ===
+  function handleFile(file) {
+    if (!file) return;
+    
+    dropZone.style.display = 'none';
+    document.getElementById('ui-layer').style.display = 'flex';
+    document.getElementById('toggle-all-btn').style.display = 'block';
+    const out = document.getElementById('output-area');
+    out.style.display = 'block';
+    out.innerHTML = '<h2 style="text-align:center;">Обработка файла...</h2>';
+
+    const reader = new FileReader();
+
+    if (file.name.endsWith('.docx')) {
+      if (typeof mammoth === 'undefined') {
+        showError('Для чтения .docx нужна библиотека <b>mammoth.js</b>.<br><br>Положите файл mammoth.js рядом с конструктором ИЛИ сохраните Word как "Веб-страница, фильтрованный HTML".');
+        return;
+      }
+      reader.onload = function(e) {
+        const arrayBuffer = e.target.result;
+        mammoth.convertToHtml({arrayBuffer: arrayBuffer})
+          .then(res => processHTML(res.value))
+          .catch(err => showError('Ошибка DOCX: ' + err.message));
+      };
+      reader.readAsArrayBuffer(file);
+    } else if (file.name.match(/\.(html|htm)$/i)) {
+      reader.onload = function(e) {
+        let text = e.target.result;
+        if (text.includes('�')) {
+          const reader2 = new FileReader();
+          reader2.onload = function(e2) { processHTML(e2.target.result); };
+          reader2.readAsText(file, 'windows-1251');
+        } else {
+          processHTML(text);
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    } else {
+      showError('Неподдерживаемый формат. Используйте .docx или .html');
+    }
+  }
+
+  function showError(msg) {
+    const out = document.getElementById('output-area');
+    out.innerHTML = `<div class="error-box">⚠️ ${msg}</div>
+      <div style="text-align:center; margin-top:20px;"><button onclick="resetApp()" style="padding:10px 20px; cursor:pointer; border-radius:6px;">Попробовать снова</button></div>`;
+  }
+
+  // === 4. РАЗБОР HTML ===
+  function processHTML(htmlString) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlString;
+
+    let finalHTML = '';
+    let currentReport = '';
+
+    Array.from(tempDiv.children).forEach(child => {
+      if (child.tagName === 'PRE') {
+        if (currentReport.trim()) {
+          finalHTML += `<div class="report-layer">${currentReport}</div>`;
+          currentReport = '';
+        }
+        finalHTML += createTerminalBlock(child.innerText);
+      } else {
+        currentReport += child.outerHTML;
+      }
+    });
+
+    if (currentReport.trim()) {
+      finalHTML += `<div class="report-layer">${currentReport}</div>`;
+    }
+
+    if (!finalHTML.trim()) {
+      finalHTML = `<div class="report-layer">${htmlString}</div>`;
+    }
+
+    document.getElementById('output-area').innerHTML = finalHTML;
+  }
+
+  // === 5. СОЗДАНИЕ ТЕРМИНАЛА ===
+  function createTerminalBlock(code) {
+    let coloredCode = code.split('\n').map(line => {
+      let trimmed = line.trim();
+      if (trimmed.startsWith('show') || trimmed.startsWith('ping') || trimmed.startsWith('traceroute')) {
+        return `<span class="cmd">${escapeHtml(line)}</span>`;
+      }
+      if (trimmed.startsWith('!') || trimmed.startsWith('#')) {
+        return `<span class="comment">${escapeHtml(line)}</span>`;
+      }
+      return escapeHtml(line);
+    }).join('<br>');
+
+    return `
+      <div class="terminal-layer">
+        <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        <div class="term-content">${coloredCode}</div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function copyCode(btn) {
+    const termDiv = btn.parentElement.querySelector('.term-content');
+    navigator.clipboard.writeText(termDiv.innerText).then(() => {
+      btn.textContent = '✅ Скопировано';
+      setTimeout(() => btn.textContent = 'Копировать', 2000);
+    });
+  }
+
+  // === 6. ПОИСК ===
+  function filterContent() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    document.querySelectorAll('.report-layer, .terminal-layer').forEach(block => {
+      block.style.display = block.innerText.toLowerCase().includes(query) ? '' : 'none';
+    });
+  }
+
+  // === 7. СВЕРНУТЬ/РАЗВЕРНУТЬ ВСЁ ===
+  let isAllCollapsed = false;
+  function toggleAll() {
+    isAllCollapsed = !isAllCollapsed;
+    const btn = document.getElementById('toggle-all-btn');
+    document.querySelectorAll('.report-layer, .terminal-layer').forEach(block => {
+      if (isAllCollapsed) {
+        block.classList.add('is-collapsed');
+      } else {
+        block.classList.remove('is-collapsed');
+      }
+    });
+    btn.innerText = isAllCollapsed ? '[+] Развернуть всё' : '[-] Свернуть всё';
+  }
+
+  // === 8. СКАЧИВАНИЕ ===
+  function saveHTML() {
+    const content = document.getElementById('output-area').innerHTML;
+    
+    const styles = `
+      <style>
+        :root { --bg: #f4f4f6; --fg: #1a1a2e; --card: rgba(255,255,255,0.15); --blue: #7fa8d4; --pink: #e8a0a8; --term-bg: #1e1e1e; --term-fg: #d4d4d4; --border: rgba(255,255,255,0.2); }
+        body { font-family: sans-serif; background: var(--bg); color: var(--fg); padding: 20px; line-height: 1.6; }
+        .report-layer { background: var(--card); padding: 30px; border-radius: 20px; border-left: 4px solid var(--pink); margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); overflow-x: auto; }
+        .report-layer p, .report-layer span, .report-layer div, .report-layer li { background-color: transparent !important; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; border-radius: 12px; overflow: hidden; }
+        th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; background-color: transparent; }
+        th { background: var(--blue); color: #fff; }
+        .terminal-layer { background: var(--term-bg); color: var(--term-fg); padding: 20px; border-radius: 16px; font-family: monospace; position: relative; margin-bottom: 30px; overflow-x: auto; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: #238636; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+        .cmd { color: #dcdcaa; font-weight: bold; }
+        .comment { color: #6a9955; }
+        .ui-layer { margin-bottom: 20px; }
+        .ui-layer input { padding: 12px 16px; width: 100%; border: none; border-radius: 12px; font-size: 16px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); }
+        .report-layer.is-collapsed, .terminal-layer.is-collapsed { max-height: 100px !important; overflow: hidden !important; opacity: 0.8; }
+        @media (prefers-color-scheme: dark) {
+          :root { --bg: #2a2a2e; --fg: #e6edf3; --card: rgba(255,255,255,0.08); --term-bg: rgba(0,0,0,0.3); --border: rgba(255,255,255,0.1); }
+          body { background: var(--bg); color: var(--fg); }
+          .report-layer { background: var(--card); border: 1px solid var(--border); }
+          .report-layer table { background: rgba(255,255,255,0.05); }
+          th, td { border-color: #555; }
+          input { background: #222; color: #fff; border-color: #555; }
+        }
+      </style>
+    `;
+
+    const fullHTML = `<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><title>Справочник</title>${styles}</head>
+<body>
+  <div class="ui-layer">
+    <input type="text" placeholder="Поиск..." onkeyup="filterContent()" id="search-input">
+  </div>
+  <div id="output-area">${content}</div>
+  <script>
+    function filterContent() {
+      const q = document.getElementById('search-input').value.toLowerCase();
+      document.querySelectorAll('.report-layer, .terminal-layer').forEach(b => {
+        b.style.display = b.innerText.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+    function copyCode(btn) {
+      const termDiv = btn.parentElement.querySelector('.term-content');
+      navigator.clipboard.writeText(termDiv.innerText).then(() => {
+        btn.textContent = '✅';
+        setTimeout(() => btn.textContent = 'Копировать', 2000);
+      });
+    }
+  <\/script>
+</body>
+</html>`;
+
+    const blob = new Blob([fullHTML], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-reference.html';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function resetApp() {
+    location.reload();
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cisco IOS — Troubleshooting (Практические сценарии)</title>
+<style>
+  :root {
+    --bg: #f4f4f6; --fg: #1a1a2e; 
+    --card: rgba(255, 255, 255, 0.25); /* Прозрачная карточка */
+    --border: #d0d7de;
+    --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; 
+    --tag: rgba(234, 240, 248, 0.3);   /* Прозрачный заголовок */
+    --note-bg: #f7f7f7; --note-border: #c8c8c8;
+    --schema-bg: #e8f5e9; --schema-border: #7cbf82;
+    --warn-bg: #fce4e4; --warn-border: #e8a0a8;
+    --bg-overlay: rgba(244, 244, 246, 0.8); /* Слой для картинки */
+  }
+  [data-theme="dark"] {
+    --bg: #1a1a1a; --fg: #c9d1d9; 
+    --card: rgba(42, 42, 42, 0.35);  /* Прозрачная карточка */
+    --border: #3a3a3a;
+    --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; 
+    --tag: rgba(42, 58, 74, 0.3);    /* Прозрачный заголовок */
+    --note-bg: #3a3a3a; --note-border: #6a6a6a;
+    --schema-bg: #1a3d1a; --schema-border: #7cbf82;
+    --warn-bg: #3d1a1a; --warn-border: #f0b8c0;
+    --bg-overlay: rgba(26, 26, 26, 0.85);
+  }
+  * { box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--fg); margin: 0; padding: 0;
+    line-height: 1.6; transition: color .2s;
+    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  
+  header {
+    position: sticky; top: 0; z-index: 100; background: var(--card);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border); padding: 12px 20px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  }
+  header::before {
+    content: ""; display: block; width: 100%; height: 3px;
+    background: linear-gradient(to right, #e0e0e0 33%, #7fa8d4 33%, #7fa8d4 66%, #e8a0a8 66%);
+    position: absolute; top: 0; left: 0;
+  }
+  header h1 { font-size: 1.2em; margin: 0; flex: 1; min-width: 200px; }
+  header input[type="search"] {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--fg); min-width: 260px; font-size: 14px;
+  }
+  header button {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--fg); cursor: pointer; font-size: 14px;
+  }
+  header button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  
+  .intro {
+    background: var(--card); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 20px; font-size: 14px;
+    transition: background 0.3s ease;
+  }
+  .intro:hover { background: rgba(255, 255, 255, 0.95); }
+  [data-theme="dark"] .intro:hover { background: rgba(42, 42, 42, 0.98); }
+  .intro h2 { margin-top: 0; font-size: 1.1em; color: var(--accent); }
+  
+  details.topic {
+    background: var(--card); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 14px; overflow: hidden;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* МАГИЯ: при наведении, клике или раскрытии карточка становится непрозрачной */
+  details.topic:hover, details.topic:focus-within, details.topic[open] {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  [data-theme="dark"] details.topic:hover, 
+  [data-theme="dark"] details.topic:focus-within, 
+  [data-theme="dark"] details.topic[open] {
+    background: rgba(42, 42, 42, 0.98);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  
+  details.topic > summary {
+    padding: 14px 18px; cursor: pointer; font-weight: 600; font-size: 1.05em;
+    list-style: none; display: flex; align-items: center; gap: 10px;
+    user-select: none; background: var(--tag);
+    transition: background 0.2s;
+  }
+  details.topic > summary::-webkit-details-marker { display: none; }
+  details.topic > summary::before { content: "▶"; font-size: .75em; transition: transform .2s; color: var(--accent); }
+  details.topic[open] > summary::before { transform: rotate(90deg); }
+  details.topic > summary:hover { background: var(--accent); color: #fff; }
+  details.topic > summary:hover::before { color: #fff; }
+  
+  .topic-body { padding: 4px 18px 18px; }
+  .layer { margin: 12px 0; padding: 12px 14px; border-radius: 6px; }
+  .layer-note { background: var(--note-bg); border-left: 3px solid var(--note-border); }
+  .layer-schema { background: var(--schema-bg); border-left: 3px solid var(--schema-border); }
+  .layer-code { background: transparent; border-left: 3px solid var(--accent); padding-left: 0; }
+  .layer-warn { background: var(--warn-bg); border-left: 3px solid var(--warn-border); }
+  
+  .layer-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 6px; color: var(--muted);
+  }
+  .layer-note .layer-title { color: #7a7a7a; }
+  .layer-schema .layer-title { color: #2e7d32; }
+  .layer-code .layer-title { color: var(--accent); }
+  .layer-warn .layer-title { color: #c62828; }
+  
+  .schema {
+    font-family: "Consolas", "Courier New", monospace; font-size: 12px;
+    white-space: pre; overflow-x: auto; line-height: 1.5;
+  }
+  .code-wrap { position: relative; margin-top: 6px; }
+  .code-wrap pre {
+    margin: 0; padding: 12px; background: #2b2b2b !important; color: #e0e0e0 !important;
+    font-family: "Consolas", "Courier New", monospace; font-size: 13px;
+    overflow-x: auto; line-height: 1.5; border-radius: 6px;
+  }
+  .code-wrap .copy-btn {
+    position: absolute; top: 6px; right: 6px; padding: 4px 10px;
+    background: #238636; color: #fff; border: none; border-radius: 4px;
+    cursor: pointer; font-size: 12px; opacity: .85;
+  }
+  .code-wrap .copy-btn:hover { opacity: 1; }
+  .code-wrap .copy-btn.copied { background: #1f6feb; }
+  .hidden { display: none !important; }
+  footer { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
+  
+  @media (max-width: 600px) {
+    header h1 { font-size: 1em; width: 100%; }
+    header input[type="search"] { flex: 1; min-width: 0; }
+    main { padding: 12px; }
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <h1>🔧 Cisco IOS — Troubleshooting</h1>
+  <input type="search" id="search" placeholder="Поиск: OSPF, BGP, NAT, VLAN...">
+  <button id="theme-btn" title="Переключить тему">🌙 Тема</button>
+  <button id="expand-btn" title="Развернуть/свернуть всё">⤢ Развернуть</button>
+</header>
+
+<main>
+
+<div class="intro">
+  <h2>📌 Как пользоваться</h2>
+  <p>Каждая карточка — <strong>конкретная проблема</strong> и её решение. Внутри — три слоя: <strong>📌 Кратко</strong> (принцип), <strong>🗺 Схема</strong> (где применяется, ваши адреса), <strong>⚙️ Пример</strong> (команды с кнопкой «Копировать»).</p>
+  <p><strong>Карта сети (общая для всех сценариев):</strong> R1 (Fa0/0 = 192.168.1.5/24, Fa0/1 = 30.30.30.31/8), R2 (Fa0/0 = 192.168.1.150/24, Fa0/1 = 30.30.30.32/8), ISP (Loopback0 = 8.8.8.8/32, Fa0/0 = 30.30.30.1/8, Fa0/1 = 30.30.30.2/8), HSRP = 192.168.1.2/24. VLAN 104 = 192.168.4.0/24 (SW1), VLAN 105 = 192.168.5.0/24 (SW11), VLAN 108 = 192.168.8.0/24 (SW00), VLAN 103 = 192.168.3.0/24 (SW00).</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 1: Floating Static -->
+<!-- ============================================================ -->
+<details class="topic" id="t1" open>
+  <summary>1. Маршрут в «невидимую» сеть (Floating Static)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Основной шлюз (ISP) не знает о внутренней сети <code>192.168.5.0/24</code> (VLAN 105), потому что она не анонсируется в BGP. Нужен резервный путь через R2, но так, чтобы он не перебивал основной (OSPF). Решение — <strong>Floating Static</strong> с AD 250 (выше, чем OSPF 110).
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[ПК VLAN 105: 192.168.5.10] --- [SW11] --- [SW1] --- [R1: 192.168.1.5]
+                                                                      |
+                                                                 Fa0/1 = 30.30.30.31
+                                                                      |
+                                                                   [ISP: 30.30.30.1]
+
+Резервный путь: [R1] --- (через ISP) --- [R2: 30.30.30.32]
+next-hop для 192.168.5.0/24 = 30.30.30.32 (R2, connected через ISP)
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига (на R1)</div>
+      <div class="code-wrap"><pre>! Резервный маршрут через R2 (AD 250 — выше, чем OSPF 110)
+ip route 192.168.5.0 255.255.255.0 30.30.30.32 250
+
+! Проверка:
+show ip route 192.168.5.0
+! В норме — O (OSPF). Если OSPF упал — S (static, AD 250).</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      Если next-hop (30.30.30.32) недоступен (R2 выключен) — статика не установится. Проверьте: <code>show ip route 30.30.30.32</code> (должен быть C или O).
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 2: PBR -->
+<!-- ============================================================ -->
+<details class="topic" id="t2">
+  <summary>2. PBR — трафик из VLAN 108 через R2 (а не через R1)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      По умолчанию трафик из VLAN 108 (<code>192.168.8.0/24</code>) идёт через R1 (HSRP Active 192.168.1.2). Нужно, чтобы <strong>только VLAN 108</strong> ходил в интернет через <strong>R2</strong> (192.168.1.150). Это делает <strong>Policy-Based Routing (PBR)</strong> на SW00 (где шлюз VLAN 108).
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[ПК VLAN 108: 192.168.8.10] --- [SW00: 192.168.8.254] --- [SW0] --- [SW22] --- [SW2]
+                                                                                    |
+                                                                              [R2: 192.168.1.150]
+                                                                                    |
+                                                                              Fa0/1 = 30.30.30.32
+                                                                                    |
+                                                                                 [ISP]
+
+Обычный путь: SW00 → ... → SW1 → R1 (HSRP Active) → ISP.
+PBR путь:     SW00 → ... → SW2 → R2 → ISP (только source = 192.168.8.0/24).
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига (на SW00)</div>
+      <div class="code-wrap"><pre>! 1. ACL: какой трафик перехватываем (только VLAN 108)
+access-list 108 permit ip 192.168.8.0 0.0.0.255 any
+
+! 2. Route-map: куда его отправляем (next-hop = R2)
+route-map PBR-VLAN108 permit 10
+ match ip address 108
+ set ip next-hop 192.168.1.150
+ exit
+
+! 3. Применяем на входящем интерфейсе (SVI VLAN 108)
+interface Vlan108
+ ip policy route-map PBR-VLAN108
+ exit
+
+! Проверка:
+show route-map
+show ip policy</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      PBR обрабатывает только <strong>входящий</strong> трафик. Если next-hop (192.168.1.150) недоступен — пакеты дропаются. Используйте <code>set ip next-hop verify-availability 192.168.1.150 10 track 1</code> + IP SLA.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 3: VRF Route Leaking -->
+<!-- ============================================================ -->
+<details class="topic" id="t3">
+  <summary>3. VRF Route Leaking — гостям доступ к одному серверу</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Есть VRF «Guest» (VLAN 108, <code>192.168.8.0/24</code>) и VRF «Corp» (VLAN 104, <code>192.168.4.0/24</code>). Гостям нужен доступ <strong>только к принтеру</strong> <code>192.168.4.50/32</code> в Corp. По умолчанию VRF изолированы — route leaking импортирует один маршрут.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[VRF Guest: 192.168.8.0/24] --- [SW00] --- [SW1] --- [VRF Corp: 192.168.4.0/24]
+                                                       |
+                                                 (импорт: только 192.168.4.50/32)
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига (на SW00)</div>
+      <div class="code-wrap"><pre>! 1. Создаём VRF
+vrf definition Guest
+ address-family ipv4
+ exit
+vrf definition Corp
+ address-family ipv4
+ exit
+
+! 2. Назначаем интерфейсы
+interface Vlan108
+ vrf forwarding Guest
+ ip address 192.168.8.254 255.255.255.0
+ exit
+
+! 3. Route-map для экспорта (Corp -> Guest)
+ip prefix-list ALLOWED-CORP permit 192.168.4.50/32
+route-map CORP-TO-GUEST permit 10
+ match ip address prefix-list ALLOWED-CORP
+ exit
+
+! 4. Импорт в Guest, экспорт из Corp
+vrf definition Guest
+ address-family ipv4
+  import ipv4 unicast map CORP-TO-GUEST
+ exit
+vrf definition Corp
+ address-family ipv4
+  export ipv4 unicast map CORP-TO-GUEST
+ exit</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      Маршрут <code>192.168.4.50/32</code> должен быть в таблице Corp (connected/OSPF/static). Если его там нет — импортировать нечего.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 4: Шлюз не видит сеть -->
+<!-- ============================================================ -->
+<details class="topic" id="t4">
+  <summary>4. «Шлюз не видит сеть» — статика не появилась в show ip route</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Вы прописали на R1 <code>ip route 192.168.5.0 255.255.255.0 192.168.1.150</code>, но маршрут не появился. Причина: next-hop (<code>192.168.1.150</code> — R2) недоступен (или резолвится через маршрут, которого нет). IOS проверяет доступность next-hop перед установкой статики.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[R1: 192.168.1.5] --- (192.168.1.0/24) --- [R2: 192.168.1.150]
+        |
+   Fa0/0 = 192.168.1.5
+
+Проверяем: видит ли R1 сеть 192.168.1.0/24?
+(должен быть C connected на Fa0/0)
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка (пошагово)</div>
+      <div class="code-wrap"><pre>! 1. Прописали статику:
+ip route 192.168.5.0 255.255.255.0 192.168.1.150
+
+! 2. Смотрим, появилась ли:
+show ip route static
+! Если нет — next-hop недоступен.
+
+! 3. Проверяем, видит ли R1 next-hop:
+show ip route 192.168.1.150
+! Должен быть C (connected) через Fa0/0.
+! Если пусто — next-hop недоступен.
+
+! 4. Проверяем интерфейс:
+show ip interface brief
+! Fa0/0 должен быть up/up.</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      Если next-hop резолвится через другую статику (рекурсия) — петля. Для Ethernet используйте fully specified static route: <code>ip route 192.168.5.0 255.255.255.0 Fa0/0 192.168.1.150</code>.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 5: OSPF не поднимает соседство -->
+<!-- ============================================================ -->
+<details class="topic" id="t5">
+  <summary>5. OSPF не поднимает соседство (R1 ↔ SW1)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      OSPF-соседи не переходят в <code>FULL</code>. Причины: не совпали <strong>area ID</strong>, <strong>аутентификация</strong> (ключ/метод), <strong>MTU</strong>, <strong>таймеры</strong> (Hello/Dead), <strong>network type</strong> (broadcast vs point-to-point).
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[R1: 192.168.1.5] --- (192.168.1.0/24) --- [SW1: 192.168.1.253]
+        |                                  |
+   Fa0/0, area 0                    Vlan1, area 0
+   authentication-key gro1ch21      authentication-key gro1ch21
+   MTU 1500                         MTU 1500
+
+Если хотя бы одно не совпало — соседство не встанет.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка (пошагово)</div>
+      <div class="code-wrap"><pre>! 1. Смотрим соседей:
+show ip ospf neighbor
+! Если пусто или INIT/EXSTART — проблема.
+
+! 2. Проверяем area:
+show ip ospf interface f0/0
+show ip ospf interface Vlan1
+! Area ID должен совпадать (0).
+
+! 3. Проверяем аутентификацию:
+show run | section ospf
+! area 0 authentication
+! ip ospf authentication-key gro1ch21
+
+! 4. Проверяем MTU:
+show interface f0/0 | include MTU
+! Должен совпадать (1500).
+
+! 5. Включаем debug (осторожно):
+debug ip ospf adj
+! Покажет причину: "authentication failed" или "MTU mismatch".</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      В Packet Tracer MTU mismatch часто не виден, но в реальной сети — частая причина. Также проверьте, что <code>network</code> в OSPF покрывает интерфейс (wildcard mask!).
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 6: BGP не устанавливает сессию -->
+<!-- ============================================================ -->
+<details class="topic" id="t6">
+  <summary>6. BGP не устанавливает сессию (ISP ↔ R1)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      BGP-сессия не переходит в <code>Established</code>. Причины: не совпали <strong>AS</strong> (remote-as), <strong>next-hop недоступен</strong>, <strong>update-source</strong> (Loopback vs физический), <strong>TTL</strong> (для eBGP), <strong>password</strong> (MD5).
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[R1: 30.30.30.31] --- (30.30.30.0/8) --- [ISP: 30.30.30.1]
+        |                                  |
+   AS 65002                          AS 65001
+   neighbor 30.30.30.1               neighbor 30.30.30.31
+
+Если AS не совпали — сессия не встанет.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка (пошагово)</div>
+      <div class="code-wrap"><pre>! 1. Смотрим BGP-соседей:
+show ip bgp summary
+! Если State не Established — проблема.
+
+! 2. Проверяем AS:
+show run | section bgp
+! neighbor X remote-as Y — Y должен совпадать с AS соседа.
+
+! 3. Проверяем reachability:
+ping 30.30.30.1
+! Если пинг не идёт — проблема с IP-адресацией.
+
+! 4. Проверяем update-source (если Loopback):
+show run | section bgp
+! neighbor X update-source Loopback0
+
+! 5. Включаем debug:
+debug ip bgp
+! Покажет причину: "bad AS" или "connection refused".</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      Для eBGP (между разными AS) TTL = 1 по умолчанию. Если сосед не в той же подсети — нужен <code>neighbor X ebgp-multihop 2</code>. Для iBGP — <code>next-hop-self</code> на граничном роутере.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 7: EtherChannel не собирается -->
+<!-- ============================================================ -->
+<details class="topic" id="t7">
+  <summary>7. EtherChannel не собирается (SW1 ↔ SW11)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Po1 не переходит в статус <code>SU</code> (Switched, Up). Причины: не совпали <strong>speed/duplex</strong>, <strong>mode</strong> (active/passive), <strong>allowed vlan</strong>, <strong>native vlan</strong>, или порты в разных VLAN.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[SW1: Fa0/2,4,6,8-13] === (LACP Po1) === [SW11: Fa0/1,6-13]
+        |                                              |
+   channel-group 1 mode active                  channel-group 1 mode passive
+   speed 100, duplex full                      speed 100, duplex full
+   allowed vlan 1,100,102-108                  allowed vlan 1,100,102-108
+
+Если хотя бы один порт отличается — Po1 не соберётся.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка (пошагово)</div>
+      <div class="code-wrap"><pre>! 1. Смотрим статус:
+show etherchannel summary
+! Po1 должен быть SU, порты — P.
+
+! 2. Проверяем speed/duplex:
+show interface f0/2 | include duplex|speed
+! На всех портах — speed 100, duplex full.
+
+! 3. Проверяем mode:
+show run | section channel-group
+! На SW1 — active, на SW11 — passive (или оба active).
+
+! 4. Проверяем allowed vlan:
+show interfaces trunk
+! Po1 должен пропускать 1,100,102-108.</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      В Packet Tracer LACP капризен: обязательно <code>speed 100</code> и <code>duplex full</code> на всех портах. Если один порт в <code>access</code>, а другой в <code>trunk</code> — канал не соберётся.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 8: HSRP flapping -->
+<!-- ============================================================ -->
+<details class="topic" id="t8">
+  <summary>8. HSRP flapping — Active/Standby переключаются</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      HSRP-роли «прыгают» между R1 и R2. Причины: <strong>preempt</strong> без <strong>track</strong> (R1 возвращается, но канал ещё не готов), <strong>priority</strong> одинаковый, <strong>timers</strong> не совпадают, <strong>interface tracking</strong> не настроен.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[R1: 192.168.1.5] --- (LAN 192.168.1.0/24) --- [R2: 192.168.1.150]
+        |                                              |
+   standby 1 priority 150                      standby 1 priority 100
+   standby 1 preempt                            standby 1 preempt
+   standby 1 track 1 decrement 60               (без track)
+
+Виртуальный IP: 192.168.1.2
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка и настройка</div>
+      <div class="code-wrap"><pre>! 1. Смотрим статус:
+show standby brief
+! R1 — Active, R2 — Standby.
+
+! 2. Проверяем preempt:
+show run | section standby
+! На обоих — standby 1 preempt.
+
+! 3. Настраиваем track (чтобы R1 не возвращался, пока канал не готов):
+ip sla 1
+ icmp-echo 30.30.30.1 source-interface f0/1
+ frequency 5
+ exit
+ip sla schedule 1 life forever start-time now
+track 1 ip sla 1 reachability
+interface f0/0
+ standby 1 track 1 decrement 60
+ exit
+
+! 4. Проверяем:
+show standby brief
+show track</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      Без <code>track</code> R1 вернётся в Active сразу после восстановления, даже если интернет ещё не работает. <code>track</code> + <code>decrement</code> решает проблему.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 9: NAT не работает -->
+<!-- ============================================================ -->
+<details class="topic" id="t9">
+  <summary>9. NAT не работает для конкретной подсети (VLAN 108)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      ПК из VLAN 108 (<code>192.168.8.0/24</code>) не выходит в интернет, хотя NAT настроен. Причины: <strong>ACL NAT</strong> не покрывает подсеть, <strong>inside/outside</strong> перепутаны, <strong>overload</strong> не указан, или маршрут до R1 отсутствует.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[ПК VLAN 108: 192.168.8.10] --- [SW00] --- ... --- [R1: 192.168.1.5]
+                                                                      |
+                                                                 Fa0/1 = 30.30.30.31
+                                                                      |
+                                                                   [ISP: 30.30.30.1]
+
+NAT: 192.168.8.10 → 30.30.30.31 (overload)
+ACL NAT должен разрешать 192.168.8.0/24
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка и настройка (на R1)</div>
+      <div class="code-wrap"><pre>! 1. Проверяем ACL NAT:
+show ip access-lists NAT
+! Должна быть строка: permit ip 192.168.0.0 0.0.255.255 any
+
+! 2. Проверяем inside/outside:
+show run | section interface
+! Fa0/0 — ip nat inside, Fa0/1 — ip nat outside
+
+! 3. Проверяем overload:
+show run | include ip nat inside source
+! Должно быть: ip nat inside source list NAT interface f0/1 overload
+
+! 4. Проверяем трансляции:
+show ip nat translations
+! Если пусто — трафик не доходит до NAT.
+
+! 5. Проверяем маршрут от ПК до R1:
+show ip route 192.168.8.0
+! Должен быть через SW1 (OSPF).</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      ACL NAT проверяется <strong>до</strong> маршрутизации. Если ACL не покрывает подсеть — пакет не будет транслирован. Также проверьте, что <code>ip nat inside</code> на Fa0/0, а <code>ip nat outside</code> на Fa0/1 (не наоборот).
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 10: DHCP Snooping блокирует DHCP -->
+<!-- ============================================================ -->
+<details class="topic" id="t10">
+  <summary>10. DHCP Snooping блокирует легитимный DHCP (SW0)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      DHCP Snooping включён на SW0, но ПК не получает IP. Причины: <strong>trunk-порт не в trust</strong>, <strong>option 82</strong> не отключён, <strong>rate-limit</strong> слишком низкий, или DHCP-сервер находится за нетрастовым портом.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[DHCP-сервер: SW00 192.168.8.254] --- [SW0: Po2 trunk]
+                                                      |
+                                              (trust на trunk!)
+                                                      |
+                                              [ПК: Fa0/10 access VLAN 108]
+                                              (untrust — DHCP-ответы дропаются)
+
+DHCP Snooping: trust только на trunk (Po2, Fa0/8)
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка и настройка (на SW0)</div>
+      <div class="code-wrap"><pre>! 1. Проверяем trust:
+show ip dhcp snooping
+! Interfaces: Po2 (trust), Fa0/8 (trust), Fa0/10 (untrust).
+
+! 2. Проверяем option 82:
+show run | include information option
+! Должно быть: no ip dhcp snooping information option
+
+! 3. Проверяем rate-limit:
+show ip dhcp snooping
+! Rate limit (pps) — не слишком низкий (по умолчанию 100).
+
+! 4. Проверяем bindings:
+show ip dhcp snooping binding
+! Если пусто — DHCP-ответы не доходят.</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      Если DHCP-сервер находится за trunk, но trunk не в trust — DHCP-ответы дропаются. Также <code>option 82</code> может ломать DHCP на некоторых серверах — отключите <code>no ip dhcp snooping information option</code>.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 11: STP err-disable -->
+<!-- ============================================================ -->
+<details class="topic" id="t11">
+  <summary>11. STP: порт в err-disable (BPDU Guard)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Порт на SW0 ушёл в <code>err-disabled</code>. Причина: <strong>BPDU Guard</strong> сработал (на порт с PortFast пришёл BPDU от свитча). Это защита от петель — но если вы подключили свитч к порту с PortFast, порт блокируется.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[SW0: Fa0/10] --- (PortFast + BPDU Guard) --- [ПК]
+                                                     |
+                                              (если вместо ПК — свитч,
+                                               приходит BPDU → err-disable)
+
+Правильно: PortFast + BPDU Guard — только на портах к ПК.
+К свитчам — trunk без PortFast.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка и восстановление (на SW0)</div>
+      <div class="code-wrap"><pre>! 1. Смотрим статус:
+show interface f0/10 status
+! err-disabled
+
+! 2. Смотрим причину:
+show interface f0/10 | include err
+! "BPDU Guard"
+
+! 3. Восстанавливаем:
+interface f0/10
+ shutdown
+ no shutdown
+ exit
+! Если причина не устранена — снова уйдёт в err-disable.
+
+! 4. Отключаем BPDU Guard (если порт к свитчу):
+interface f0/10
+ no spanning-tree bpduguard enable
+ exit
+
+! 5. Или настраиваем auto-recovery:
+errdisable recovery cause bpduguard
+errdisable recovery interval 300</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      BPDU Guard — это защита. Если порт уходит в err-disable постоянно — значит, к нему подключён свитч (а не ПК). Уберите PortFast + BPDU Guard с этого порта.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 12: VLAN не проходит через trunk -->
+<!-- ============================================================ -->
+<details class="topic" id="t12">
+  <summary>12. VLAN не проходит через trunk (SW22 ↔ SW0)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      ПК в VLAN 108 на SW0 не получает IP от SW00. Причина: trunk SW22 ↔ SW0 не пропускает VLAN 108 (не в <code>allowed</code>), или <strong>native VLAN mismatch</strong>, или STP блокирует порт.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[SW22: Fa0/16] === (trunk, allowed 1,108) === [SW0: Fa0/8]
+                                                              |
+                                                       [ПК: Fa0/10, VLAN 108]
+
+Если VLAN 108 не в allowed — трафик дропается.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка (на SW22 и SW0)</div>
+      <div class="code-wrap"><pre>! 1. Смотрим trunk:
+show interfaces trunk
+! На SW22 (Fa0/16) и SW0 (Fa0/8) — VLAN 108 в allowed.
+
+! 2. Проверяем native VLAN:
+show interfaces trunk
+! Native VLAN должен совпадать на обеих сторонах.
+
+! 3. Проверяем STP:
+show spanning-tree vlan 108
+! Порт не должен быть в BLK.
+
+! 4. Проверяем VLAN в database:
+show vlan brief
+! VLAN 108 должен быть active.</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      Если native VLAN не совпадает — Cisco выдаст warning <code>%CDP-4-NATIVE_VLAN_MISMATCH</code>. Проверьте <code>show interfaces trunk</code>.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 13: IPv6 SLAAC не выдаёт адрес -->
+<!-- ============================================================ -->
+<details class="topic" id="t13">
+  <summary>13. IPv6: SLAAC не выдаёт адрес (SW1, VLAN 104)</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      ПК в VLAN 104 не получает IPv6-адрес по SLAAC. Причины: <strong>RA suppress</strong> на интерфейсе, <strong>prefix flags</strong> (A-флаг не установлен), <strong>MTU</strong>, <strong>DAD</strong> (duplicate address detection) не проходит.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[SW1: Vlan104 = 2001:db8:104::1/64] --- [ПК VLAN 104]
+        |
+   ipv6 nd prefix 2001:db8:104::/64 (A-флаг)
+   no ipv6 nd suppress-ra
+
+Если RA suppress — ПК не получит префикс.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка и настройка (на SW1)</div>
+      <div class="code-wrap"><pre>! 1. Проверяем RA:
+show ipv6 interface Vlan104
+! "ND router advertisements are sent" — должно быть.
+
+! 2. Проверяем prefix flags:
+show ipv6 interface Vlan104
+! "Advertised" — да, "Autoconfig" — да.
+
+! 3. Включаем RA (если suppress):
+interface Vlan104
+ no ipv6 nd suppress-ra
+ ipv6 nd prefix 2001:db8:104::/64
+ exit
+
+! 4. Проверяем на ПК:
+ipconfig /all
+! Должен быть IPv6-адрес 2001:db8:104::...</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      В Packet Tracer IPv6 SLAAC работает не всегда стабильно. Если не получается — настройте DHCPv6 (stateless) или статический IPv6 на ПК.
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 14: IPsec туннель поднят, трафик не идёт -->
+<!-- ============================================================ -->
+<details class="topic" id="t14">
+  <summary>14. IPsec: туннель поднят, но трафик не идёт</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      <code>show crypto isakmp sa</code> показывает <code>QM_IDLE</code> (туннель поднят), но пинг между офисами не идёт. Причины: <strong>ACL</strong> не совпадает (интересный трафик), <strong>NAT</strong> «съедает» пакеты до шифрования, <strong>MTU</strong> (фрагментация), <strong>routing</strong> (нет маршрута через туннель).
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваши адреса)</div>
+      <div class="schema">[R1: 30.30.30.31] === (IPsec) === [R2: 30.30.30.32]
+        |                                       |
+   crypto map CMAP                        crypto map CMAP
+   ACL VPN_TRAFFIC                        ACL VPN_TRAFFIC
+   (source 192.168.1.0/24)                (source 192.168.1.150/32)
+
+Если ACL не зеркальный — трафик не шифруется.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка (на R1 и R2)</div>
+      <div class="code-wrap"><pre>! 1. Проверяем IPsec SA:
+show crypto ipsec sa
+! Должны быть encaps/decaps > 0.
+
+! 2. Проверяем ACL:
+show ip access-lists VPN_TRAFFIC
+! На R1: permit ip 192.168.1.0 0.0.0.255 host 192.168.1.150
+! На R2: permit ip host 192.168.1.150 192.168.1.0 0.0.0.255
+
+! 3. Проверяем NAT (если есть):
+show ip nat translations
+! Если пакеты уходят в NAT — добавьте deny в NAT ACL:
+! deny ip 192.168.1.0 0.0.0.255 host 192.168.1.150
+
+! 4. Проверяем MTU:
+show interface tunnel0 | include MTU
+! Если MTU 1500 — уменьшите до 1400 (ip mtu 1400).</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      NAT и IPsec конфликтуют: если NAT настроен на том же интерфейсе, он «съест» пакеты до шифрования. Добавьте <code>deny ip</code> для VPN-трафика в NAT ACL (до <code>permit</code>).
+    </div>
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- СЦЕНАРИЙ 15: Маршрут пропал после перезагрузки -->
+<!-- ============================================================ -->
+<details class="topic" id="t15">
+  <summary>15. Маршрут «пропал» после перезагрузки</summary>
+  <div class="topic-body">
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Вы настроили статический маршрут, он работал, но после перезагрузки исчез. Причина: не выполнено <code>copy running-config startup-config</code> (или <code>write memory</code>). В NVRAM осталась старая конфигурация.
+    </div>
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема</div>
+      <div class="schema">[Running-config] --- (RAM, текущая) --- [Startup-config] --- (NVRAM, при загрузке)
+        |                                                        |
+   copy run start                                      reload → startup загружается
+
+Если не сделали copy run start — после reload маршрут исчезнет.
+</div>
+    </div>
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Проверка и сохранение</div>
+      <div class="code-wrap"><pre>! 1. Проверяем, есть ли маршрут в running:
+show run | include ip route
+! Есть.
+
+! 2. Проверяем, есть ли он в startup:
+show start | include ip route
+! Если нет — не сохранён.
+
+! 3. Сохраняем:
+copy running-config startup-config
+! или
+write memory
+
+! 4. Проверяем:
+show start | include ip route
+! Теперь есть.</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Грабли</div>
+      <code>write memory</code> и <code>copy run start</code> — одно и то же. Но <code>write</code> (без <code>memory</code>) — это команда для записи в NVRAM (устаревшая). Используйте <code>copy run start</code>.
+    </div>
+  </div>
+</details>
+
+</main>
+
+<footer>
+  Cisco IOS · Troubleshooting · 15 сценариев · Работает офлайн
+</footer>
+
+<script>
+// === Тема ===
+const themeBtn = document.getElementById('theme-btn');
+const savedTheme = localStorage.getItem('cisco-ts-theme') || 'light';
+document.body.dataset.theme = savedTheme;
+themeBtn.addEventListener('click', () => {
+  const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+  document.body.dataset.theme = next;
+  localStorage.setItem('cisco-ts-theme', next);
+});
+
+// === Копировать ===
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const pre = btn.parentElement.querySelector('pre');
+    let text = pre.innerText
+      .split('\n')
+      .filter(line => !line.trim().startsWith('!'))
+      .map(line => line.replace(/\s+$/g, ''))
+      .join('\n')
+      .replace(/^\s*\n+/, '')
+      .replace(/\n+\s*$/, '');
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '✅ Скопировано';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Копировать'; btn.classList.remove('copied'); }, 1500);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = '✅ Скопировано';
+      setTimeout(() => { btn.textContent = 'Копировать'; }, 1500);
+    }
+  });
+});
+
+// === Развернуть/свернуть всё ===
+const expandBtn = document.getElementById('expand-btn');
+let allOpen = false;
+expandBtn.addEventListener('click', () => {
+  allOpen = !allOpen;
+  document.querySelectorAll('details.topic').forEach(d => d.open = allOpen);
+  expandBtn.textContent = allOpen ? '⤡ Свернуть' : '⤢ Развернуть';
+});
+
+// === Поиск ===
+const searchInput = document.getElementById('search');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  document.querySelectorAll('details.topic').forEach(d => {
+    if (!q) {
+      d.classList.remove('hidden');
+      return;
+    }
+    if (d.innerText.toLowerCase().includes(q)) {
+      d.classList.remove('hidden');
+      d.open = true;
+    } else {
+      d.classList.add('hidden');
+      d.open = false;
+    }
+  });
+});
+</script>
+
+</body>
+</html>

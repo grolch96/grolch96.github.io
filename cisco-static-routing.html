@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cisco IOS — Статическая маршрутизация (все варианты)</title>
+<style>
+  :root {
+    --bg: #f4f4f6; --fg: #1a1a2e; 
+    --card: rgba(255, 255, 255, 0.12); /* Очень прозрачная карточка */
+    --border: rgba(208, 215, 222, 0.4); 
+    --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; 
+    --tag: rgba(234, 240, 248, 0.15); 
+    --note-bg: #f7f7f7; --note-border: #c8c8c8;
+    --schema-bg: #e8f5e9; --schema-border: #7cbf82;
+    --warn-bg: #fce4e4; --warn-border: #e8a0a8;
+    --bg-overlay: rgba(244, 244, 246, 0.85); /* Дымка для светлой темы */
+  }
+  [data-theme="dark"] {
+    --bg: #1a1a1a; --fg: #c9d1d9; 
+    --card: rgba(42, 42, 42, 0.15); 
+    --border: rgba(58, 58, 58, 0.4); 
+    --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; 
+    --tag: rgba(42, 58, 74, 0.15); 
+    --note-bg: #3a3a3a; --note-border: #6a6a6a;
+    --schema-bg: #1a3d1a; --schema-border: #7cbf82;
+    --warn-bg: #3d1a1a; --warn-border: #f0b8c0;
+    --bg-overlay: rgba(26, 26, 26, 0.9); /* Дымка для тёмной темы */
+  }
+  * { box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--fg); margin: 0; padding: 0;
+    line-height: 1.6; transition: color .2s;
+    
+    /* ФОН С КАРТИНКОЙ (увеличенной в 5 раз) */
+    background-color: var(--bg);
+    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('bg-static.jpg');
+    background-size: 500px auto; /* Размер картинки (можно увеличить до 800px) */
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  
+  header {
+    position: sticky; top: 0; z-index: 100; background: var(--card);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    border-bottom: 1px solid var(--border); padding: 12px 20px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  }
+  header::before {
+    content: ""; display: block; width: 100%; height: 3px;
+    background: linear-gradient(to right, #e0e0e0 33%, #7fa8d4 33%, #7fa8d4 66%, #e8a0a8 66%);
+    position: absolute; top: 0; left: 0;
+  }
+  header h1 { font-size: 1.2em; margin: 0; flex: 1; min-width: 200px; }
+  header input[type="search"] {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--fg); min-width: 260px; font-size: 14px;
+  }
+  header button {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--fg); cursor: pointer; font-size: 14px;
+  }
+  header button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  
+  .intro {
+    background: var(--card); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 20px; font-size: 14px;
+    transition: background 0.3s ease;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+  }
+  [data-theme="dark"] .intro { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+  .intro:hover { background: rgba(255, 255, 255, 0.35); }
+  [data-theme="dark"] .intro:hover { background: rgba(42, 42, 42, 0.45); }
+  .intro h2 { margin-top: 0; font-size: 1.1em; color: var(--accent); }
+  
+  details.topic {
+    background: var(--card); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 14px; overflow: hidden;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* При наведении карточка становится чуть плотнее, но не глухой */
+  details.topic:hover, details.topic:focus-within, details.topic[open] {
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  [data-theme="dark"] details.topic:hover, 
+  [data-theme="dark"] details.topic:focus-within, 
+  [data-theme="dark"] details.topic[open] {
+    background: rgba(42, 42, 42, 0.45);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  
+  details.topic > summary {
+    padding: 14px 18px; cursor: pointer; font-weight: 600; font-size: 1.05em;
+    list-style: none; display: flex; align-items: center; gap: 10px;
+    user-select: none; background: var(--tag);
+    transition: background 0.2s;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+  }
+  [data-theme="dark"] details.topic > summary { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+  
+  details.topic > summary::-webkit-details-marker { display: none; }
+  details.topic > summary::before { content: "▶"; font-size: .75em; transition: transform .2s; color: var(--accent); }
+  details.topic[open] > summary::before { transform: rotate(90deg); }
+  details.topic > summary:hover { background: var(--accent); color: #fff; text-shadow: none; }
+  details.topic > summary:hover::before { color: #fff; }
+  
+  .topic-body { padding: 4px 18px 18px; }
+  .layer { margin: 12px 0; padding: 12px 14px; border-radius: 6px; }
+  
+  /* Слои сделаны чуть плотнее, чтобы текст на них читался */
+  .layer-note { background: rgba(247, 247, 247, 0.85); border-left: 3px solid var(--note-border); }
+  .layer-schema { background: rgba(232, 245, 233, 0.85); border-left: 3px solid var(--schema-border); }
+  .layer-code { background: transparent; border-left: 3px solid var(--accent); padding-left: 0; }
+  .layer-warn { background: rgba(252, 228, 228, 0.85); border-left: 3px solid var(--warn-border); }
+  
+  [data-theme="dark"] .layer-note { background: rgba(58, 58, 58, 0.85); }
+  [data-theme="dark"] .layer-schema { background: rgba(26, 61, 26, 0.85); }
+  [data-theme="dark"] .layer-warn { background: rgba(61, 26, 26, 0.85); }
+  
+  .layer-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 6px; color: var(--muted);
+  }
+  .layer-note .layer-title { color: #7a7a7a; }
+  .layer-schema .layer-title { color: #2e7d32; }
+  .layer-code .layer-title { color: var(--accent); }
+  .layer-warn .layer-title { color: #c62828; }
+  
+  .schema {
+    font-family: "Consolas", "Courier New", monospace; font-size: 12px;
+    white-space: pre; overflow-x: auto; line-height: 1.5;
+  }
+  .code-wrap { position: relative; margin-top: 6px; }
+  .code-wrap pre {
+    margin: 0; padding: 12px; background: #2b2b2b !important; color: #e0e0e0 !important;
+    font-family: "Consolas", "Courier New", monospace; font-size: 13px;
+    overflow-x: auto; line-height: 1.5; border-radius: 6px;
+  }
+  .code-wrap .copy-btn {
+    position: absolute; top: 6px; right: 6px; padding: 4px 10px;
+    background: #238636; color: #fff; border: none; border-radius: 4px;
+    cursor: pointer; font-size: 12px; opacity: .85;
+  }
+  .code-wrap .copy-btn:hover { opacity: 1; }
+  .code-wrap .copy-btn.copied { background: #1f6feb; }
+  .hidden { display: none !important; }
+  footer { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+  [data-theme="dark"] footer { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+  
+  @media (max-width: 600px) {
+    header h1 { font-size: 1em; width: 100%; }
+    header input[type="search"] { flex: 1; min-width: 0; }
+    main { padding: 12px; }
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <h1>🛣 Статическая маршрутизация — все варианты</h1>
+  <input type="search" id="search" placeholder="Поиск: next-hop, exit-interface, floating...">
+  <button id="theme-btn" title="Переключить тему">🌙 Тема</button>
+  <button id="expand-btn" title="Развернуть/свернуть всё">⤢ Развернуть</button>
+</header>
+
+<main>
+
+<div class="intro">
+  <h2>📌 Главное правило</h2>
+  <p><strong>Next-hop</strong> — это адрес устройства, которое находится <strong>в той же подсети (connected)</strong>, что и один из интерфейсов вашего роутера. Это может быть <strong>внутренний</strong> роутер (как SW1 в вашей лабе) или <strong>внешний</strong> (как ISP: `30.30.30.1` для R1 — он «внешний» по смыслу, но <strong>напрямую подключён</strong> к Fa0/1, поэтому является connected и работает как next-hop).</p>
+  <p>Если next-hop <strong>не достижим напрямую</strong> (резолвится через другой маршрут) — это <strong>рекурсивный</strong> маршрут. IOS проверит его и либо установит (если next-hop резолвится), либо отбросит (если нет).</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1. NEXT-HOP (через IP) -->
+<!-- ============================================================ -->
+<details class="topic" id="topic-nexthop" open>
+  <summary>1. Next-Hop (через IP) — внутренний и внешний</summary>
+  <div class="topic-body">
+
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Указываете <strong>IP-адрес следующего прыжка</strong>. Роутер сам найдёт выходной интерфейс (сделает рекурсивный поиск в таблице). <strong>Предпочтительный способ для Ethernet</strong> — роутер знает, чей MAC ARP-ить, а не спамит ARP на каждый IP в сети.
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваша лаба)</div>
+      <div class="schema">Внутренний next-hop (SW1):
+[R1: Fa0/0 = 192.168.1.5] --- (192.168.1.0/24) --- [SW1: 192.168.1.253]
+                                                        ^
+                                          next-hop = 192.168.1.253 (connected)
+
+Внешний next-hop (ISP):
+[R1: Fa0/1 = 30.30.30.31] --- (30.30.30.0/8) --- [ISP: 30.30.30.1]
+                                                     ^
+                                       next-hop = 30.30.30.1 (connected, но "внешний")
+</div>
+    </div>
+
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига</div>
+      <div class="code-wrap"><pre>! Внутренний next-hop (R1 → SW1)
+ip route 192.168.5.0 255.255.255.0 192.168.1.253
+
+! Внешний next-hop (R1 → ISP) — default route
+ip route 0.0.0.0 0.0.0.0 30.30.30.1
+
+! Проверка:
+show ip route 192.168.5.0
+show ip route 0.0.0.0</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">📋 Что в show ip route</div>
+      <div class="schema">S    192.168.5.0/24 [1/0] via 192.168.1.253
+S*   0.0.0.0/0 [1/0] via 30.30.30.1</div>
+    </div>
+
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- 2. EXIT-INTERFACE (через интерфейс) -->
+<!-- ============================================================ -->
+<details class="topic" id="topic-exit">
+  <summary>2. Exit-Interface (через интерфейс) — только для Serial</summary>
+  <div class="topic-body">
+
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Указываете <strong>только свой выходной интерфейс</strong>. Надёжно работает <strong>только на Point-to-Point</strong> (Serial), где всего один сосед. На Ethernet — опасно: роутер не знает, чей MAC подставлять, и начинает ARP-ить каждый IP (или полагается на Proxy ARP).
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема</div>
+      <div class="schema">Serial (OK):
+[R1: S0/0/0] === (point-to-point) === [R2]
+       ^
+exit-interface = S0/0/0
+
+Ethernet (ОПАСНО):
+[R1: Fa0/0] --- (много устройств) --- [SW1, SW2, ПК...]
+       ^
+exit-interface = Fa0/0
+(роутер будет ARP-ить каждый IP)
+</div>
+    </div>
+
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига</div>
+      <div class="code-wrap"><pre>! Serial (OK)
+ip route 192.168.5.0 255.255.255.0 Serial0/0/0
+
+! Ethernet (НЕ РЕКОМЕНДУЕТСЯ)
+ip route 192.168.5.0 255.255.255.0 FastEthernet0/0</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">📋 Что в show ip route (Ethernet — ОПАСНО)</div>
+      <div class="schema">S    192.168.5.0/24 is directly connected, FastEthernet0/0
+! Роутер считает сеть "напрямую подключённой" — это не так.
+! Он будет ARP-ить каждый IP в 192.168.5.0/24.</div>
+    </div>
+
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Опасно на Ethernet</div>
+      Без next-hop роутер не знает MAC получателя. Он шлёт ARP на <strong>каждый IP</strong> из целевой сети. Если Proxy ARP выключен — пакеты дропаются. Даже если работает — засоряет ARP-таблицу.
+    </div>
+
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- 3. FULLY SPECIFIED (оба параметра) -->
+<!-- ============================================================ -->
+<details class="topic" id="topic-fully">
+  <summary>3. Fully Specified (Exit-Interface + Next-Hop) — best practice для Ethernet</summary>
+  <div class="topic-body">
+
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Указываете <strong>и интерфейс, и IP next-hop</strong>. Роутер не делает второй поиск в таблице (экономия CPU) и не ARP-ит лишние адреса. <strong>Лучшая практика для Ethernet</strong> (хотя с CEF часто достаточно просто next-hop).
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваша лаба)</div>
+      <div class="schema">[R1: Fa0/0 = 192.168.1.5] --- (192.168.1.0/24) --- [SW1: 192.168.1.253]
+
+exit-interface = Fa0/0 (локальный интерфейс R1)
+next-hop       = 192.168.1.253 (SW1, connected)
+</div>
+    </div>
+
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига</div>
+      <div class="code-wrap"><pre>! Fully specified (R1 → SW1)
+ip route 192.168.5.0 255.255.255.0 FastEthernet0/0 192.168.1.253
+
+! Проверка:
+show ip route 192.168.5.0</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">📋 Что в show ip route</div>
+      <div class="schema">S    192.168.5.0/24 [1/0] via 192.168.1.253, FastEthernet0/0
+! Явно указаны и next-hop, и интерфейс.</div>
+    </div>
+
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- 4. FLOATING STATIC (резервный маршрут) -->
+<!-- ============================================================ -->
+<details class="topic" id="topic-floating">
+  <summary>4. Floating Static (плавающая статика) — резервный путь</summary>
+  <div class="topic-body">
+
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Статика с <strong>Administrative Distance (AD) выше</strong>, чем у основного маршрута (например, AD 250). Пока основной жив (OSPF/EIGRP) — резервный <strong>не виден</strong> в таблице. Когда основной падает — резервный «всплывает».
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема</div>
+      <div class="schema">[R1] --- (основной, OSPF AD 110) --- [SW1] --- [Сеть 192.168.5.0/24]
+  |
+  +--- (резервный, static AD 250) --- [R2 192.168.1.150]
+
+В норме: show ip route 192.168.5.0 → O (OSPF)
+Если OSPF упал: → S (static, AD 250)
+</div>
+    </div>
+
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига</div>
+      <div class="code-wrap"><pre>! Резервный маршрут через R2 (AD 250 — выше, чем OSPF 110)
+ip route 192.168.5.0 255.255.255.0 192.168.1.150 250
+
+! Проверка:
+show ip route 192.168.5.0
+! В норме — O. Если OSPF упал — S.</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- 5. DEFAULT ROUTE (через внешний next-hop) -->
+<!-- ============================================================ -->
+<details class="topic" id="topic-default">
+  <summary>5. Default Route (0.0.0.0/0) — через внешний next-hop (ISP)</summary>
+  <div class="topic-body">
+
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      «Всё, что не совпало с другими маршрутами — отправляй сюда». Обычно next-hop — <strong>ISP</strong> (внешний адрес, но <strong>connected</strong> для вашего интерфейса). В `show ip route` помечается звёздочкой `S*`.
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваша лаба)</div>
+      <div class="schema">[R1: Fa0/1 = 30.30.30.31] --- (30.30.30.0/8) --- [ISP: 30.30.30.1] --- [Интернет]
+
+next-hop = 30.30.30.1 (ISP, connected через Fa0/1)
+</div>
+    </div>
+
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига</div>
+      <div class="code-wrap"><pre>! Default route через ISP
+ip route 0.0.0.0 0.0.0.0 30.30.30.1
+
+! Или fully specified:
+ip route 0.0.0.0 0.0.0.0 FastEthernet0/1 30.30.30.1
+
+! Проверка:
+show ip route 0.0.0.0</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">📋 Что в show ip route</div>
+      <div class="schema">S*   0.0.0.0/0 [1/0] via 30.30.30.1
+! S* = static default route</div>
+    </div>
+
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- 6. WINDOWS ROUTE ADD (VPN) -->
+<!-- ============================================================ -->
+<details class="topic" id="topic-windows">
+  <summary>6. Windows: route add через VPN (локальная сеть)</summary>
+  <div class="topic-body">
+
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      На ПК поднят VPN — он «забирает» весь трафик, и ПК перестаёт видеть локальную сеть. Решение: <code>route -p add</code> с next-hop = <strong>локальный шлюз</strong> (модем). Ключ <code>-p</code> — постоянный маршрут (не удалится после перезагрузки).
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема (ваш пример)</div>
+      <div class="schema">[ПК A: 192.168.1.2] --- (LAN 192.168.1.0/24) --- [ПК B: 192.168.1.3]
+        |
+        +--- VPN-туннель --- [VPN-сервер]
+        |
+   Шлюз (модем): 192.168.1.1
+
+next-hop для LAN = 192.168.1.1 (локальный шлюз, connected)
+</div>
+    </div>
+
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример (Windows, cmd от администратора)</div>
+      <div class="code-wrap"><pre>:: Добавить постоянный маршрут в локальную сеть через модем
+route -p add 192.168.1.0 mask 255.255.255.0 192.168.1.1
+
+:: Проверить таблицу маршрутизации
+route print
+
+:: Удалить (если больше не нужен)
+route delete 192.168.1.0 mask 255.255.255.0</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Важно</div>
+      <code>route add</code> — это <strong>Windows</strong>, не Cisco IOS. В Cisco аналог: <code>ip route 192.168.1.0 255.255.255.0 192.168.1.1</code> (без <code>-p</code>, без <code>mask</code>). Next-hop в Windows — <strong>локальный шлюз</strong> (в той же подсети, что и ПК).
+    </div>
+
+  </div>
+</details>
+
+<!-- ============================================================ -->
+<!-- 7. РЕКУРСИВНЫЙ МАРШРУТ (next-hop не connected) -->
+<!-- ============================================================ -->
+<details class="topic" id="topic-recursive">
+  <summary>7. Рекурсивный маршрут — когда next-hop не connected</summary>
+  <div class="topic-body">
+
+    <div class="layer layer-note">
+      <div class="layer-title">📌 Кратко</div>
+      Если next-hop <strong>не в connected-сети</strong>, IOS ищет его в таблице (рекурсивный поиск). Если находит — маршрут устанавливается. Если нет — отбрасывается. <strong>Может залипнуть</strong> при падении основного канала (next-hop резолвится через default route — маршрут остаётся, но ведёт «в никуда»).
+    </div>
+
+    <div class="layer layer-schema">
+      <div class="layer-title">🗺 Схема</div>
+      <div class="schema">[R1] --- (10.0.0.0/30) --- [R2] --- (192.168.5.0/24)
+  |
+  +--- next-hop 192.168.5.1 (НЕ connected для R1)
+
+R1 ищет 192.168.5.1 в таблице:
+  - если есть маршрут через R2 → рекурсия работает
+  - если нет → статика не установится
+</div>
+    </div>
+
+    <div class="layer layer-code">
+      <div class="layer-title">⚙️ Пример конфига</div>
+      <div class="code-wrap"><pre>! Рекурсивный маршрут (next-hop не connected)
+ip route 10.20.30.0 255.255.255.0 192.168.5.1
+
+! Проверка: установился ли?
+show ip route static
+! Если нет — next-hop 192.168.5.1 не резолвится.
+! Проверьте: show ip route 192.168.5.1</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <div class="layer layer-warn">
+      <div class="layer-title">⚠️ Риск «залипания»</div>
+      Если next-hop резолвится через default route, а основной канал упал — маршрут может остаться в таблице, но вести не туда. Для защиты используйте <strong>fully specified</strong> (интерфейс + next-hop) или <strong>track</strong> (IP SLA).
+    </div>
+
+  </div>
+</details>
+
+</main>
+
+<footer>
+  Cisco IOS · Статическая маршрутизация · Все варианты · Работает офлайн
+</footer>
+
+<script>
+// === Тема ===
+const themeBtn = document.getElementById('theme-btn');
+const savedTheme = localStorage.getItem('cisco-static-theme') || 'light';
+document.body.dataset.theme = savedTheme;
+themeBtn.addEventListener('click', () => {
+  const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+  document.body.dataset.theme = next;
+  localStorage.setItem('cisco-static-theme', next);
+});
+
+// === Копировать ===
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const pre = btn.parentElement.querySelector('pre');
+    let text = pre.innerText
+      .split('\n')
+      .filter(line => !line.trim().startsWith('!'))
+      .map(line => line.replace(/\s+$/g, ''))
+      .join('\n')
+      .replace(/^\s*\n+/, '')
+      .replace(/\n+\s*$/, '');
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '✅ Скопировано';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Копировать'; btn.classList.remove('copied'); }, 1500);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = '✅ Скопировано';
+      setTimeout(() => { btn.textContent = 'Копировать'; }, 1500);
+    }
+  });
+});
+
+// === Развернуть/свернуть всё ===
+const expandBtn = document.getElementById('expand-btn');
+let allOpen = false;
+expandBtn.addEventListener('click', () => {
+  allOpen = !allOpen;
+  document.querySelectorAll('details.topic').forEach(d => d.open = allOpen);
+  expandBtn.textContent = allOpen ? '⤡ Свернуть' : '⤢ Развернуть';
+});
+
+// === Поиск ===
+const searchInput = document.getElementById('search');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  document.querySelectorAll('details.topic').forEach(d => {
+    if (!q) {
+      d.classList.remove('hidden');
+      return;
+    }
+    if (d.innerText.toLowerCase().includes(q)) {
+      d.classList.remove('hidden');
+      d.open = true;
+    } else {
+      d.classList.add('hidden');
+      d.open = false;
+    }
+  });
+});
+</script>
+
+</body>
+</html>

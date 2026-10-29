@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cisco IOS — Интерактивный справочник</title>
+<style>
+  :root {
+    --bg: #f7f9fc; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
+    --accent: #0969da; --muted: #57606a; --tag: #ddf4ff;
+    --term-bg: #2b2b2b; --term-fg: #e0e0e0;
+  }
+  [data-theme="dark"] {
+    --bg: #0d1117; --fg: #c9d1d9; --card: #161b22; --border: #30363d;
+    --accent: #58a6ff; --muted: #8b949e; --tag: #1f6feb33;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg); color: var(--fg); margin: 0; padding: 0;
+    line-height: 1.6; transition: background .2s, color .2s;
+  }
+  header {
+    position: sticky; top: 0; z-index: 100; background: var(--card);
+    border-bottom: 1px solid var(--border); padding: 12px 20px;
+  }
+  .header-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  header h1 { font-size: 1.1em; margin: 0; flex-shrink: 0; }
+  header input[type="search"] {
+    flex: 1; min-width: 240px; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--fg); font-size: 15px;
+  }
+  header input[type="search"]:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+  header button {
+    padding: 9px 14px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg); color: var(--fg); cursor: pointer; font-size: 14px;
+  }
+  header button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  header button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip {
+    padding: 4px 10px; border-radius: 12px; background: var(--tag);
+    color: var(--accent); font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent; user-select: none;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: #fff; }
+  main { max-width: 1000px; margin: 0 auto; padding: 20px; }
+  .stats { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 18px; padding: 20px; transition: border-color .15s, box-shadow .15s;
+  }
+  .card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+  .card h2 { margin: 0 0 6px; font-size: 1.15em; color: var(--accent); }
+  .card .tags { margin: 4px 0 12px; }
+  .card .tag {
+    display: inline-block; padding: 2px 8px; margin: 2px 4px 2px 0;
+    border-radius: 12px; background: var(--tag); color: var(--accent);
+    font-size: 12px; font-weight: 600;
+  }
+  .card .desc { font-size: 14.5px; margin: 0 0 12px; line-height: 1.7; }
+  .card .desc strong { color: var(--accent); }
+  .card .desc code {
+    background: var(--tag); padding: 1px 5px; border-radius: 3px;
+    font-family: "Consolas", "Courier New", monospace; font-size: 13px;
+  }
+  .card .desc .block { display: block; margin: 6px 0; }
+  .card .diagram {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12.5px;
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    white-space: pre !important;
+    overflow-x: auto;
+    line-height: 1.6;
+    tab-size: 4;
+    font-variant-ligatures: none;
+  }
+  .card .diagram .hl { color: #89b4fa !important; font-weight: 700; }
+  .code-wrap {
+    position: relative; margin: 12px 0 0; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .code-wrap pre {
+    margin: 0; padding: 16px;
+    background: var(--term-bg) !important; color: var(--term-fg) !important;
+    font-family: "Consolas", "Courier New", monospace; font-size: 13px;
+    overflow-x: auto; line-height: 1.55;
+  }
+  .code-wrap .copy-btn {
+    position: absolute; top: 10px; right: 10px; padding: 5px 12px;
+    background: #238636; color: #fff; border: none; border-radius: 5px;
+    cursor: pointer; font-size: 12px; opacity: .85;
+  }
+  .code-wrap .copy-btn:hover { opacity: 1; }
+  .code-wrap .copy-btn.copied { background: #1f6feb; }
+  .hidden { display: none !important; }
+  .empty {
+    text-align: center; padding: 40px; color: var(--muted);
+    border: 2px dashed var(--border); border-radius: 10px;
+  }
+  footer { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 600px) {
+    header h1 { font-size: 1em; width: 100%; }
+    main { padding: 12px; }
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <div class="header-row">
+    <h1>📘 Cisco — Справочник</h1>
+    <input type="search" id="search" list="topic-list"
+      placeholder="Выберите тему из списка или начните вводить...">
+    <datalist id="topic-list">
+      <option value="VLAN">
+      <option value="Trunk (802.1Q)">
+      <option value="EtherChannel (LACP/PAgP)">
+      <option value="STP / Rapid-PVST+">
+      <option value="MSTP">
+      <option value="SVI (шлюз для VLAN)">
+      <option value="Статическая маршрутизация">
+      <option value="OSPFv2">
+      <option value="EIGRP">
+      <option value="BGP (eBGP)">
+      <option value="Redistribution">
+      <option value="HSRP">
+      <option value="VRRP">
+      <option value="GLBP">
+      <option value="NAT / PAT">
+      <option value="Static NAT">
+      <option value="ACL Standard">
+      <option value="ACL Extended">
+      <option value="DHCP-сервер">
+      <option value="DHCP Snooping">
+      <option value="Port-Security">
+      <option value="SSH">
+      <option value="NTP">
+      <option value="Syslog">
+      <option value="SNMP">
+      <option value="NetFlow">
+      <option value="Kron">
+      <option value="Archive">
+      <option value="IPv6">
+      <option value="OSPFv3">
+      <option value="HSRPv6">
+      <option value="IPsec (Site-to-Site)">
+      <option value="GRE-туннель">
+      <option value="AAA (TACACS+/RADIUS)">
+      <option value="QoS">
+      <option value="RSPAN">
+      <option value="CDP / LLDP">
+      <option value="Сброс пароля">
+    </datalist>
+    <button id="find-btn" class="primary">🔍 Найти</button>
+    <button id="clear-btn">✕ Сброс</button>
+    <button id="theme-btn">🌙 Тема</button>
+  </div>
+  <div class="chips" id="chips">
+    <span class="chip" data-q="vlan">VLAN</span>
+    <span class="chip" data-q="trunk">Trunk</span>
+    <span class="chip" data-q="etherchannel">EtherChannel</span>
+    <span class="chip" data-q="stp">STP</span>
+    <span class="chip" data-q="mstp">MSTP</span>
+    <span class="chip" data-q="svi">SVI</span>
+    <span class="chip" data-q="static route">Static Route</span>
+    <span class="chip" data-q="ospf">OSPF</span>
+    <span class="chip" data-q="eigrp">EIGRP</span>
+    <span class="chip" data-q="bgp">BGP</span>
+    <span class="chip" data-q="redistribution">Redistribution</span>
+    <span class="chip" data-q="hsrp">HSRP</span>
+    <span class="chip" data-q="nat">NAT/PAT</span>
+    <span class="chip" data-q="acl">ACL</span>
+    <span class="chip" data-q="dhcp">DHCP</span>
+    <span class="chip" data-q="port-security">Port-Security</span>
+    <span class="chip" data-q="ipv6">IPv6</span>
+    <span class="chip" data-q="ipsec">IPsec</span>
+    <span class="chip" data-q="gre">GRE</span>
+    <span class="chip" data-q="aaa">AAA</span>
+    <span class="chip" data-q="qos">QoS</span>
+  </div>
+</header>
+
+<main>
+  <div class="stats" id="stats">Загрузка...</div>
+  <div id="cards">
+
+    <!-- 1. VLAN -->
+    <div class="card" data-tags="vlan layer2 l2 segmentation broadcast access">
+      <h2>VLAN</h2>
+      <div class="tags"><span class="tag">L2</span><span class="tag">VLAN</span><span class="tag">Сегментация</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Логически делит один физический свитч на несколько независимых broadcast-доменов. Клиенты разных VLAN не видят трафик друг друга (без L3-маршрутизации), что повышает безопасность и снижает нагрузку от broadcast-штормов.</span>
+        <span class="block"><strong>Как работает:</strong> Каждый кадр внутри свитча помечается VLAN-ID (12 бит, до 4094 VLAN). Порт доступа (access) принадлежит одному VLAN; trunk передаёт несколько VLAN с тегами 802.1Q.</span>
+        <span class="block"><strong>Как настроить:</strong> <code>vlan X</code> — создать VLAN, <code>name</code> — имя, затем порт <code>switchport access vlan X</code>. Для trunk — <code>switchport mode trunk</code> + <code>allowed vlan</code>.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show vlan brief</code> — список VLAN и портов; <code>show interfaces switchport</code> — детали по порту.</span>
+      </p>
+      <div class="diagram">PC1 ──┐
+        ├── [<span class="hl">Switch</span>] ── <span class="hl">VLAN 100</span> (Users)   ← broadcast-домен 1
+PC2 ──┘
+PC3 ──┐
+        ├── [<span class="hl">Switch</span>] ── <span class="hl">VLAN 200</span> (Voice)   ← broadcast-домен 2
+PC4 ──┘</div>
+      <div class="code-wrap"><pre>vlan 100
+ name Users
+vlan 200
+ name Voice
+interface f0/10
+ switchport mode access
+ switchport access vlan 100
+ exit
+interface f0/11
+ switchport mode access
+ switchport access vlan 200
+ exit
+show vlan brief</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 2. Trunk -->
+    <div class="card" data-tags="trunk 802.1q native vlan l2 encapsulation">
+      <h2>Trunk (802.1Q)</h2>
+      <div class="tags"><span class="tag">L2</span><span class="tag">Trunk</span><span class="tag">802.1Q</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Передаёт трафик нескольких VLAN между двумя свитчами (или свитч ↔ роутер) по одному кабелю. Без trunk пришлось бы тянуть отдельный кабель на каждый VLAN — это дорого и неудобно.</span>
+        <span class="block"><strong>Как работает:</strong> Каждый кадр тегируется VLAN-ID (4 байта 802.1Q). Исключение — Native VLAN: её трафик идёт без тега (по умолчанию VLAN 1).</span>
+        <span class="block"><strong>Безопасность:</strong> Native VLAN по умолчанию = VLAN 1. Её меняют (например, на 99), чтобы злоумышленник не мог «прыгнуть» между VLAN через double-tagging.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show interfaces trunk</code> — какие порты в trunk, какие VLAN разрешены, какая native VLAN.</span>
+      </p>
+      <div class="diagram"><span class="hl">Switch A</span> ═══════════ <span class="hl">trunk</span> ═══════════════ <span class="hl">Switch B</span>
+        [VLAN 100 | VLAN 200 | VLAN 300]
+        каждый кадр несёт тег 802.1Q (кроме native)</div>
+      <div class="code-wrap"><pre>interface f0/1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 1,100,102-108
+ exit
+show interfaces trunk</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 3. EtherChannel -->
+    <div class="card" data-tags="etherchannel lacp pagp aggregation channel-group bundle">
+      <h2>EtherChannel (LACP / PAgP)</h2>
+      <div class="tags"><span class="tag">L2</span><span class="tag">Агрегация</span><span class="tag">LACP</span><span class="tag">PAgP</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Объединяет несколько физических линков между двумя устройствами в один логический (Port-Channel). Даёт суммарную пропускную способность и отказоустойчивость: если один кабель порвётся, канал продолжит работать (трафик пойдёт через остальные).</span>
+        <span class="block"><strong>Протоколы:</strong> LACP (IEEE 802.3ad) — режимы <code>active</code>/<code>passive</code>. PAgP (Cisco) — <code>desirable</code>/<code>auto</code>. Режим <code>on</code> — без протокола (не рекомендуется, нет проверки ошибок).</span>
+        <span class="block"><strong>Правило:</strong> Все порты в канале должны иметь одинаковые speed/duplex, режим (trunk/access) и разрешённые VLAN. Иначе канал не соберётся.</span>
+        <span class="block"><strong>Балансировка:</strong> трафик распределяется по линкам на основе хеша (по MAC, IP или портам). Настраивается глобально: <code>port-channel load-balance src-dst-mac</code>.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show etherchannel summary</code> — ищем статус <code>SU</code> (Switched, Up) и флаг <code>P</code> (In Port-Channel).</span>
+      </p>
+      <div class="diagram"><span class="hl">Switch A</span> ═══════ <span class="hl">Port-Channel 1</span> ═══════ <span class="hl">Switch B</span>
+    4 физических линка (Fa0/1-4), LACP active
+    суммарно 400 Мбит/с + резервирование</div>
+      <div class="code-wrap"><pre>interface range f0/1 - 4
+ shutdown
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+ no shutdown
+ exit
+interface port-channel 1
+ switchport mode trunk
+ exit
+show etherchannel summary</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 4. STP -->
+    <div class="card" data-tags="stp spanning-tree rapid-pvst root bridge portfast bpduguard loop">
+      <h2>STP / Rapid-PVST+</h2>
+      <div class="tags"><span class="tag">L2</span><span class="tag">STP</span><span class="tag">Loop protection</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Защищает от петель на L2. Если между свитчами несколько линков, STP выбирает один Root Bridge и блокирует избыточные порты (Altn BLK), чтобы кадры не ходили по кругу бесконечно.</span>
+        <span class="block"><strong>Как работает:</strong> Выбирается Root Bridge (наименьший Bridge ID = priority + MAC). Затем каждый свитч выбирает Root Port (ближайший к корню) и блокирует остальные.</span>
+        <span class="block"><strong>Ускорение:</strong> <code>portfast</code> — порт к ПК сразу в Forwarding (не ждёт 30 сек). <code>bpduguard</code> — отключает порт, если на него пришёл BPDU (защита от подключения свитча к порту ПК).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show spanning-tree vlan 1</code> — ищем «This bridge is the root».</span>
+      </p>
+      <div class="diagram">        [<span class="hl">Switch A</span>] <span class="hl">Root</span> (priority 24576)
+       /     \
+    [Switch B]   [Switch C]
+       \     /
+        [Switch D]  ← один порт <span class="hl">Altn BLK</span></div>
+      <div class="code-wrap"><pre>spanning-tree mode rapid-pvst
+spanning-tree vlan 1,100,102-108 priority 24576
+interface f0/10
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ exit
+show spanning-tree vlan 1</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 5. MSTP -->
+    <div class="card" data-tags="mstp mst instance spanning-tree region root load balancing">
+      <h2>MSTP</h2>
+      <div class="tags"><span class="tag">L2</span><span class="tag">STP</span><span class="tag">MSTP</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Группирует VLAN в инстансы (instance). Позволяет балансировать нагрузку: один свитч — root для instance 1, другой — для instance 2. В Rapid-PVST+ так нельзя (каждый VLAN = отдельный инстанс).</span>
+        <span class="block"><strong>Как работает:</strong> Все свитчи должны иметь одинаковое имя региона (region name), ревизию и маппинг VLAN → instance. Иначе они не «увидят» друг друга.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show spanning-tree mst 1</code> — ищем «This bridge is the root».</span>
+      </p>
+      <div class="diagram"><span class="hl">Instance 1</span> (VLAN 100,102,104) → <span class="hl">Switch A Root</span>
+<span class="hl">Instance 2</span> (VLAN 105-108)   → <span class="hl">Switch B Root</span>
+       трафик распределён между ядровыми свитчами</div>
+      <div class="code-wrap"><pre>spanning-tree mode mst
+spanning-tree mst configuration
+ name LAB
+ instance 1 vlan 100,102,104
+ instance 2 vlan 105,106,107,108
+ exit
+spanning-tree mst 1 root primary
+spanning-tree mst 2 root secondary
+show spanning-tree mst 1</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 6. SVI -->
+    <div class="card" data-tags="svi interface vlan switch virtual interface gateway l3 routing">
+      <h2>SVI (шлюз для VLAN)</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">SVI</span><span class="tag">Шлюз</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Виртуальный интерфейс на L3-свитче, который служит шлюзом для VLAN. Позволяет маршрутизировать трафик между VLAN внутри одного свитча (без внешнего роутера).</span>
+        <span class="block"><strong>Как работает:</strong> <code>interface VlanX</code> + <code>ip address</code>. Требует <code>ip routing</code> глобально на свитче.</span>
+        <span class="block"><strong>Важно:</strong> SVI поднимается только если в VLAN есть хотя бы один активный порт (или trunk). Иначе статус down/down.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip interface brief</code> — статус up/up.</span>
+      </p>
+      <div class="diagram"><span class="hl">VLAN 100</span>: 192.168.1.0/24  → SVI Vlan100 = <span class="hl">.254</span> (шлюз)
+<span class="hl">VLAN 200</span>: 192.168.2.0/24  → SVI Vlan200 = <span class="hl">.254</span> (шлюз)
+          свитч маршрутизирует между VLAN</div>
+      <div class="code-wrap"><pre>ip routing
+interface Vlan100
+ ip address 192.168.1.254 255.255.255.0
+ no shutdown
+ exit
+interface Vlan200
+ ip address 192.168.2.254 255.255.255.0
+ no shutdown
+ exit
+show ip interface brief</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 7. Static Route -->
+    <div class="card" data-tags="static route default route ip route next-hop ad">
+      <h2>Статическая маршрутизация</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">Route</span><span class="tag">Static</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Вручную задать маршрут до сети через next-hop (IP соседа) или выходной интерфейс. Default route (<code>0.0.0.0/0</code>) — маршрут «по умолчанию», используется, когда нет более конкретного.</span>
+        <span class="block"><strong>AD (Administrative Distance):</strong> приоритет источника маршрута. Static = 1, EIGRP = 90, OSPF = 110. Чем меньше AD, тем приоритетнее.</span>
+        <span class="block"><strong>Резервирование:</strong> можно прописать два default route с разным AD — второй станет резервным (активируется при падении первого).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip route</code> (статика — метка «S», default — «S*»).</span>
+      </p>
+      <div class="diagram"><span class="hl">Router 1</span> ── 192.168.1.0/24 ── <span class="hl">Router 2</span> ── 0.0.0.0/0 ── <span class="hl">ISP</span>
+   статика: ip route 192.168.2.0/24 via Router 2
+   default: ip route 0.0.0.0/0 via ISP</div>
+      <div class="code-wrap"><pre>ip route 192.168.2.0 255.255.255.0 192.168.1.2
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+ip route 0.0.0.0 0.0.0.0 10.0.0.2 200
+show ip route</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 8. OSPF (расширенное) -->
+    <div class="card" data-tags="ospf ospfv2 area link-state dr bdr abr cost">
+      <h2>OSPFv2</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">OSPF</span><span class="tag">Link-State</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Link-State протокол. Каждый роутер строит полную карту сети (LSDB) и вычисляет кратчайшие пути по алгоритму Дейкстры. Быстро сходится, не рассылает всю таблицу маршрутизации (только изменения).</span>
+        <span class="block"><strong>Иерархия (Areas):</strong> Area 0 (Backbone) — ядро. Остальные зоны (Area 1, 2...) подключаются к Area 0 через ABR (Area Border Router). Это снижает нагрузку на CPU и стабилизирует сеть (изменения в Area 1 не «трясут» Area 2).</span>
+        <span class="block"><strong>Соседство:</strong> требует совпадения Area ID, Hello/Dead таймеров, пароля, MTU, типа сети. Если соседство «залипло» в EXSTART/EXCHANGE — почти всегда проблема в MTU.</span>
+        <span class="block"><strong>DR/BDR:</strong> в широковещательных сетях выбирается Designated Router и Backup — чтобы не создавать полную mesh-сеть соседства (N×(N−1)/2). DROther устанавливают соседство только с DR/BDR.</span>
+        <span class="block"><strong>Метрика:</strong> Cost = 10^8 / Bandwidth (чем выше скорость, тем ниже cost). Можно менять вручную: <code>ip ospf cost X</code> на интерфейсе.</span>
+        <span class="block"><strong>Типы LSA (запомнить):</strong> Type 1 — Router (внутри Area), Type 2 — Network (от DR), Type 3 — Summary (от ABR), Type 4 — ASBR Summary, Type 5 — External (от ASBR).</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) не совпал MTU на интерфейсах — соседство «висит» в EXSTART; (2) не совпал Area ID — соседство не встаёт; (3) забыли <code>area 0 authentication</code> — соседство не встаёт; (4) не совпал Hello/Dead таймер — соседство не встаёт.</span>
+        <span class="block"><strong>Связанные темы:</strong> Redistribution, OSPFv3, HSRP (для резервирования шлюза).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip ospf neighbor</code> (FULL), <code>show ip ospf database</code> (LSDB), <code>show ip route ospf</code> (метка «O»).</span>
+      </p>
+      <div class="diagram">       <span class="hl">Area 0</span> (ядро)
+       /          \
+   [ABR]         [ABR]
+     |             |
+ <span class="hl">Area 1</span>         <span class="hl">Area 2</span>
+(Switch C)     (Switch D, Switch E)</div>
+      <div class="code-wrap"><pre>router ospf 1
+ router-id 1.1.1.1
+ network 192.168.1.0 0.0.0.255 area 0
+ network 192.168.5.0 0.0.0.255 area 1
+ area 0 authentication
+ exit
+interface f0/0
+ ip ospf authentication-key gro1ch21
+ exit
+show ip ospf neighbor
+show ip route ospf</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 9. EIGRP (расширенное) -->
+    <div class="card" data-tags="eigrp dual as autonomous system hybrid">
+      <h2>EIGRP</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">EIGRP</span><span class="tag">Hybrid</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Гибридный протокол (Distance Vector + Link State). Использует алгоритм DUAL для быстрой сходимости. Считается «проприетарным Cisco» (хотя с 2013 открыт по RFC 7868).</span>
+        <span class="block"><strong>Как работает:</strong> Номер AS (Autonomous System) должен совпадать у соседей. <code>no auto-summary</code> отключает автоматическое суммирование сетей на границе класса.</span>
+        <span class="block"><strong>Термины DUAL:</strong> <em>Successor</em> — основной маршрут (лучший). <em>Feasible Successor</em> — резервный маршрут (готов сразу, без пересчёта). <em>Feasible Distance</em> — метрика до сети. <em>Reported Distance</em> — метрика, которую сообщил сосед.</span>
+        <span class="block"><strong>Метрика:</strong> bandwidth + delay (по умолчанию), опционально load/reliability. Формула: 256 × (10^7 / min bandwidth + сумма delay).</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) не совпал номер AS — соседство не встаёт; (2) разные K-значения (K1–K5) — соседство не встаёт; (3) не отключили auto-summary — маршруты «схлопываются» на классовой границе.</span>
+        <span class="block"><strong>Связанные темы:</strong> Redistribution (EIGRP ↔ OSPF), BGP (стык с провайдером).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip eigrp neighbors</code> (статус UP), <code>show ip eigrp topology</code> (Successor/Feasible Successor), <code>show ip route eigrp</code> (метка «D»).</span>
+      </p>
+      <div class="diagram"><span class="hl">Router 2</span> (AS 100) ─── <span class="hl">Switch D</span> (AS 100)
+                EIGRP neighbor <span class="hl">UP</span>
+          обмен маршрутами внутри AS 100</div>
+      <div class="code-wrap"><pre>router eigrp 100
+ network 192.168.1.0 0.0.0.255
+ no auto-summary
+ exit
+show ip eigrp neighbors
+show ip route eigrp</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 10. BGP (расширенное) -->
+    <div class="card" data-tags="bgp ebpg ibgp as autonomous system neighbor">
+      <h2>BGP (eBGP)</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">BGP</span><span class="tag">WAN</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Протокол маршрутизации между автономными системами (AS). Используется для стыка с провайдером (eBGP) или внутри крупной сети (iBGP). Работает поверх TCP (порт 179).</span>
+        <span class="block"><strong>eBGP vs iBGP:</strong> eBGP — между разными AS (ISP ↔ клиент). iBGP — внутри одной AS (между граничными роутерами). iBGP требует full-mesh или route reflector.</span>
+        <span class="block"><strong>Как работает:</strong> <code>neighbor X remote-as Y</code> — установить соседство. <code>network X mask Y</code> — анонсировать сеть. BGP не «находит» сети автоматически — их нужно явно анонсировать или переливать из IGP (через <code>redistribute</code>).</span>
+        <span class="block"><strong>Атрибуты (запомнить порядок):</strong> Weight (Cisco) → Local Preference → Locally Originated → AS-Path (короче = лучше) → Origin → MED → eBGP > iBGP → IGP metric.</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) не совпал remote-as — соседство не встаёт; (2) нет маршрута до neighbor — соседство «висит» в Active; (3) анонсировали сеть, которой нет в таблице маршрутизации — BGP её не анонсирует; (4) забыли <code>next-hop-self</code> на iBGP — соседи не видят next-hop.</span>
+        <span class="block"><strong>Связанные темы:</strong> Redistribution, Route Filtering (prefix-list, route-map).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip bgp summary</code> (соседи в Established), <code>show ip bgp</code> (таблица BGP), <code>show ip bgp neighbors X advertised-routes</code> (что мы анонсируем).</span>
+      </p>
+      <div class="diagram"><span class="hl">ISP</span> (AS 65001) ═══ <span class="hl">eBGP</span> ═══ <span class="hl">Router 1</span> (AS 65002)
+                              │
+                         внутренняя сеть
+                         (OSPF/EIGRP)</div>
+      <div class="code-wrap"><pre>router bgp 65002
+ neighbor 10.0.0.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0
+ exit
+show ip bgp summary
+show ip bgp</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 11. Redistribution (расширенное) -->
+    <div class="card" data-tags="redistribution redistribute metric subnets ospf eigrp asbr">
+      <h2>Redistribution</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">Redistribution</span><span class="tag">OSPF ↔ EIGRP</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Перелив маршрутов между разными протоколами (OSPF → EIGRP, EIGRP → OSPF, Static → OSPF, BGP → OSPF). Нужен, когда сеть состоит из двух доменов маршрутизации.</span>
+        <span class="block"><strong>Как работает:</strong> На граничном роутере (ASBR) указывается <code>redistribute &lt;протокол&gt;</code>. Для OSPF обязательно <code>subnets</code> (иначе передадутся только классовые сети). Для EIGRP — <code>metric</code> (5 параметров: bandwidth, delay, reliability, load, MTU).</span>
+        <span class="block"><strong>AD (Administrative Distance):</strong> при переливе маршрутов AD меняется. Внешние OSPF (O E2) = 110, внешние EIGRP (D EX) = 170. Это может привести к «петлям» — используйте route-map/distribute-list для фильтрации.</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) забыли <code>subnets</code> — передались только классовые сети; (2) не указали <code>metric</code> для EIGRP — маршруты не передаются; (3) петля между OSPF и EIGRP — нужен route-map для фильтрации.</span>
+        <span class="block"><strong>Связанные темы:</strong> OSPF, EIGRP, BGP, Route Filtering.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip route</code> (маршруты «O E2» — внешние OSPF, «D EX» — внешние EIGRP), <code>show ip protocols</code> (что и откуда переливается).</span>
+      </p>
+      <div class="diagram"><span class="hl">OSPF</span> (Area 0) ── <span class="hl">Router 2</span> (ASBR) ── <span class="hl">EIGRP</span> (AS 100)
+                   redistribution в обе стороны
+                   (с metric и subnets)</div>
+      <div class="code-wrap"><pre>router ospf 1222
+ redistribute eigrp 100 subnets
+ exit
+router eigrp 100
+ redistribute ospf 1222 metric 10000 100 255 1 1500
+ exit
+show ip route</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 12. HSRP (расширенное) -->
+    <div class="card" data-tags="hsrp fhrp redundancy gateway virtual ip preempt priority">
+      <h2>HSRP</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">Резервирование</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Два роутера делят один виртуальный IP (шлюз для клиентов). Клиенты настраивают этот IP как шлюз и не знают, какой роутер активен.</span>
+        <span class="block"><strong>Active / Standby:</strong> больший приоритет → Active. Если Active падает, Standby мгновенно перехватывает виртуальный IP. <code>preempt</code> позволяет вернуть роль Active после восстановления (иначе бывший Active останется Standby).</span>
+        <span class="block"><strong>version 2:</strong> поддержка IPv6 и больше групп (0–4095). version 1 — только IPv4, группы 0–255.</span>
+        <span class="block"><strong>Виртуальный MAC:</strong> <code>0000.0c07.acXX</code>, где XX — номер группы в hex. Например, группа 1 = <code>0000.0c07.ac01</code>.</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) не совпал номер группы — два HSRP-процесса не видят друг друга; (2) забыли <code>preempt</code> — после восстановления Active остаётся Standby; (3) не совпал виртуальный IP — клиенты ходят через разные шлюзы.</span>
+        <span class="block"><strong>Отличие от VRRP:</strong> HSRP — Cisco-проприетарный; VRRP — открытый стандарт (IEEE 3768). В мультивендорной сети — VRRP.</span>
+        <span class="block"><strong>Связанные темы:</strong> VRRP, GLBP, OSPF (для маршрутизации к HSRP-шлюзу).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show standby brief</code> (Active/Standby, виртуальный IP), <code>show standby</code> (детали).</span>
+      </p>
+      <div class="diagram"><span class="hl">Router 1</span> (Active, prio 150) ═══ <span class="hl">Router 2</span> (Standby, prio 100)
+            ╲                     ╱
+             Виртуальный IP: <span class="hl">192.168.1.2</span>
+             (клиенты используют его как шлюз)</div>
+      <div class="code-wrap"><pre>interface f0/0
+ standby version 2
+ standby 1 ip 192.168.1.2
+ standby 1 priority 150
+ standby 1 preempt
+ exit
+show standby brief</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 13. VRRP -->
+    <div class="card" data-tags="vrrp fhrp redundancy virtual router ieee master backup">
+      <h2>VRRP</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">IEEE</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Открытый стандарт (IEEE 3768), аналог HSRP. Master/Backup, виртуальный IP + виртуальный MAC. Используется в мультивендорных сетях (не только Cisco).</span>
+        <span class="block"><strong>Отличие от HSRP:</strong> в VRRP Master — это реальный роутер с виртуальным IP; в HSRP Active — тоже реальный, но виртуальный MAC другой.</span>
+        <span class="block"><strong>Приоритет:</strong> 1–254 (по умолчанию 100). Больший → Master.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show vrrp</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Router 1</span> (Master) ═══ <span class="hl">Router 2</span> (Backup)
+        Виртуальный IP: <span class="hl">192.168.1.2</span>
+        (стандарт IEEE — работает с любым вендором)</div>
+      <div class="code-wrap"><pre>interface f0/0
+ vrrp 1 ip 192.168.1.2
+ vrrp 1 priority 150
+ vrrp 1 preempt
+ exit
+show vrrp</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 14. GLBP -->
+    <div class="card" data-tags="glbp fhrp load balancing cisco avg avf">
+      <h2>GLBP</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">Cisco</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Проприетарный протокол Cisco. В отличие от HSRP/VRRP, не просто резервирует шлюз, а <strong>балансирует нагрузку</strong> между несколькими роутерами.</span>
+        <span class="block"><strong>AVG / AVF:</strong> AVG (Active Virtual Gateway) — главный, раздаёт виртуальные MAC. AVF (Active Virtual Forwarder) — реальные роутеры, каждый обслуживает часть трафика.</span>
+        <span class="block"><strong>Балансировка:</strong> round-robin, weighted, host-dependent.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show glbp</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Router 1</span> (AVG) ──┐
+<span class="hl">Router 2</span> (AVF) ──┼── Виртуальный IP: <span class="hl">192.168.1.2</span>
+<span class="hl">Router 3</span> (AVF) ──┘   (нагрузка распределена между AVF)</div>
+      <div class="code-wrap"><pre>interface f0/0
+ glbp 1 ip 192.168.1.2
+ glbp 1 priority 150
+ glbp 1 preempt
+ glbp 1 load-balancing round-robin
+ exit
+show glbp</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 15. NAT/PAT (расширенное) -->
+    <div class="card" data-tags="nat pat overload static dynamic translation inside outside">
+      <h2>NAT / PAT</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">NAT</span><span class="tag">PAT</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Позволяет устройствам с приватными IP (192.168.x.x) выходить в интернет через один публичный IP. Экономит IPv4-адреса и скрывает внутреннюю структуру сети.</span>
+        <span class="block"><strong>Типы:</strong> Static NAT (1 к 1) — для серверов. Dynamic NAT (пул) — редко. PAT / Overload (много внутренних → 1 внешний, разные порты) — самый частый вариант.</span>
+        <span class="block"><strong>Как работает:</strong> На внутреннем интерфейсе — <code>ip nat inside</code>, на внешнем — <code>ip nat outside</code>. ACL определяет, какие адреса транслировать. PAT меняет source IP + source port, ведёт таблицу трансляций.</span>
+        <span class="block"><strong>Термины:</strong> Inside Local (внутренний IP до NAT), Inside Global (внутренний IP после NAT), Outside Local (внешний IP до NAT), Outside Global (внешний IP после NAT).</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) забыли <code>ip nat inside</code> / <code>ip nat outside</code> — трансляция не работает; (2) ACL не покрывает нужные адреса — трансляция не работает; (3) конфликт с IPsec — NAT «съедает» пакеты до шифрования (нужен <code>deny ip</code> для VPN-трафика).</span>
+        <span class="block"><strong>Связанные темы:</strong> Static NAT (port forwarding), IPsec (NAT-T), ACL.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip nat translations</code> (таблица активных трансляций), <code>show ip nat statistics</code> (счётчики).</span>
+      </p>
+      <div class="diagram"><span class="hl">LAN</span> 192.168.0.0/24 ── [<span class="hl">Router NAT</span>] ── <span class="hl">ISP</span> 30.30.30.31
+   (много внутренних IP)    (один внешний IP, разные порты)</div>
+      <div class="code-wrap"><pre>interface f0/0
+ ip nat inside
+ exit
+interface f0/1
+ ip nat outside
+ exit
+ip access-list extended NAT
+ permit ip 192.168.0.0 0.0.0.255 any
+ exit
+ip nat inside source list NAT interface f0/1 overload
+show ip nat translations</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 16. Static NAT -->
+    <div class="card" data-tags="static nat 1 to 1 server port forwarding">
+      <h2>Static NAT</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">NAT</span><span class="tag">Static</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Постоянная трансляция «один-к-одному»: внутренний IP всегда соответствует внешнему. Нужна для серверов, к которым обращаются извне (веб, почта, FTP).</span>
+        <span class="block"><strong>Как работает:</strong> <code>ip nat inside source static &lt;внутренний&gt; &lt;внешний&gt;</code>. Внешний IP может быть адресом интерфейса.</span>
+        <span class="block"><strong>Port Forwarding:</strong> частный случай Static NAT — проброс конкретного порта (например, TCP 80) на внутренний сервер.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip nat translations</code> (запись типа «---»).</span>
+      </p>
+      <div class="diagram"><span class="hl">Web-сервер</span> 192.168.3.53:80
+        ↕ (static NAT)
+<span class="hl">Внешний IP</span> 30.30.30.31:80  ← клиенты из интернета</div>
+      <div class="code-wrap"><pre>ip nat inside source static 192.168.3.53 30.30.30.31
+ip nat inside source static tcp 192.168.3.53 80 interface f0/1 80
+show ip nat translations</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 17. ACL Standard -->
+    <div class="card" data-tags="acl standard access-list source ip vty access-class">
+      <h2>ACL Standard</h2>
+      <div class="tags"><span class="tag">Security</span><span class="tag">ACL</span><span class="tag">Standard</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Фильтрует трафик только по Source IP (номера 1–99). Просто, но грубо: нельзя указать destination или порт.</span>
+        <span class="block"><strong>Где применять:</strong> Ближе к получателю (чтобы не блокировать трафик раньше времени).</span>
+        <span class="block"><strong>VTY:</strong> на линиях <code>line vty</code> применяется через <code>access-class</code> — ограничивает, кто может подключаться по Telnet/SSH.</span>
+        <span class="block"><strong>Правило:</strong> В конце ACL неявный <code>deny any</code>. Поэтому всегда нужен хотя бы один <code>permit</code>.</span>
+      </p>
+      <div class="diagram">[<span class="hl">PC1</span> 10.0.3.2] ── [Switch] ── [<span class="hl">Router 1</span>] ── [Server 192.168.3.10]
+                        access-list 1 deny 10.0.3.2
+                        access-list 1 permit any
+                        → PC1 не видит сервер, остальные видят</div>
+      <div class="code-wrap"><pre>access-list 10 permit 4.4.4.4
+line vty 0 4
+ access-class 10 in
+ exit
+access-list 1 deny 10.0.3.2
+access-list 1 permit any
+interface f0/1
+ ip access-group 1 out
+ exit
+show ip access-lists</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 18. ACL Extended -->
+    <div class="card" data-tags="acl extended access-list source destination protocol port access-group">
+      <h2>ACL Extended</h2>
+      <div class="tags"><span class="tag">Security</span><span class="tag">ACL</span><span class="tag">Extended</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Фильтрует по Source + Destination + Protocol + Port (номера 100–199). Гибко, но сложнее.</span>
+        <span class="block"><strong>Где применять:</strong> Ближе к источнику (чтобы не гонять блокируемый трафик через сеть).</span>
+        <span class="block"><strong>Пример:</strong> разрешить HTTP/HTTPS, запретить Telnet. <code>permit tcp any any eq 80</code>, <code>deny tcp any any eq 23</code>.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip access-lists</code>, <code>show ip interface f0/1</code> (применён ли ACL).</span>
+      </p>
+      <div class="diagram">[<span class="hl">PC</span>] ── in ── [<span class="hl">Router 1</span>] ── out ── [<span class="hl">ISP</span>]
+   permit tcp any any eq 80/443
+   deny   tcp any any eq 23
+   → HTTP/HTTPS можно, Telnet нельзя</div>
+      <div class="code-wrap"><pre>ip access-list extended WEB_ONLY
+ permit tcp any any eq 80
+ permit tcp any any eq 443
+ deny tcp any any eq 23
+ permit ip any any
+ exit
+interface f0/0
+ ip access-group WEB_ONLY in
+ exit
+show ip access-lists</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 19. DHCP -->
+    <div class="card" data-tags="dhcp pool default-router excluded binding server">
+      <h2>DHCP-сервер</h2>
+      <div class="tags"><span class="tag">Services</span><span class="tag">DHCP</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> Автоматически выдаёт клиентам IP-адрес, маску, шлюз, DNS. Работает по DORA (Discover → Offer → Request → Ack).</span>
+        <span class="block"><strong>Как работает:</strong> <code>ip dhcp pool</code> создаёт пул, <code>network</code> — подсеть, <code>default-router</code> — шлюз. <code>ip dhcp excluded-address</code> — исключить адреса (шлюз, принтеры, серверы).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip dhcp binding</code> (кто какой IP получил), <code>show ip dhcp conflict</code> (конфликты).</span>
+        <span class="block"><strong>Совет:</strong> На L3-свитче DHCP-пул работает, если SVI поднят (есть активный порт в VLAN).</span>
+      </p>
+      <div class="diagram">[<span class="hl">DHCP Server</span>] ── offer ──→ [<span class="hl">PC</span>]
+                  ←─ request ──
+                  ── ack ──→ IP получен</div>
+      <div class="code-wrap"><pre>ip dhcp excluded-address 192.168.8.254
+ip dhcp pool VLAN108
+ network 192.168.8.0 255.255.255.0
+ default-router 192.168.8.254
+ dns-server 8.8.8.8
+ exit
+show ip dhcp binding
+show ip dhcp conflict</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 20. DHCP Snooping -->
+    <div class="card" data-tags="dhcp snooping trust untrust rogue server l2 security">
+      <h2>DHCP Snooping</h2>
+      <div class="tags"><span class="tag">Security</span><span class="tag">L2</span><span class="tag">DHCP</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Защита от «левого» DHCP-сервера (rogue DHCP). Злоумышленник может поднять свой DHCP и выдать клиентам неправильный шлюз — трафик пойдёт через него.</span>
+        <span class="block"><strong>Как работает:</strong> Свитч делит порты на trusted (trunk к реальному DHCP-серверу) и untrusted (порты к ПК). DHCP-ответы с untrusted-портов дропаются.</span>
+        <span class="block"><strong>Option 82:</strong> <code>no ip dhcp snooping information option</code> — отключает добавление служебной информации (часто нужно в лабах).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip dhcp snooping</code>, <code>show ip dhcp snooping binding</code>.</span>
+      </p>
+      <div class="diagram">[<span class="hl">DHCP Server</span>] ── <span class="hl">trust</span> ── [Switch] ── untrust ── [PC]
+                                  └─ untrust ── [Rogue DHCP] ← <span class="hl">drop</span></div>
+      <div class="code-wrap"><pre>ip dhcp snooping
+ip dhcp snooping vlan 1,108
+no ip dhcp snooping information option
+interface range f0/3 - 5
+ ip dhcp snooping trust
+ exit
+show ip dhcp snooping
+show ip dhcp snooping binding</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 21. Port-Security -->
+    <div class="card" data-tags="port-security sticky mac violation shutdown restrict protect">
+      <h2>Port-Security</h2>
+      <div class="tags"><span class="tag">Security</span><span class="tag">L2</span><span class="tag">MAC</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Ограничивает количество MAC-адресов на порту. Защита от подключения несанкционированных устройств (хабов, левых ПК).</span>
+        <span class="block"><strong>Режимы:</strong> <code>protect</code> — дропает лишние MAC (без лога), <code>restrict</code> — дропает + лог, <code>shutdown</code> — выключает порт (err-disable).</span>
+        <span class="block"><strong>sticky:</strong> запоминает первый подключённый MAC и «приклеивает» его к порту.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show port-security interface f0/10</code>, <code>show port-security address</code>.</span>
+        <span class="block"><strong>Сброс:</strong> при ошибке — <code>shutdown</code> / <code>no shutdown</code> на порту.</span>
+      </p>
+      <div class="diagram">[Switch] ── f0/10 ── [<span class="hl">PC1</span>] (первый MAC = sticky)
+                └─ [<span class="hl">PC2</span>] → violation → <span class="hl">err-disable</span>
+                (порт выключен до ручного сброса)</div>
+      <div class="code-wrap"><pre>interface f0/10
+ switchport mode access
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown
+ exit
+show port-security interface f0/10</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 22. SSH -->
+    <div class="card" data-tags="ssh secure shell rsa crypto key transport input vty">
+      <h2>SSH</h2>
+      <div class="tags"><span class="tag">Security</span><span class="tag">SSH</span><span class="tag">Remote access</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Безопасная замена Telnet. Шифрует трафик (пароли, команды). Telnet передаёт всё в открытом виде.</span>
+        <span class="block"><strong>Как работает:</strong> Нужны доменное имя (<code>ip domain-name</code>) и RSA-ключи (<code>crypto key generate rsa</code>). Затем на VTY: <code>transport input ssh</code> (отключает Telnet).</span>
+        <span class="block"><strong>Аутентификация:</strong> <code>login local</code> — использовать локальную базу пользователей (<code>username ... secret ...</code>).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip ssh</code>, <code>show ssh</code>.</span>
+      </p>
+      <div class="diagram">[<span class="hl">Admin PC</span>] ── <span class="hl">SSH</span> (TCP 22, шифрование) ── [<span class="hl">Router 1</span>]
+                    ✗ Telnet (TCP 23, открытый текст) — отключён</div>
+      <div class="code-wrap"><pre>ip domain-name lab.local
+crypto key generate rsa modulus 1024
+ip ssh version 2
+username admin privilege 15 secret admin123
+line vty 0 15
+ login local
+ transport input ssh
+ exit
+show ip ssh</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 23. NTP -->
+    <div class="card" data-tags="ntp time sync clock timezone master server">
+      <h2>NTP</h2>
+      <div class="tags"><span class="tag">Services</span><span class="tag">NTP</span><span class="tag">Time</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Синхронизация времени между устройствами. Без точного времени не работают сертификаты, логи (нельзя сопоставить события), Kron (расписание).</span>
+        <span class="block"><strong>Как работает:</strong> <code>ntp master</code> — устройство становится источником времени. <code>ntp server X</code> — клиент синхронизируется с сервером X.</span>
+        <span class="block"><strong>Часовой пояс:</strong> <code>clock timezone MSK 3 0</code> — задаёт смещение от UTC.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ntp status</code>, <code>show clock</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">NTP Server</span> (stratum 1) ──→ <span class="hl">Router 1</span> (stratum 2)
+                          ──→ <span class="hl">Switch A</span> (stratum 2)
+                          ──→ <span class="hl">Switch B</span> (stratum 3)
+       все устройства синхронизированы</div>
+      <div class="code-wrap"><pre>clock timezone MSK 3 0
+ntp master 1
+ntp server 192.168.1.230
+show ntp status
+show clock</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 24. Syslog -->
+    <div class="card" data-tags="syslog logging buffered console monitor host severity">
+      <h2>Syslog</h2>
+      <div class="tags"><span class="tag">Services</span><span class="tag">Syslog</span><span class="tag">Logging</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Сбор логов с устройств (события, ошибки, изменения). Без логов невозможно отладить проблему постфактум.</span>
+        <span class="block"><strong>Уровни:</strong> 0 (emergencies) — 7 (debugging). <code>logging buffered informational</code> — писать в RAM всё от informational и выше.</span>
+        <span class="block"><strong>Куда:</strong> <code>logging buffered</code> — в RAM, <code>logging console</code> — на консоль, <code>logging monitor</code> — на VTY, <code>logging host X</code> — на внешний сервер.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show logging</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Router</span> ── syslog (UDP 514) ──→ <span class="hl">Syslog Server</span>
+   ├─ buffered (RAM) — show logging
+   ├─ console — на консоль
+   └─ monitor — на VTY (SSH/Telnet)</div>
+      <div class="code-wrap"><pre>logging buffered informational
+logging rate-limit 10
+no logging console
+logging monitor informational
+logging host 192.168.1.100
+show logging</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 25. SNMP -->
+    <div class="card" data-tags="snmp v2c v3 community trap inform mib oid">
+      <h2>SNMP</h2>
+      <div class="tags"><span class="tag">Services</span><span class="tag">SNMP</span><span class="tag">Monitoring</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Мониторинг устройств (CPU, память, интерфейсы, температура). Используется системами управления (Zabbix, SolarWinds, PRTG).</span>
+        <span class="block"><strong>v2c:</strong> community string (как пароль, открытый текст). Просто, но небезопасно.</span>
+        <span class="block"><strong>v3:</strong> аутентификация (MD5/SHA) + шифрование (DES/AES). Используется в продакшене.</span>
+        <span class="block"><strong>Trap vs Inform:</strong> Trap — без подтверждения (UDP 162), Inform — с подтверждением.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show snmp</code>, <code>show snmp community</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Router</span> ── SNMP (UDP 161 запрос / 162 trap) ──→ <span class="hl">NMS</span>
+   v2c: community public (открыто)
+   v3:  auth SHA + priv AES (шифровано)</div>
+      <div class="code-wrap"><pre>snmp-server community public RO
+snmp-server community private RW
+snmp-server host 192.168.1.100 version 2c public
+snmp-server enable traps
+snmp-server group ADMINS v3 priv
+snmp-server user admin ADMINS v3 auth sha AuthPass123 priv aes 128 PrivPass123
+show snmp</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 26. NetFlow -->
+    <div class="card" data-tags="netflow flow ingress egress top talkers cache">
+      <h2>NetFlow</h2>
+      <div class="tags"><span class="tag">Services</span><span class="tag">NetFlow</span><span class="tag">Traffic analysis</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Анализ трафика: кто, куда и сколько качает. Показывает Top Talkers (самых активных), распределение по протоколам (TCP/UDP/ICMP), размеры пакетов.</span>
+        <span class="block"><strong>Как работает:</strong> <code>ip flow ingress</code> / <code>ip flow egress</code> на интерфейсе — включает сбор flow-записей.</span>
+        <span class="block"><strong>Top Talkers:</strong> <code>ip flow-top-talkers top 10 sort-by bytes</code> — топ-10 по байтам.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ip cache flow</code>, <code>show ip flow top-talkers</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Router</span> ── flow records ──→ <span class="hl">Cache</span>
+   ├─ Top Talkers: 10.0.1.2 (225 pkts)
+   ├─ Протоколы: TCP-WWW, UDP-DNS, ICMP
+   └─ Размеры пакетов: 1-32, 64, 1024...</div>
+      <div class="code-wrap"><pre>interface f0/0
+ ip flow ingress
+ ip flow egress
+ exit
+ip flow-top-talkers
+ top 10 sort-by bytes
+ exit
+show ip cache flow
+show ip flow top-talkers</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 27. Kron -->
+    <div class="card" data-tags="kron schedule recurring policy-list cli redirect">
+      <h2>Kron (планировщик)</h2>
+      <div class="tags"><span class="tag">Automation</span><span class="tag">Kron</span><span class="tag">Schedule</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Планировщик задач в IOS (аналог cron в Linux). Позволяет автоматически выполнять команды по расписанию: снимать статистику, делать бэкапы, отправлять логи.</span>
+        <span class="block"><strong>Как работает:</strong> <code>kron policy-list</code> — список команд. <code>kron occurrence</code> — расписание (время + recurring).</span>
+        <span class="block"><strong>Пример:</strong> каждый час с 8:00 до 18:00 снимать CPU/memory и отправлять на TFTP.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show kron schedule</code>, <code>show kron summary</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Kron</span> (каждый час 8:00–18:00)
+   ├─ show proc cpu  → tftp://.../cpu.txt
+   ├─ show proc mem  → tftp://.../memory.txt
+   └─ show int status → tftp://.../ports.txt</div>
+      <div class="code-wrap"><pre>kron policy-list BACKUP
+ cli show proc cpu sort | redirect tftp://192.168.1.100/cpu.txt
+ cli show proc mem sort | redirect tftp://192.168.1.100/mem.txt
+ exit
+kron occurrence HOUR8 at 8:00 recurring
+ policy-list BACKUP
+ exit
+kron occurrence HOUR9 at 9:00 recurring
+ policy-list BACKUP
+ exit
+show kron schedule</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 28. Archive -->
+    <div class="card" data-tags="archive config backup tftp write-memory path">
+      <h2>Archive (авто-бэкап)</h2>
+      <div class="tags"><span class="tag">Automation</span><span class="tag">Archive</span><span class="tag">Backup</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Автоматический бэкап конфигурации при каждом <code>write memory</code> или <code>copy run start</code>. Позволяет откатиться к предыдущей версии.</span>
+        <span class="block"><strong>Как работает:</strong> <code>archive</code> → <code>path tftp://...</code> → <code>write-memory</code>. Можно использовать переменные <code>$H</code> (hostname) и <code>$T</code> (time).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show archive</code>, <code>show archive config differences</code>.</span>
+        <span class="block"><strong>Совет:</strong> Храните бэкапы на TFTP/FTP-сервере, а не только в flash (при сбое flash потеряете всё).</span>
+      </p>
+      <div class="diagram"><span class="hl">Router</span> ── write memory ──→ <span class="hl">Archive</span>
+   path tftp://192.168.1.100/$H-$T
+   → R1-2024-01-15-12:00.cfg
+   (каждый раз новый файл)</div>
+      <div class="code-wrap"><pre>archive
+ log config
+  logging enable
+  notify syslog contenttype plaintext
+  hidekeys
+ exit
+ path tftp://192.168.1.100/$H-$T
+ write-memory
+show archive</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 29. IPv6 -->
+    <div class="card" data-tags="ipv6 addressing global unicast link-local slaac eui-64">
+      <h2>IPv6</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">IPv6</span><span class="tag">Addressing</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> 128 бит (вместо 32 в IPv4). Запись — 8 групп по 4 hex-цифры, сокращение <code>::</code> (один раз).</span>
+        <span class="block"><strong>Типы:</strong> <code>2000::/3</code> — Global Unicast (аналог публичного IPv4). <code>fe80::/10</code> — Link-Local (автоматически на каждом интерфейсе). <code>fc00::/7</code> — Unique Local. <code>ff00::/8</code> — Multicast.</span>
+        <span class="block"><strong>SLAAC:</strong> устройство само строит адрес из префикса роутера (RA) + MAC (EUI-64) или случайного ID.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ipv6 interface brief</code>, <code>show ipv6 route</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">2001:db8:1::/64</span>  ← Global Unicast (как публичный IPv4)
+<span class="hl">fe80::/10</span>          ← Link-Local (автоматически)
+<span class="hl">::1</span>                ← Loopback (аналог 127.0.0.1)
+<span class="hl">ff02::1</span>            ← All-nodes multicast</div>
+      <div class="code-wrap"><pre>ipv6 unicast-routing
+interface f0/0
+ ipv6 address 2001:db8:1::1/64
+ ipv6 address fe80::1 link-local
+ no shutdown
+ exit
+ipv6 route ::/0 2001:db8:1::2
+show ipv6 interface brief</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 30. OSPFv3 -->
+    <div class="card" data-tags="ospfv3 ipv6 routing area interface">
+      <h2>OSPFv3</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">OSPFv3</span><span class="tag">IPv6</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> OSPF для IPv6. Отдельный процесс (<code>router ospfv3 1</code>), но логика та же: Area 0, LSDB, Дейкстра, DR/BDR.</span>
+        <span class="block"><strong>Отличие от OSPFv2:</strong> в OSPFv3 network-команды не используются — интерфейсы включаются через <code>ipv6 ospf 1 area 0</code> на самом интерфейсе.</span>
+        <span class="block"><strong>Аутентификация:</strong> через IPsec (в IPv6 встроен).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show ospfv3 neighbor</code>, <code>show ipv6 route ospf</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">OSPFv3</span> (IPv6) — Area 0
+   интерфейсы включаются командой:
+   ipv6 ospf 1 area 0   (на самом интерфейсе)</div>
+      <div class="code-wrap"><pre>ipv6 unicast-routing
+router ospfv3 1
+ router-id 1.1.1.1
+ exit
+interface f0/0
+ ipv6 address 2001:db8:1::1/64
+ ipv6 ospf 1 area 0
+ exit
+show ospfv3 neighbor
+show ipv6 route ospf</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 31. HSRPv6 -->
+    <div class="card" data-tags="hsrpv6 fhrp ipv6 virtual gateway standby">
+      <h2>HSRPv6</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">IPv6</span></div>
+      <p class="desc">
+        <span class="block"><strong>Принцип:</strong> HSRP для IPv6. Требует <code>standby version 2</code> (version 1 не поддерживает IPv6).</span>
+        <span class="block"><strong>Как работает:</strong> Виртуальный IPv6-адрес, который клиенты используют как шлюз. Active/Standby — как в IPv4.</span>
+        <span class="block"><strong>Link-Local:</strong> HSRPv6 использует link-local адрес для служебных сообщений.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show standby brief</code> (виден IPv6-адрес).</span>
+      </p>
+      <div class="diagram"><span class="hl">Router 1</span> (Active) ═══ <span class="hl">Router 2</span> (Standby)
+   Виртуальный IPv6: <span class="hl">2001:db8:1::100</span>
+   (клиенты используют как шлюз)</div>
+      <div class="code-wrap"><pre>interface f0/0
+ standby version 2
+ standby 1 ipv6 2001:db8:1::100
+ standby 1 priority 150
+ standby 1 preempt
+ exit
+show standby brief</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 32. IPsec (расширенное) -->
+    <div class="card" data-tags="ipsec vpn site-to-site ike esp ah crypto map transform-set">
+      <h2>IPsec (Site-to-Site)</h2>
+      <div class="tags"><span class="tag">Security</span><span class="tag">VPN</span><span class="tag">IPsec</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Шифрование трафика между двумя офисами через интернет. Защищает от прослушивания и подмены.</span>
+        <span class="block"><strong>Компоненты:</strong> IKE (фаза 1 — согласование ключей), IPsec (фаза 2 — шифрование трафика). <strong>ESP</strong> — шифрование + аутентификация, <strong>AH</strong> — только аутентификация (без шифрования, редко используется).</span>
+        <span class="block"><strong>Режимы:</strong> Transport (хост-хост, шифрует только payload), Tunnel (сеть-сеть, шифрует весь пакет — используется в site-to-site).</span>
+        <span class="block"><strong>IKEv1 vs IKEv2:</strong> IKEv1 — старый (main/aggressive mode). IKEv2 — новый, быстрее, поддерживает MOBIKE (мобильность). В новых сетях — IKEv2.</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) не совпали политики IKE (шифрование, хеш, DH-группа) — фаза 1 не встаёт; (2) не совпал transform-set — фаза 2 не встаёт; (3) ACL не зеркальный — трафик шифруется в одну сторону; (4) NAT конфликтует с IPsec — нужен NAT-T или <code>deny ip</code> в NAT ACL.</span>
+        <span class="block"><strong>Связанные темы:</strong> GRE (GRE + IPsec), NAT (NAT-T), AAA (для аутентификации).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show crypto isakmp sa</code> (QM_IDLE — фаза 1 поднята), <code>show crypto ipsec sa</code> (encaps/decaps > 0 — трафик шифруется), <code>show crypto map</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Офис 1</span> (192.168.1.0/24) ═══ IPsec ═══ <span class="hl">Офис 2</span> (192.168.2.0/24)
+         Router 1 ─── IKE (фаза 1) ─── Router 2
+         Router 1 ─── ESP (фаза 2) ─── Router 2
+         трафик зашифрован</div>
+      <div class="code-wrap"><pre>crypto isakmp policy 10
+ encr aes 256
+ hash sha256
+ authentication pre-share
+ group 14
+ exit
+crypto isakmp key SECRET123 address 203.0.113.2
+crypto ipsec transform-set TS esp-aes 256 esp-sha256-hmac
+crypto map CMAP 10 ipsec-isakmp
+ set peer 203.0.113.2
+ set transform-set TS
+ match address VPN_TRAFFIC
+ exit
+interface f0/1
+ crypto map CMAP
+ exit
+show crypto isakmp sa
+show crypto ipsec sa</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 33. GRE -->
+    <div class="card" data-tags="gre tunnel generic routing encapsulation l3 over l3">
+      <h2>GRE-туннель</h2>
+      <div class="tags"><span class="tag">L3</span><span class="tag">GRE</span><span class="tag">Tunnel</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Туннель «L3 поверх L3» — позволяет передавать пакеты одного протокола через сеть другого (например, IPv6 через IPv4, или multicast через интернет).</span>
+        <span class="block"><strong>Как работает:</strong> <code>interface Tunnel0</code>, <code>tunnel source</code>, <code>tunnel destination</code>, <code>tunnel mode gre ip</code>. Туннель получает свой IP-адрес.</span>
+        <span class="block"><strong>Без шифрования:</strong> GRE сам по себе не шифрует — часто используется вместе с IPsec (GRE + IPsec).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show interfaces tunnel 0</code> (up/up), пинг по туннельному IP.</span>
+      </p>
+      <div class="diagram"><span class="hl">Router 1</span> (10.0.0.2) ═══ GRE ═══ <span class="hl">Router 2</span> (10.0.1.2)
+   Tunnel0: 192.168.100.1/30  ↔  192.168.100.2/30
+   (пакеты инкапсулируются в IP и идут через интернет)</div>
+      <div class="code-wrap"><pre>interface Tunnel0
+ ip address 192.168.100.1 255.255.255.252
+ tunnel source 10.0.0.2
+ tunnel destination 10.0.1.2
+ tunnel mode gre ip
+ exit
+show interfaces tunnel 0
+ping 192.168.100.2</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 34. AAA -->
+    <div class="card" data-tags="aaa tacacs radius authentication authorization accounting new-model">
+      <h2>AAA (TACACS+ / RADIUS)</h2>
+      <div class="tags"><span class="tag">Security</span><span class="tag">AAA</span><span class="tag">TACACS+</span><span class="tag">RADIUS</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Централизованная аутентификация, авторизация и учёт (AAA). Вместо локальных <code>username</code> на каждом устройстве — единый сервер.</span>
+        <span class="block"><strong>TACACS+</strong> (Cisco, TCP 49) — шифрует всё тело пакета, разделяет AAA. <strong>RADIUS</strong> (стандарт, UDP 1812/1813) — шифрует только пароль.</span>
+        <span class="block"><strong>Fallback:</strong> обязательно <code>local</code> в конце — иначе при падении сервера будет lockout.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show aaa servers</code>, <code>show tacacs</code>.</span>
+      </p>
+      <div class="diagram">[<span class="hl">Admin</span>] ── SSH ── [<span class="hl">Router 1</span>] ── TACACS+ ──→ [<span class="hl">TACACS Server</span>]
+                       └─ если сервер недоступен ──→ <span class="hl">local</span>
+                       (fallback на локальную базу)</div>
+      <div class="code-wrap"><pre>aaa new-model
+tacacs server TAC1
+ address ipv4 192.168.1.100
+ key secret123
+ exit
+aaa group server tacacs+ TAC_GROUP
+ server name TAC1
+ exit
+aaa authentication login default group TAC_GROUP local
+aaa authorization exec default group TAC_GROUP local
+aaa accounting exec default start-stop group TAC_GROUP
+line vty 0 15
+ login authentication default
+ exit
+show aaa servers</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 35. QoS (расширенное) -->
+    <div class="card" data-tags="qos quality of service dscp llq cbwfq policing shaping priority">
+      <h2>QoS</h2>
+      <div class="tags"><span class="tag">QoS</span><span class="tag">Traffic</span><span class="tag">Voice/Video</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Приоритизация трафика. Голос и видео важнее файлов — при перегрузке канала QoS даёт им приоритет. Без QoS голос «квакает», видео «сыпется».</span>
+        <span class="block"><strong>Классификация:</strong> DSCP-метки (0–63). Голос — EF (46), видео — AF41 (34), данные — 0. CoS (L2) — 0–7, используется в 802.1Q-тегах.</span>
+        <span class="block"><strong>Очереди:</strong> LLQ (Low Latency Queue) — для голоса (строгий приоритет), CBWFQ — для остальных классов (гарантированная полоса).</span>
+        <span class="block"><strong>Policing vs Shaping:</strong> Policing — дропает лишнее (жёстко), Shaping — буферизует (сглаживает, для WAN).</span>
+        <span class="block"><strong>Trust boundary:</strong> где ставить метки DSCP? Обычно на access-порту (телефон ставит EF, ПК — 0) или на trunk между свитчами.</span>
+        <span class="block"><strong>Типичные ошибки:</strong> (1) не включили <code>mls qos</code> глобально — QoS не работает; (2) не настроили trust boundary — метки сбрасываются; (3) LLQ > 33% канала — голос «съедает» всё.</span>
+        <span class="block"><strong>Связанные темы:</strong> Voice VLAN, Auto-QoS.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show policy-map interface f0/1</code> (счётчики по классам), <code>show mls qos</code> (глобальные настройки).</span>
+      </p>
+      <div class="diagram"><span class="hl">Voice</span> (EF 46)   → <span class="hl">Priority Queue</span> (LLQ) — 20%
+<span class="hl">Video</span> (AF41 34) → CBWFQ — 30%
+<span class="hl">Data</span>  (0)      → Fair Queue — остальное</div>
+      <div class="code-wrap"><pre>class-map match-any VOICE
+ match dscp ef
+ exit
+policy-map WAN
+ class VOICE
+  priority percent 20
+ class class-default
+  fair-queue
+ exit
+interface f0/1
+ service-policy output WAN
+ exit
+interface f0/0
+ mls qos trust dscp
+ exit
+show policy-map interface f0/1</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 36. RSPAN -->
+    <div class="card" data-tags="rspan span monitor session remote vlan reflector port mirroring">
+      <h2>RSPAN (удалённое зеркалирование)</h2>
+      <div class="tags"><span class="tag">L2</span><span class="tag">Monitoring</span><span class="tag">RSPAN</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Зеркалирование трафика с одного свитча на анализатор, подключённый к другому свитчу (через сеть).</span>
+        <span class="block"><strong>SPAN vs RSPAN:</strong> SPAN — локально (анализатор на том же свитче). RSPAN — удалённо (через VLAN).</span>
+        <span class="block"><strong>Как работает:</strong> Источник (source interface) → RSPAN VLAN → получатель (destination interface).</span>
+        <span class="block"><strong>Проверка:</strong> <code>show monitor</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Switch A</span> (source f0/10) ═══ RSPAN VLAN 100 ═══ <span class="hl">Switch B</span> (dest f0/8)
+        └─ трафик зеркалируется через сеть → <span class="hl">Анализатор</span></div>
+      <div class="code-wrap"><pre>! Источник (Switch A)
+monitor session 1 source interface fa0/10 both
+monitor session 1 destination remote vlan 100 reflector-port fa0/1
+! Получатель (Switch B)
+monitor session 1 source remote vlan 100
+monitor session 1 destination interface fa0/8
+show monitor</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 37. CDP/LLDP -->
+    <div class="card" data-tags="cdp lldp discovery neighbor protocol">
+      <h2>CDP / LLDP</h2>
+      <div class="tags"><span class="tag">L2</span><span class="tag">Discovery</span><span class="tag">CDP</span><span class="tag">LLDP</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Обнаружение соседних устройств. Позволяет узнать, кто подключён к порту (имя, модель, IP, порт).</span>
+        <span class="block"><strong>CDP:</strong> проприетарный Cisco (включён по умолчанию). <strong>LLDP:</strong> открытый стандарт (IEEE 802.1AB), нужен для мультивендорных сетей.</span>
+        <span class="block"><strong>Безопасность:</strong> CDP/LLDP могут раскрыть информацию о сети — на внешних портах их отключают.</span>
+        <span class="block"><strong>Проверка:</strong> <code>show cdp neighbors</code>, <code>show lldp neighbors</code>.</span>
+      </p>
+      <div class="diagram"><span class="hl">Switch A</span> ─── CDP/LLDP ─── <span class="hl">Switch B</span>
+   Switch A видит: Switch B, Fa0/1, IP 192.168.1.254
+   Switch B видит: Switch A, Fa0/1, IP 192.168.1.253</div>
+      <div class="code-wrap"><pre>cdp run
+lldp run
+show cdp neighbors
+show cdp neighbors detail
+show lldp neighbors
+show lldp neighbors detail</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+    <!-- 38. Сброс пароля -->
+    <div class="card" data-tags="password recovery reset rommon config.text switch ignore">
+      <h2>Сброс пароля</h2>
+      <div class="tags"><span class="tag">Maintenance</span><span class="tag">Password recovery</span></div>
+      <p class="desc">
+        <span class="block"><strong>Зачем:</strong> Восстановить доступ к устройству, если пароль утерян. Процедура отличается для роутеров и свитчей.</span>
+        <span class="block"><strong>Свитчи (2950/2960/3560):</strong> зажать MODE при загрузке → в ROMMON переименовать <code>config.text</code> → загрузиться → вернуть конфиг → сменить пароль.</span>
+        <span class="block"><strong>Роутеры:</strong> <code>confreg 0x2142</code> (игнорировать startup-config) → загрузиться → <code>copy start run</code> → сменить пароль → <code>config-register 0x2102</code>.</span>
+        <span class="block"><strong>Совет:</strong> после сброса — сохранить конфиг и проверить <code>show version</code> (config register).</span>
+      </p>
+      <div class="diagram"><span class="hl">Свитч</span>:  MODE при загрузке → ROMMON
+   rename flash:config.text flash:config.text.old
+   boot → enable → copy flash:config.text system:running-config
+   → сменить пароль → copy run start
+
+<span class="hl">Роутер</span>: confreg 0x2142 → reload
+   copy start run → сменить пароль → config-register 0x2102</div>
+      <div class="code-wrap"><pre>! Свитч (в ROMMON)
+flash_init
+load_helper
+dir flash:
+rename flash:config.text flash:config.text.old
+boot
+! После загрузки
+enable
+rename flash:config.text.old flash:config.text
+copy flash:config.text system:running-config
+configure terminal
+enable secret NEWPASS
+end
+write memory
+reload</pre><button class="copy-btn">Копировать</button></div>
+    </div>
+
+  </div>
+  <div class="empty hidden" id="empty">Ничего не найдено. Попробуйте другой запрос или выберите тему из списка.</div>
+</main>
+
+<footer>
+  Cisco IOS Справочник · 38 тем · Работает офлайн · Выберите тему из списка или начните вводить
+</footer>
+
+<script>
+  // === Тема ===
+  const themeBtn = document.getElementById('theme-btn');
+  const savedTheme = localStorage.getItem('cisco-ref-theme') || 'light';
+  document.body.dataset.theme = savedTheme;
+  themeBtn.addEventListener('click', () => {
+    const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+    document.body.dataset.theme = next;
+    localStorage.setItem('cisco-ref-theme', next);
+  });
+
+  // === Элементы ===
+  const searchInput = document.getElementById('search');
+  const findBtn = document.getElementById('find-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const stats = document.getElementById('stats');
+  const empty = document.getElementById('empty');
+  const chips = document.querySelectorAll('.chip');
+
+  // === Фильтрация: ТОЧНОЕ совпадение по заголовку + тегам ===
+  function filterCards(query) {
+    const q = query.trim().toLowerCase();
+    let visible = 0;
+    cards.forEach(card => {
+      if (!q) {
+        card.classList.remove('hidden');
+        visible++;
+        return;
+      }
+      const haystack = (
+        (card.getAttribute('data-tags') || '') + ' ' +
+        card.querySelector('h2').textContent
+      ).toLowerCase();
+      const words = q.split(/\s+/).filter(Boolean);
+      const matches = words.every(word => {
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp('\\b' + escaped, 'i');
+        return re.test(haystack);
+      });
+      if (matches) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    stats.textContent = q
+      ? `Найдено: ${visible} из ${cards.length} (запрос: «${query.trim()}»)`
+      : `Всего карточек: ${cards.length}`;
+    empty.classList.toggle('hidden', visible !== 0 || !q);
+  }
+
+  // === Снять активность со всех чипов ===
+  function deactivateAllChips() {
+    chips.forEach(c => c.classList.remove('active'));
+  }
+
+  // === Активировать чип ===
+  function activateChip(chip) {
+    deactivateAllChips();
+    if (chip) chip.classList.add('active');
+  }
+
+  // === Кнопка «Найти» ===
+  findBtn.addEventListener('click', () => {
+    const q = searchInput.value;
+    filterCards(q);
+    let matched = null;
+    chips.forEach(c => {
+      if (c.dataset.q === q.trim().toLowerCase()) matched = c;
+    });
+    activateChip(matched);
+  });
+
+  // === Ввод в поиск ===
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value;
+    filterCards(q);
+    if (!q.trim()) {
+      deactivateAllChips();
+      return;
+    }
+    let matched = null;
+    chips.forEach(c => {
+      if (c.dataset.q === q.trim().toLowerCase()) matched = c;
+    });
+    activateChip(matched);
+  });
+
+  // === Enter в поиске ===
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      findBtn.click();
+    }
+  });
+
+  // === Клик по чипу (явный вызов фильтрации) ===
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.q;
+      searchInput.value = q;
+      filterCards(q);
+      activateChip(chip);
+    });
+  });
+
+  // === Сброс ===
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    filterCards('');
+    deactivateAllChips();
+    searchInput.focus();
+  });
+
+  // === Копировать (чистка от ! и пустых строк) ===
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const pre = btn.parentElement.querySelector('pre');
+      let text = pre.innerText
+        .split('\n')
+        .filter(line => !line.trim().startsWith('!'))
+        .map(line => line.replace(/\s+$/g, ''))
+        .join('\n')
+        .replace(/^\s*\n+/, '')
+        .replace(/\n+\s*$/, '');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = '✅ Скопировано';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Копировать'; btn.classList.remove('copied'); }, 1500);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✅ Скопировано';
+        setTimeout(() => { btn.textContent = 'Копировать'; }, 1500);
+      }
+    });
+  });
+
+  // === Инициализация ===
+  filterCards('');
+</script>
+
+</body>
+</html>

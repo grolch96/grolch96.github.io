@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>grolch96 | Network Engineer Portfolio</title>
+    <style>
+        :root {
+            --bg: #f4f4f6; --fg: #1a1a2e; --card: rgba(255, 255, 255, 0.7);
+            --border: rgba(0, 0, 0, 0.1); --accent: #7fa8d4; --accent2: #e8a0a8;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1a; --fg: #c9d1d9; --card: rgba(42, 42, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.1); --accent: #a3c4e8; --accent2: #f0b8c0;
+        }
+        * { box-sizing: border-box; transition: background 0.3s, color 0.3s; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--fg); margin: 0; padding: 0;
+            line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column;
+        }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 40px; background: var(--card); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+        }
+        header h1 { margin: 0; font-size: 1.5em; color: var(--accent); }
+        .btn-theme {
+            padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px;
+            background: transparent; color: var(--fg); cursor: pointer; font-weight: bold;
+        }
+        .btn-theme:hover { background: var(--accent); color: #fff; }
+        
+        main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 40px 20px; width: 100%; }
+        
+        .hero {
+            text-align: center; margin-bottom: 50px;
+            background: var(--card); padding: 40px; border-radius: 20px;
+            border: 1px solid var(--border); backdrop-filter: blur(10px);
+        }
+        .hero h2 { font-size: 2.5em; margin-top: 0; }
+        .hero p { font-size: 1.2em; max-width: 800px; margin: 0 auto 20px; color: var(--fg); opacity: 0.8; }
+        
+        h2.section-title { text-align: center; margin: 50px 0 30px; font-size: 1.8em; }
+
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; margin-bottom: 40px;
+        }
+        .card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 30px; backdrop-filter: blur(10px); text-decoration: none;
+            color: var(--fg); display: block; transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 5px solid var(--accent);
+        }
+        .card:hover {
+            transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left-color: var(--accent2);
+        }
+        .card h3 { margin-top: 0; font-size: 1.3em; color: var(--accent); }
+        .card p { margin-bottom: 0; font-size: 0.95em; opacity: 0.8; }
+        .card .icon { font-size: 2em; margin-bottom: 15px; display: block; }
+        
+        .doc-links a {
+            display: inline-block; margin: 5px 10px 5px 0; color: var(--accent);
+            text-decoration: none; font-weight: bold;
+        }
+        .doc-links a:hover { text-decoration: underline; }
+
+        footer {
+            text-align: center; padding: 20px; color: var(--fg); opacity: 0.6;
+            border-top: 1px solid var(--border); font-size: 0.9em;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <header>
+        <h1>👨‍💻 grolch96</h1>
+        <button class="btn-theme" id="theme-btn">🌙 Сменить тему</button>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h2>Сетевой инженер / Системный администратор</h2>
+            <p>Специализируюсь на проектировании, восстановлении и автоматизации сетей Cisco. В данном портале собраны мои практические работы, интерактивные справочники и сценарии решения проблем.</p>
+            <p><strong>Статус:</strong> Подготовка к CCNA (~95%), CCNP Enterprise (~45%).</p>
+        </div>
+
+        <h2 class="section-title">🌐 Лабораторные работы</h2>
+        <div class="grid">
+            <a href="labs.html" class="card" style="border-left-color: #2e7d32;">
+                <span class="icon">🧪</span>
+                <h3>Сетевые лабораторные (CCNA/CCNP)</h3>
+                <p>Восстановление базовой и продвинутой сети: LACP, OSPF, BGP, HSRP, NAT. Схемы, конфиги и протоколы тестирования.</p>
+            </a>
+        </div>
+
+        <h2 class="section-title">📚 Интерактивные справочники</h2>
+        <div class="grid">
+            <a href="cisco-reference.html" class="card" style="border-left-color: #7fa8d4;">
+                <span class="icon">📘</span>
+                <h3>Справочник Cisco IOS</h3>
+                <p>База знаний по 38 темам: от VLAN и STP до BGP и IPsec. С поиском и копированием команд.</p>
+            </a>
+            
+            <a href="cisco-troubleshooting.html" class="card" style="border-left-color: #c62828;">
+                <span class="icon">🔧</span>
+                <h3>Troubleshooting</h3>
+                <p>15 реальных сценариев: почему не поднимается OSPF, не работает NAT или падает EtherChannel.</p>
+            </a>
+
+            <a href="cisco-static-routing.html" class="card" style="border-left-color: #7fa8d4;">
+                <span class="icon">📗</span>
+                <h3>Статическая маршрутизация</h3>
+                <p>Справочник по настройке статических маршрутов, маршрутов по умолчанию и резервированию путей.</p>
+            </a>
+
+            <a href="cisco-windows.html" class="card" style="border-left-color: #f39c12;">
+                <span class="icon">🪟</span>
+                <h3>Сетевые команды Windows</h3>
+                <p>Шпаргалка по диагностике сети в Windows: route, ping, tracert, netstat и другие.</p>
+            </a>
+        </div>
+
+        <h2 class="section-title">🛠️ Инструменты разработчика</h2>
+        <div class="grid">
+            <a href="constructor.html" class="card" style="border-left-color: #8e44ad;">
+                <span class="icon">⚙️</span>
+                <h3>Конструктор справочников</h3>
+                <p>Мой JS-инструмент для превращения Word-документов в интерактивные HTML-страницы.</p>
+            </a>
+        </div>
+
+        <h2 class="section-title">📄 Документация и отчеты</h2>
+        <div class="grid">
+            <div class="card" style="border-left-color: #555;">
+                <h3>Скачать материалы</h3>
+                <p>Исходные файлы с описанием лабораторных работ и отчеты по разработке.</p>
+                <div class="doc-links" style="margin-top: 15px;">
+                    <a href="Отчет по итогам Lab1.doc" download>📥 Скачать Lab 1 (Base)</a><br>
+                    <a href="Отчет по итогам Lab2.docx" download>📥 Скачать Lab 2 (Advanced)</a><br>
+                    <a href="Отчет о написании справочника.docx" download>📥 Отчет: Справочник</a><br>
+                    <a href="Отчет о написании конструктора html из текстов со сложным форматированием.docx" download>📥 Отчет: Конструктор</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2026 grolch96. Собрано вручную на чистом HTML/CSS/JS.
+    </footer>
+
+    <script>
+        const themeBtn = document.getElementById('theme-btn');
+        const savedTheme = localStorage.getItem('portfolio-theme') || 'light';
+        document.body.dataset.theme = savedTheme;
+
+        themeBtn.addEventListener('click', () => {
+            const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+            document.body.dataset.theme = next;
+            localStorage.setItem('portfolio-theme', next);
+        });
+    </script>
+</body>
+</html>
