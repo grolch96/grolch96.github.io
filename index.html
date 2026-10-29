@@ -27,8 +27,6 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     color: var(--fg); margin: 0; padding: 0;
     line-height: 1.6; transition: color .2s;
-    
-    /* ФОН С КАРТИНКОЙ */
     background-color: var(--bg);
     background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-index.jpg');
     background-size: auto 100%; 
@@ -92,8 +90,8 @@
   }
   .card .tech { margin-top: 10px; font-size: 12px; color: var(--muted); font-family: "Consolas", "Courier New", monospace; line-height: 1.5; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
   [data-theme="dark"] .card .tech { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-  
-  /* Стили для кнопок скачивания отчетов */
+
+  /* Кнопки для отчетов */
   .report-link {
     display: inline-block; margin-top: 15px; font-size: 12px; font-weight: bold;
     text-decoration: none; color: #fff !important; background: #2e7d32;
@@ -102,7 +100,7 @@
   .report-link:hover { background: #1b5e20; }
   .report-link.purple { background: #8e44ad; }
   .report-link.purple:hover { background: #6a1b9a; }
-
+  
   footer { max-width: 1200px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
   
   @media (max-width: 600px) {
@@ -138,7 +136,7 @@
       <span class="badge">CCNP (база)</span>
     </a>
 
-    <!-- Лаба 3 -->
+    <!-- Лаба 3 (Заглушка) -->
     <div class="card" style="opacity: 0.7; cursor: default;">
       <div class="icon">3️⃣</div>
       <h2>Лаба 3 — IPv6 Enterprise / Secure WAN</h2>
@@ -153,7 +151,7 @@
       <h2>Справочник</h2>
       <p>Полный конспект Cisco IOS: теория IP, коммутация, маршрутизация, безопасность, NAT, мониторинг, добивка CCNA.</p>
       <div class="tech">Части 0–VIII · CCNA ~95% · CCNP ~50–55%</div>
-      <a href="cisco-reference.html" class="badge" style="text-decoration: none;">Открыть справочник</a>
+      <a href="cisco-reference.html" class="badge" style="text-decoration: none; display: inline-block; margin-top: 15px; color: var(--accent);">Открыть справочник</a>
       <br>
       <a href="report-reference.docx" download class="report-link">📥 Скачать отчет о разработке</a>
     </div>
@@ -189,9 +187,10 @@
     <div class="card">
       <div class="icon">⚙️</div>
       <h2>Конструктор справочников</h2>
-      <p>JS-инструмент для преобразования Word-документов в интерактивные HTML-страницы. <em>(В память о Владимире Олеговиче).</em></p>
+      <p>JS-инструмент для преобразования Word-документов в интерактивные HTML-страницы.</p>
+      <p style="margin-top: 5px; font-style: italic; color: var(--fg);">(В память о Владимире Олеговиче).</p>
       <div class="tech">JavaScript · HTML5 File API · CSS3 · Mammoth.js</div>
-      <a href="constructor.html" class="badge" style="text-decoration: none;">Открыть конструктор</a>
+      <a href="constructor.html" class="badge" style="text-decoration: none; display: inline-block; margin-top: 15px; color: var(--accent);">Открыть конструктор</a>
       <br>
       <a href="report-constructor.docx" download class="report-link purple">📥 Скачать отчет о разработке</a>
     </div>
