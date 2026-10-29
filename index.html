@@ -7,18 +7,18 @@
 <style>
   :root {
     --bg: #f4f4f6; --fg: #1a1a2e; 
-    --card: rgba(255, 255, 255, 0.12); /* Очень прозрачная карточка */
-    --border: rgba(208, 215, 222, 0.4); /* Полупрозрачная рамка */
+    --card: rgba(255, 255, 255, 0.12);
+    --border: rgba(208, 215, 222, 0.4);
     --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; 
-    --tag: rgba(234, 240, 248, 0.15);   /* Очень прозрачный бейдж */
+    --tag: rgba(234, 240, 248, 0.15);
     --bg-overlay: rgba(244, 244, 246, 0.8); 
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
-    --card: rgba(42, 42, 42, 0.15);  /* Очень прозрачная карточка */
-    --border: rgba(58, 58, 58, 0.4); /* Полупрозрачная рамка */
+    --card: rgba(42, 42, 42, 0.15);
+    --border: rgba(58, 58, 58, 0.4);
     --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; 
-    --tag: rgba(42, 58, 74, 0.15);    /* Очень прозрачный бейдж */
+    --tag: rgba(42, 58, 74, 0.15);
     --bg-overlay: rgba(26, 26, 26, 0.85);
   }
   * { box-sizing: border-box; }
@@ -68,12 +68,11 @@
     word-wrap: break-word;
   }
   
-  /* При наведении карточка становится чуть плотнее, но не глухой */
   .card:hover { 
     transform: translateY(-3px); 
     border-color: var(--accent); 
     box-shadow: 0 6px 20px rgba(0,0,0,.15); 
-    background: rgba(255, 255, 255, 0.35); /* Слегка плотнее */
+    background: rgba(255, 255, 255, 0.35);
   }
   [data-theme="dark"] .card:hover {
     background: rgba(42, 42, 42, 0.45);
@@ -94,6 +93,16 @@
   .card .tech { margin-top: 10px; font-size: 12px; color: var(--muted); font-family: "Consolas", "Courier New", monospace; line-height: 1.5; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
   [data-theme="dark"] .card .tech { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
   
+  /* Стили для кнопок скачивания отчетов */
+  .report-link {
+    display: inline-block; margin-top: 15px; font-size: 12px; font-weight: bold;
+    text-decoration: none; color: #fff !important; background: #2e7d32;
+    padding: 6px 12px; border-radius: 6px; transition: background 0.2s;
+  }
+  .report-link:hover { background: #1b5e20; }
+  .report-link.purple { background: #8e44ad; }
+  .report-link.purple:hover { background: #6a1b9a; }
+
   footer { max-width: 1200px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
   
   @media (max-width: 600px) {
@@ -112,7 +121,7 @@
   <div class="grid">
 
     <!-- Лаба 1 -->
-    <a class="card" href="labs1-Base-Legacy_%28VLAN+Trunk+EtherChannel+LACP+PAgP+RapidPVST+OSPF+HSRP+NAT+DHCP%29.html">
+    <a class="card" href="lab1-report.doc" download>
       <div class="icon">1️⃣</div>
       <h2>Лаба 1 — Base Legacy</h2>
       <p>Классическая корпоративная сеть: базовая сборка с нуля.</p>
@@ -121,7 +130,7 @@
     </a>
 
     <!-- Лаба 2 -->
-    <a class="card" href="labs2-Advanced_Enterprise_%28VLAN+EtherChannel+MSTP+OSPF+EIGRP+Redistribution+BGP+HSRP+NAT+DHCP+NTP+DHCP-Snooping+Port-Security+WLC+AP%29.html">
+    <a class="card" href="lab2-report.docx" download>
       <div class="icon">2️⃣</div>
       <h2>Лаба 2 — Advanced Enterprise</h2>
       <p>Всё из Лабы 1 + BGP, EIGRP, Redistribution, MSTP, NTP, DHCP Snooping, Port-Security, WLC/AP.</p>
@@ -130,22 +139,24 @@
     </a>
 
     <!-- Лаба 3 -->
-    <a class="card" href="labs3-IPv6_Enterprise-Secure_WAN_%28GRE+IPsec+SLAAC+DHCPv6+OSPFv3+HSRPv6%29.html">
+    <div class="card" style="opacity: 0.7; cursor: default;">
       <div class="icon">3️⃣</div>
       <h2>Лаба 3 — IPv6 Enterprise / Secure WAN</h2>
       <p>Две подглавы: 3A — Secure WAN (IPsec + GRE), 3B — IPv6 Enterprise (SLAAC, DHCPv6, OSPFv3, HSRPv6).</p>
       <div class="tech">GRE · IPsec · SLAAC · DHCPv6 · OSPFv3 · HSRPv6</div>
-      <span class="badge">CCNP ENARSI / ENCOR</span>
-    </a>
+      <span class="badge" style="background: #555; color: #fff; border: none;">В разработке</span>
+    </div>
 
     <!-- Справочник -->
-    <a class="card" href="cisco-reference.html">
+    <div class="card">
       <div class="icon">📘</div>
       <h2>Справочник</h2>
       <p>Полный конспект Cisco IOS: теория IP, коммутация, маршрутизация, безопасность, NAT, мониторинг, добивка CCNA.</p>
       <div class="tech">Части 0–VIII · CCNA ~95% · CCNP ~50–55%</div>
-      <span class="badge">Конспект</span>
-    </a>
+      <a href="cisco-reference.html" class="badge" style="text-decoration: none;">Открыть справочник</a>
+      <br>
+      <a href="report-reference.docx" download class="report-link">📥 Скачать отчет о разработке</a>
+    </div>
 
     <!-- Статическая маршрутизация -->
     <a class="card" href="cisco-static-routing.html">
@@ -175,13 +186,15 @@
     </a>
 
     <!-- Конструктор -->
-    <a class="card" href="constructor.html">
+    <div class="card">
       <div class="icon">⚙️</div>
       <h2>Конструктор справочников</h2>
       <p>JS-инструмент для преобразования Word-документов в интерактивные HTML-страницы. <em>(В память о Владимире Олеговиче).</em></p>
       <div class="tech">JavaScript · HTML5 File API · CSS3 · Mammoth.js</div>
-      <span class="badge">Инструмент</span>
-    </a>
+      <a href="constructor.html" class="badge" style="text-decoration: none;">Открыть конструктор</a>
+      <br>
+      <a href="report-constructor.docx" download class="report-link purple">📥 Скачать отчет о разработке</a>
+    </div>
 
   </div>
 </main>
