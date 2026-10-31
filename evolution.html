@@ -117,7 +117,31 @@ interface f0/10
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простой сегментации к защите канального уровня.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простой сегментации к защите канального уровня.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной работе мы создаём VLAN 100 (Users) и настраиваем trunk-порт между свитчами. Задача — изолировать broadcast-домены и передавать трафик нескольких VLAN по одному кабелю.</p>
+            <ol>
+                <li>Создаём VLAN: <code>vlan 100</code>, <code>name Users</code>.</li>
+                <li>Настраиваем access-порт для клиента: <code>switchport mode access</code>, <code>switchport access vlan 100</code>.</li>
+                <li>Настраиваем trunk между свитчами: <code>switchport mode trunk</code>, <code>switchport trunk allowed vlan 1,100,102-108</code>.</li>
+                <li>Проверяем: <code>show vlan brief</code> (все VLAN на месте), <code>show interfaces trunk</code> (порт в режиме trunk, разрешённые VLAN).</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li>Повторяем настройку VLAN и trunk (как в Base).</li>
+                <li>Включаем DHCP Snooping: <code>ip dhcp snooping</code>, <code>ip dhcp snooping vlan 1,108</code>.</li>
+                <li>Настраиваем Port Security на порту клиента (f0/10): <code>switchport port-security</code>, <code>maximum 1</code>, <code>mac-address sticky</code>.</li>
+                <li>Проверяем: <code>show ip dhcp snooping</code>, <code>show port-security interface f0/10</code>.</li>
+            </ol>
+        </div>
     </div>
 
     <!-- 2. EtherChannel LACP (с ответной частью) -->
@@ -197,7 +221,33 @@ interface port-channel 3
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простой агрегации к отказоустойчивости и балансировке. Показана ответная часть.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простой агрегации к отказоустойчивости и балансировке. Показана ответная часть.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной мы объединяем 9 физических линков между SW1 и SW11 в один логический канал (Po1) с помощью LACP. Одна сторона активна (SW1), другая пассивна (SW11). Это даёт до 900 Мбит/с и резервирование.</p>
+            <ol>
+                <li><strong>Готовим порты:</strong> на SW1 выбираем <code>f0/2, f0/4, f0/6, f0/8-13</code>, на SW11 — <code>f0/1, f0/6-13</code>.</li>
+                <li><strong>Собираем канал:</strong> на SW1 — <code>channel-group 1 mode active</code>, на SW11 — <code>channel-group 1 mode passive</code>.</li>
+                <li><strong>Настраиваем trunk:</strong> <code>switchport trunk encapsulation dot1q</code>, <code>switchport mode trunk</code>.</li>
+                <li><strong>Фиксируем скорость:</strong> <code>speed 100</code>, <code>duplex full</code> (обязательно в PT 6.2, иначе канал не соберётся).</li>
+                <li><strong>Проверяем:</strong> <code>show etherchannel summary</code> — статус <code>SU</code>, порты в скобках <code>(P)</code>.</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li>Повторяем настройку для SW1 ↔ SW11 (как в Base) и добавляем второй канал SW2 ↔ SW22 (Po3).</li>
+                <li>На SW2 и SW22 используем <code>mode active</code> (обе стороны активны).</li>
+                <li>Создаём port-channel интерфейсы: <code>interface port-channel 1</code> и <code>interface port-channel 3</code>, настраиваем trunk.</li>
+                <li>Добавляем балансировку: <code>port-channel load-balance src-dst-mac</code>.</li>
+                <li>Проверяем: <code>show etherchannel summary</code> (оба канала <code>SU</code>), <code>show etherchannel load-balance</code>.</li>
+            </ol>
+        </div>
     </div>
 
     <!-- 3. EtherChannel PAgP (с ответной частью) -->
@@ -247,15 +297,45 @@ interface range f0/3-5
  speed 100
  duplex full
 interface Port-channel 2
- switchport mode trunk</pre>
+ switchport mode trunk
+
+! Порт-заглушка на SW00 для активации SVI Vlan108
+interface f0/10
+ switchport mode access
+ switchport access vlan 108</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простой агрегации к интеграции с SVI и DHCP.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простой агрегации к интеграции с SVI и DHCP.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной мы агрегируем 4 порта между SW0 (L2-свитч) и SW00 (L3-свитч) с помощью PAgP (проприетарный протокол Cisco). Одна сторона в режиме <code>desirable</code> (SW00), другая — <code>auto</code> (SW0).</p>
+            <ol>
+                <li><strong>Выбираем порты:</strong> на SW00 — <code>f0/2-5</code>, на SW0 — <code>f0/3-5</code>.</li>
+                <li><strong>Собираем канал:</strong> на SW00 — <code>channel-group 2 mode desirable</code>, на SW0 — <code>channel-group 2 mode auto</code>.</li>
+                <li><strong>Настраиваем trunk:</strong> <code>switchport trunk encapsulation dot1q</code>, <code>switchport mode trunk</code>.</li>
+                <li><strong>Фиксируем скорость:</strong> <code>speed 100</code>, <code>duplex full</code>.</li>
+                <li><strong>Проверяем:</strong> <code>show etherchannel summary</code> — статус <code>SU</code>, порты <code>(P)</code>.</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li>Повторяем настройку (как в Base).</li>
+                <li>Создаём port-channel интерфейсы: <code>interface Port-channel 2</code> на SW00 и SW0, настраиваем trunk.</li>
+                <li>Добавляем <strong>порт-заглушку</strong> на SW00: <code>interface f0/10</code>, <code>switchport mode access</code>, <code>switchport access vlan 108</code>. Это нужно, чтобы SVI Vlan108 «поднялся» (баг PT 6.2: интерфейс не активируется без активного порта в VLAN).</li>
+                <li>Проверяем: <code>show etherchannel summary</code> (SU), <code>show ip interface brief</code> (Vlan108 up/up), <code>show ip dhcp binding</code> (адреса выдаются).</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 4. STP -->
+    <!-- 4. STP (Защита от петель) -->
     <div class="compare-card">
         <h2>4. STP (Защита от петель)</h2>
         <div class="layer">
@@ -272,17 +352,44 @@ spanning-tree vlan 1,100,102-107 priority 24576</pre>
                 <h3>🔸 Advanced Enterprise</h3>
                 <p>Балансировка нагрузки (разные корни для разных VLAN).</p>
                 <div class="code-wrap">
-                    <pre>spanning-tree mode rapid-pvst
+                    <pre>! SW1
+spanning-tree mode rapid-pvst
 spanning-tree vlan 1,100,102,104 root primary
+
+! SW2
+spanning-tree mode rapid-pvst
 spanning-tree vlan 1,105,106,107,108 root primary</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простой защиты к оптимизации трафика.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простой защиты к оптимизации трафика.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной мы включаем Rapid-PVST+ и назначаем SW1 корневым мостом (Root Bridge) для всех VLAN. Это защищает от петель: избыточные порты (например, Fa0/4, Fa0/5 на SW22) блокируются и работают как «спящий резерв».</p>
+            <ol>
+                <li><strong>Включаем Rapid-PVST+ на всех свитчах:</strong> <code>spanning-tree mode rapid-pvst</code>.</li>
+                <li><strong>Назначаем корневой мост:</strong> на SW1 — <code>spanning-tree vlan 1,100,102-107 priority 24576</code> (наименьший приоритет = корень).</li>
+                <li><strong>Проверяем:</strong> <code>show spanning-tree vlan 1</code> на SW1 — «This bridge is the root». На SW22 порты Fa0/4, Fa0/5 — <code>Altn BLK</code> (оранжевые).</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li>Включаем Rapid-PVST+ на всех свитчах.</li>
+                <li><strong>Балансировка нагрузки:</strong> на SW1 — <code>spanning-tree vlan 1,100,102,104 root primary</code> (SW1 — корень для этих VLAN).</li>
+                <li>На SW2 — <code>spanning-tree vlan 1,105,106,107,108 root primary</code> (SW2 — корень для остальных VLAN).</li>
+                <li><strong>Проверяем:</strong> <code>show spanning-tree vlan 1</code> на SW1 — «This bridge is the root» для VLAN 1,100,102,104. На SW2 — для VLAN 105-108. Трафик распределяется между двумя корнями.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 5. OSPF (с ответной частью) -->
+    <!-- 5. OSPF (Маршрутизация) -->
     <div class="compare-card">
         <h2>5. OSPF (Маршрутизация)</h2>
         <div class="layer">
@@ -319,10 +426,35 @@ router eigrp 100
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от плоской сети к иерархической маршрутизации с ответной частью.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от плоской сети к иерархической маршрутизации с ответной частью.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной мы настраиваем OSPF в одной зоне (Area 0) на всех L3-устройствах: R1, R2, SW1, SW2, SW11, SW00. Задача — связать все VLAN в единую сеть и обеспечить динамическую маршрутизацию.</p>
+            <ol>
+                <li><strong>Запускаем процесс OSPF:</strong> <code>router ospf 1111</code> (номер процесса может быть любым, главное — одинаковым на всех устройствах).</li>
+                <li><strong>Анонсируем сети:</strong> <code>network 192.168.4.0 0.0.0.255 area 0</code>, <code>network 192.168.1.0 0.0.0.255 area 0</code> и т.д.</li>
+                <li><strong>Включаем аутентификацию:</strong> <code>area 0 authentication</code>, на интерфейсах — <code>ip ospf authentication-key gro1ch21</code>.</li>
+                <li><strong>Проверяем:</strong> <code>show ip ospf neighbor</code> (все соседи в статусе <code>FULL</code>), <code>show ip route ospf</code> (маршруты с меткой <code>O</code>).</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Разбиваем сеть на зоны:</strong> Area 0 (ядро), Area 1 (SW11), Area 2 (SW22).</li>
+                <li><strong>Настраиваем ABR на SW1:</strong> <code>router ospf 1111</code>, <code>network 192.168.1.0 0.0.0.255 area 0</code>, <code>network 192.168.2.0 0.0.0.15 area 0</code>, <code>network 192.168.4.0 0.0.0.255 area 0</code>, <code>network 192.168.5.0 0.0.0.255 area 1</code>.</li>
+                <li><strong>Настраиваем ABR на SW2:</strong> <code>router ospf 1222</code>, <code>network 192.168.1.0 0.0.0.255 area 0</code>, <code>network 192.168.7.0 0.0.0.255 area 2</code>, <code>network 192.168.8.0 0.0.0.255 area 2</code>.</li>
+                <li><strong>Добавляем Redistribution на SW2:</strong> <code>redistribute eigrp 100 subnets</code> (OSPF получает маршруты из EIGRP), <code>redistribute ospf 1222 metric 10000 100 255 1 1500</code> (EIGRP получает маршруты из OSPF).</li>
+                <li><strong>Проверяем:</strong> <code>show ip ospf neighbor</code> (соседи <code>FULL</code> в каждой зоне), <code>show ip route</code> (метки <code>O</code>, <code>O IA</code>, <code>O E2</code>, <code>D</code>).</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 6. HSRP (с ответной частью) -->
+    <!-- 6. HSRP (Резервирование шлюза) -->
     <div class="compare-card">
         <h2>6. HSRP (Резервирование шлюза)</h2>
         <div class="layer">
@@ -363,10 +495,34 @@ interface f0/0
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простого резервирования к обходу ограничений симулятора.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простого резервирования к обходу ограничений симулятора.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной мы настраиваем HSRP (Hot Standby Router Protocol) на двух граничных роутерах (R1 и R2), чтобы клиенты использовали один виртуальный IP-шлюз <code>192.168.1.2</code>. Если R1 падает, R2 мгновенно перехватывает IP, и клиенты не замечают обрыва.</p>
+            <ol>
+                <li><strong>Настраиваем R1 (Active):</strong> <code>interface f0/0</code>, <code>standby 1 ip 192.168.1.2</code>, <code>standby 1 priority 150</code> (больший приоритет = Active), <code>standby 1 preempt</code> (возвращает роль Active после восстановления).</li>
+                <li><strong>Настраиваем R2 (Standby):</strong> <code>interface f0/0</code>, <code>standby 1 ip 192.168.1.2</code>, <code>standby 1 priority 100</code> (меньший приоритет = Standby), <code>standby 1 preempt</code>.</li>
+                <li><strong>Проверяем:</strong> <code>show standby brief</code> на R1 — <code>Active</code>, на R2 — <code>Standby</code>.</li>
+                <li><strong>Практический тест:</strong> на R1 выполняем <code>shutdown</code> на f0/0. На R2 статус меняется на <code>Active</code>. С ПК <code>ping 192.168.1.2</code> идёт без потерь. Возвращаем R1: <code>no shutdown</code>.</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li>Повторяем настройку HSRP (как в Base).</li>
+                <li><strong>Обход бага PT 6.2:</strong> в симуляторе транзитный SW1 не может отправить пакет на виртуальный MAC HSRP. Решение — прописать на SW1 прямой статический маршрут на физический IP R1: <code>ip route 0.0.0.0 0.0.0.0 192.168.1.5</code>.</li>
+                <li><strong>Проверяем:</strong> <code>show standby brief</code> (R1 Active, R2 Standby), <code>show ip route</code> на SW1 (маршрут через 192.168.1.5).</li>
+                <li><strong>Тест Failover:</strong> снова <code>shutdown</code> на R1, проверяем, что R2 становится Active, пинг не прерывается.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 7. BGP -->
+    <!-- 7. BGP (Стык с провайдером) -->
     <div class="compare-card">
         <h2>7. BGP (Стык с провайдером)</h2>
         <div class="layer">
@@ -378,17 +534,50 @@ interface f0/0
                 <h3>🔸 Advanced Enterprise</h3>
                 <p>eBGP (AS 65002 ↔ AS 65001).</p>
                 <div class="code-wrap">
-                    <pre>router bgp 65002
+                    <pre>! Router1
+router bgp 65002
  neighbor 10.0.0.1 remote-as 65001
- network 192.168.1.0 mask 255.255.255.0</pre>
+ network 192.168.1.0 mask 255.255.255.0
+ network 192.168.2.0 mask 255.255.255.0
+ network 192.168.5.0 mask 255.255.255.0
+
+! Router2
+router bgp 65002
+ neighbor 10.0.1.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0
+
+! ISP
+router bgp 65001
+ neighbor 10.0.0.2 remote-as 65002
+ neighbor 10.0.1.2 remote-as 65002
+ network 8.8.8.8 mask 255.255.255.255</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простого NAT к реальному стыку с провайдером.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простого NAT к реальному стыку с провайдером.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной BGP отсутствует. Выход в интернет настроен через NAT: все внутренние клиенты выходят под одним внешним IP-адресом. Маршрут по умолчанию прописан статически (<code>ip route 0.0.0.0 0.0.0.0 ...</code>).</p>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Настраиваем ISP (провайдер):</strong> <code>router bgp 65001</code>, <code>neighbor 10.0.0.2 remote-as 65002</code> (R1), <code>neighbor 10.0.1.2 remote-as 65002</code> (R2). Анонсируем сеть <code>8.8.8.8</code> (эмуляция интернета).</li>
+                <li><strong>Настраиваем Router1:</strong> <code>router bgp 65002</code>, <code>neighbor 10.0.0.1 remote-as 65001</code>. Анонсируем внутренние сети: <code>192.168.1.0</code>, <code>192.168.2.0</code>, <code>192.168.5.0</code>.</li>
+                <li><strong>Настраиваем Router2:</strong> <code>router bgp 65002</code>, <code>neighbor 10.0.1.1 remote-as 65001</code>. Анонсируем <code>192.168.1.0</code>.</li>
+                <li><strong>Проверяем:</strong> <code>show ip bgp summary</code> на ISP, R1, R2 — сессии в статусе <code>Established</code>. На R1 в таблице маршрутизации появляется дефолтный маршрут <code>B* 0.0.0.0/0</code>.</li>
+                <li><strong>Практический тест:</strong> с ПК выполняем <code>ping 8.8.8.8</code> — пакеты проходят через NAT и BGP.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 8. IPv6 -->
+    <!-- 8. IPv6 и OSPFv3 -->
     <div class="compare-card">
         <h2>8. IPv6 и OSPFv3</h2>
         <div class="layer">
@@ -403,15 +592,37 @@ interface f0/0
                     <pre>ipv6 unicast-routing
 interface f0/0
  ipv6 address 2001:DB8:1::5/64
- ipv6 ospf 1 area 0</pre>
+ ipv6 ospf 1 area 0
+router ospfv3 1
+ router-id 1.1.1.1</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от IPv4-only к современному двухстековому решению.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от IPv4-only к современному двухстековому решению.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной IPv6 не настраивается. Вся сеть работает только на IPv4. Это классический подход для старых сетей, которые ещё не перешли на новый протокол.</p>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Включаем IPv6-маршрутизацию глобально:</strong> <code>ipv6 unicast-routing</code> на всех L3-устройствах (R1, R2, SW1, SW2, SW11, SW00).</li>
+                <li><strong>Назначаем IPv6-адреса на интерфейсы:</strong> <code>interface f0/0</code>, <code>ipv6 address 2001:DB8:1::5/64</code>. Аналогично на всех интерфейсах.</li>
+                <li><strong>Включаем OSPFv3:</strong> на интерфейсах — <code>ipv6 ospf 1 area 0</code> (в отличие от OSPFv2, здесь network-команды не используются, всё делается на интерфейсах).</li>
+                <li><strong>Запускаем процесс OSPFv3:</strong> <code>router ospfv3 1</code>, <code>router-id 1.1.1.1</code> (уникальный ID для каждого устройства).</li>
+                <li><strong>Проверяем:</strong> <code>show ospfv3 neighbor</code> (соседи в статусе <code>FULL</code>), <code>show ipv6 route ospf</code> (маршруты OSPFv3).</li>
+                <li><strong>Практический тест:</strong> с Router1 выполняем <code>ping ipv6 2001:DB8:1::254</code> (SW2) — пинг проходит.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 9. Безопасность L2 -->
+    <!-- 9. Безопасность L2 (Port Security + DHCP Snooping) -->
     <div class="compare-card">
         <h2>9. Безопасность L2 (Port Security + DHCP Snooping)</h2>
         <div class="layer">
@@ -435,10 +646,31 @@ interface f0/10
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от открытого доступа к защите от атак на канальном уровне.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от открытого доступа к защите от атак на канальном уровне.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной безопасности L2 нет. Свитчи работают в режиме «открытого доступа»: любой, кто подключится к порту, получает доступ к сети. DHCP-серверы (SW11, SW00) выдают адреса всем, кто попросит, без проверки, не подменён ли сервер злоумышленником.</p>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Включаем DHCP Snooping глобально:</strong> на SW0 — <code>ip dhcp snooping</code>.</li>
+                <li><strong>Указываем VLAN:</strong> <code>ip dhcp snooping vlan 1,108</code> — защищаем трафик в этих VLAN.</li>
+                <li><strong>Отключаем опцию 82:</strong> <code>no ip dhcp snooping information option</code> — убираем вставку служебных данных (часто ломает работу в лабах PT).</li>
+                <li><strong>Настраиваем доверенные порты:</strong> на транк-порту (Po2) вводим <code>ip dhcp snooping trust</code> — это порт к реальному DHCP-серверу (SW00). DHCP-ответы с других портов будут дропаться.</li>
+                <li><strong>Включаем Port Security на порту клиента (f0/10):</strong> <code>switchport port-security</code>, <code>maximum 1</code>, <code>mac-address sticky</code>, <code>violation shutdown</code>.</li>
+                <li><strong>Проверяем:</strong> <code>show ip dhcp snooping</code> (доверенные порты), <code>show port-security interface f0/10</code> (Secure-up), <code>show ip dhcp snooping binding</code> (MAC-адреса).</li>
+                <li><strong>Практический тест:</strong> меняем MAC на ПК, делаем <code>ping</code> — порт уходит в <code>err-disabled</code>. Возвращаем: <code>shutdown</code> / <code>no shutdown</code>.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 10. DHCP -->
+    <!-- 10. DHCP (Автоматизация) -->
     <div class="compare-card">
         <h2>10. DHCP (Автоматизация)</h2>
         <div class="layer">
@@ -446,9 +678,18 @@ interface f0/10
                 <h3>🔹 Base Legacy</h3>
                 <p>Пулы для VLAN 105, 106, 108. DHCP-сервер на SW11 и SW00.</p>
                 <div class="code-wrap">
-                    <pre>ip dhcp pool vlan105
+                    <pre>! SW11
+ip dhcp pool vlan105
  network 192.168.5.0 255.255.255.0
- default-router 192.168.5.254</pre>
+ default-router 192.168.5.254
+ip dhcp pool vlan106
+ network 192.168.6.0 255.255.255.0
+ default-router 192.168.6.254
+
+! SW00
+ip dhcp pool vlan108
+ network 192.168.8.0 255.255.255.0
+ default-router 192.168.8.254</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
@@ -458,15 +699,49 @@ interface f0/10
                 <div class="code-wrap">
                     <pre>ip dhcp snooping
 ip dhcp snooping vlan 1,108
-no ip dhcp snooping information option</pre>
+no ip dhcp snooping information option
+
+! Доверенный порт (транк к SW00)
+interface Port-channel 2
+ ip dhcp snooping trust
+
+! Пул на SW00
+ip dhcp pool vlan108
+ network 192.168.8.0 255.255.255.0
+ default-router 192.168.8.254</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простой выдачи адресов к защите DHCP-сервиса.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простой выдачи адресов к защите DHCP-сервиса.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной мы настраиваем DHCP-серверы на L3-свитчах, чтобы клиенты автоматически получали IP-адреса, шлюз и DNS. Это избавляет от ручной настройки каждого ПК.</p>
+            <ol>
+                <li><strong>Создаём пул на SW11 для VLAN 105:</strong> <code>ip dhcp pool vlan105</code>, <code>network 192.168.5.0 255.255.255.0</code>, <code>default-router 192.168.5.254</code>.</li>
+                <li><strong>Создаём пул для VLAN 106:</strong> <code>ip dhcp pool vlan106</code>, <code>network 192.168.6.0 255.255.255.0</code>, <code>default-router 192.168.6.254</code>.</li>
+                <li><strong>Создаём пул на SW00 для VLAN 108:</strong> <code>ip dhcp pool vlan108</code>, <code>network 192.168.8.0 255.255.255.0</code>, <code>default-router 192.168.8.254</code>.</li>
+                <li><strong>Проверяем:</strong> на ПК в IP Configuration нажимаем «DHCP», получаем адрес. На свитче — <code>show ip dhcp binding</code> (видим выданные адреса).</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li>Повторяем настройку пулов (как в Base).</li>
+                <li><strong>Включаем DHCP Snooping на SW0:</strong> <code>ip dhcp snooping</code>, <code>ip dhcp snooping vlan 1,108</code>, <code>no ip dhcp snooping information option</code>.</li>
+                <li><strong>Настраиваем доверенный порт:</strong> на транке (Po2) — <code>ip dhcp snooping trust</code>. Это порт к реальному DHCP-серверу (SW00).</li>
+                <li><strong>Проверяем:</strong> <code>show ip dhcp snooping</code> (Po2 — trust), <code>show ip dhcp snooping binding</code> (MAC-адреса клиентов).</li>
+                <li><strong>Практический тест:</strong> если подключить «левый» DHCP-сервер, его ответы будут дропаться.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 11. NAT -->
+    <!-- 11. NAT/PAT (Выход в интернет) -->
     <div class="compare-card">
         <h2>11. NAT/PAT (Выход в интернет)</h2>
         <div class="layer">
@@ -474,7 +749,21 @@ no ip dhcp snooping information option</pre>
                 <h3>🔹 Base Legacy</h3>
                 <p>NAT Overload на R1 и R2.</p>
                 <div class="code-wrap">
-                    <pre>ip access-list extended NAT
+                    <pre>! R1 (NAT)
+interface f0/0
+ ip nat inside
+interface f0/1
+ ip nat outside
+ip access-list extended NAT
+ permit ip 192.168.0.0 0.0.0.255 any
+ip nat inside source list NAT interface f0/1 overload
+
+! R2 (NAT)
+interface f0/0
+ ip nat inside
+interface f0/1
+ ip nat outside
+ip access-list extended NAT
  permit ip 192.168.0.0 0.0.0.255 any
 ip nat inside source list NAT interface f0/1 overload</pre>
                     <button class="copy-btn">Копировать</button>
@@ -482,7 +771,7 @@ ip nat inside source list NAT interface f0/1 overload</pre>
             </div>
             <div class="side side-adv">
                 <h3>🔸 Advanced Enterprise</h3>
-                <p>То же самое, но в связке с BGP.</p>
+                <p>То же самое, но в связке с BGP (ACL расширен).</p>
                 <div class="code-wrap">
                     <pre>ip access-list extended NAT
  permit ip 192.168.0.0 0.0.255.255 any
@@ -491,7 +780,31 @@ ip nat inside source list NAT interface FastEthernet0/1 overload</pre>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простого NAT к интеграции с BGP.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простого NAT к интеграции с BGP.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной мы настраиваем NAT/PAT на граничных роутерах R1 и R2, чтобы все внутренние клиенты выходили в интернет под одним внешним IP-адресом (30.30.30.31/32).</p>
+            <ol>
+                <li><strong>Помечаем интерфейсы:</strong> на R1 и R2 — <code>ip nat inside</code> на внутреннем интерфейсе (f0/0), <code>ip nat outside</code> на внешнем (f0/1).</li>
+                <li><strong>Создаём ACL для NAT:</strong> <code>ip access-list extended NAT</code>, <code>permit ip 192.168.0.0 0.0.0.255 any</code> (разрешаем трансляцию всех внутренних сетей).</li>
+                <li><strong>Включаем PAT (Overload):</strong> <code>ip nat inside source list NAT interface f0/1 overload</code>.</li>
+                <li><strong>Проверяем:</strong> с ПК — <code>ping 30.30.30.30</code> (эмуляция интернета). На R1 — <code>show ip nat translations</code> (видим записи с внутренним и внешним IP).</li>
+            </ol>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li>Повторяем настройку (как в Base).</li>
+                <li><strong>Расширяем ACL:</strong> в продвинутой лабе внутренние сети могут быть <code>192.168.0.0/16</code>, поэтому ACL меняется на <code>permit ip 192.168.0.0 0.0.255.255 any</code>.</li>
+                <li><strong>Интеграция с BGP:</strong> NAT работает в связке с BGP. Внешний IP (10.0.0.2) анонсируется в BGP, а внутренние сети скрыты за NAT.</li>
+                <li><strong>Проверяем:</strong> <code>show ip nat translations</code> (записи icmp), <code>show ip bgp summary</code> (Established).</li>
+            </ol>
+        </div>
     </div>
 
     <!-- 12. EIGRP + Redistribution -->
@@ -506,16 +819,46 @@ ip nat inside source list NAT interface FastEthernet0/1 overload</pre>
                 <h3>🔸 Advanced Enterprise</h3>
                 <p>EIGRP + перераспределение (OSPF ↔ EIGRP).</p>
                 <div class="code-wrap">
-                    <pre>router eigrp 100
+                    <pre>! Router2 (EIGRP)
+router eigrp 100
  network 192.168.1.0
- redistribute ospf 1222 metric 10000 100 255 1 1500
+ no auto-summary
+
+! Switch2 (Redistribution)
 router ospf 1222
- redistribute eigrp 100 subnets</pre>
+ redistribute eigrp 100 subnets
+router eigrp 100
+ network 192.168.1.0
+ redistribute ospf 1222 metric 10000 100 255 1 1500</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от одной протокольной среды к мультипротокольной.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от одной протокольной среды к мультипротокольной.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной EIGRP не используется. Вся маршрутизация построена на OSPF (одна зона). Это простая и понятная схема, но она не подходит для сетей, где уже есть EIGRP (например, после слияния компаний).</p>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Настраиваем EIGRP на Router2:</strong> <code>router eigrp 100</code>, <code>network 192.168.1.0</code>, <code>no auto-summary</code> (отключаем автосуммаризацию на границе класса).</li>
+                <li><strong>Настраиваем EIGRP на Switch2:</strong> <code>router eigrp 100</code>, <code>network 192.168.1.0</code> (связь с R2).</li>
+                <li><strong>Включаем Redistribution на Switch2:</strong> 
+                    <ul>
+                        <li>В OSPF: <code>redistribute eigrp 100 subnets</code> — маршруты из EIGRP попадают в OSPF.</li>
+                        <li>В EIGRP: <code>redistribute ospf 1222 metric 10000 100 255 1 1500</code> — маршруты из OSPF попадают в EIGRP (нужно указать метрику: bandwidth, delay, reliability, load, MTU).</li>
+                    </ul>
+                </li>
+                <li><strong>Проверяем:</strong> <code>show ip route</code> — на SW2 появляются маршруты с метками <code>D</code> (EIGRP) и <code>O E2</code> (внешние OSPF). На SW1 — маршруты <code>O E2</code> (перераспределённые из EIGRP).</li>
+                <li><strong>Практический тест:</strong> с ПК в сети 1.0 <code>ping</code> до сети, которая находится за EIGRP (например, 192.168.8.1) — пакеты проходят через перераспределение.</li>
+            </ol>
+        </div>
     </div>
 
     <!-- 13. MSTP -->
@@ -542,10 +885,29 @@ spanning-tree mst 2 root secondary</pre>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от простого PVST+ к MSTP для больших сетей.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от простого PVST+ к MSTP для больших сетей.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной используется Rapid-PVST+ (каждый VLAN = отдельный экземпляр STP). Это работает, но при большом количестве VLAN (10+) нагрузка на CPU свитчей растёт: каждый VLAN держит своё дерево.</p>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Включаем MSTP:</strong> <code>spanning-tree mode mst</code> на всех свитчах.</li>
+                <li><strong>Создаём регион MSTP:</strong> <code>spanning-tree mst configuration</code>, <code>name LAB</code> (имя региона), <code>revision 1</code> (версия).</li>
+                <li><strong>Группируем VLAN в инстансы:</strong> <code>instance 1 vlan 100,102,104</code> (группа 1), <code>instance 2 vlan 105,106,107,108</code> (группа 2). Теперь вместо 10 деревьев у нас 2.</li>
+                <li><strong>Назначаем корневые мосты:</strong> на SW1 — <code>spanning-tree mst 1 root primary</code> (SW1 — корень для instance 1), <code>spanning-tree mst 2 root secondary</code> (SW1 — резерв для instance 2). На SW2 — наоборот.</li>
+                <li><strong>Проверяем:</strong> <code>show spanning-tree mst 1</code> — «This bridge is the root» на SW1. <code>show spanning-tree mst 2</code> — «This bridge is the root» на SW2.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 14. NTP -->
+    <!-- 14. NTP (Синхронизация времени) -->
     <div class="compare-card">
         <h2>14. NTP (Синхронизация времени)</h2>
         <div class="layer">
@@ -557,17 +919,39 @@ spanning-tree mst 2 root secondary</pre>
                 <h3>🔸 Advanced Enterprise</h3>
                 <p>NTP для логов и сертификатов (в планах/теории).</p>
                 <div class="code-wrap">
-                    <pre>clock timezone MSK 3 0
+                    <pre>! Настройка NTP-сервера (на R1)
+clock timezone MSK 3 0
 ntp master 1
-ntp server 192.168.1.230</pre>
+
+! Настройка NTP-клиента (на SW1)
+clock timezone MSK 3 0
+ntp server 192.168.1.5</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от отсутствия синхронизации к точным логам.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от отсутствия синхронизации к точным логам.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной NTP не настраивается. Время на устройствах не синхронизировано. Это не критично для лабы, но в реальной сети приводит к проблемам: логи с разных устройств невозможно сопоставить (разное время), сертификаты могут не работать (если время сильно расходится).</p>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Настраиваем R1 как NTP-сервер:</strong> <code>clock timezone MSK 3 0</code> (часовой пояс Москва), <code>ntp master 1</code> (R1 становится источником времени).</li>
+                <li><strong>Настраиваем SW1 как NTP-клиента:</strong> <code>clock timezone MSK 3 0</code>, <code>ntp server 192.168.1.5</code> (синхронизация с R1).</li>
+                <li><strong>Проверяем:</strong> <code>show ntp status</code> (синхронизация), <code>show clock</code> (текущее время на устройстве).</li>
+                <li><strong>Практический тест:</strong> сравните время на R1 и SW1 — они должны совпадать с точностью до секунды.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 15. WLC/AP -->
+    <!-- 15. WLC/AP (Беспроводной сегмент) -->
     <div class="compare-card">
         <h2>15. WLC/AP (Беспроводной сегмент)</h2>
         <div class="layer">
@@ -581,28 +965,84 @@ ntp server 192.168.1.230</pre>
                 <div class="code-wrap">
                     <pre>! Конфигурация WLC и AP (в разработке)
 ! Пример: настройка SSID и WPA2
-! (будет добавлено в следующих лабах)</pre>
+! (будет добавлено в следующих лабах)
+
+! На WLC:
+! Создание SSID: Corp-WiFi
+! Security: WPA2-PSK (AES)
+! VLAN: 104 (для клиентов)
+! Interface: management
+
+! На AP:
+! Подключение к WLC (CAPWAP)
+! Радиоинтерфейс: 2.4 GHz / 5 GHz
+! SSID: Corp-WiFi</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
         </div>
-        <div class="evolution-note">📌 Эволюция: от проводной сети к беспроводному сегменту.</div>
+        <div class="evolution-note">
+            📌 Эволюция: от проводной сети к беспроводному сегменту.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
+            
+            <p><strong>Base Legacy:</strong></p>
+            <p>В базовой лабораторной беспроводного сегмента нет. Вся сеть проводная. Это классическая корпоративная сеть, где клиенты подключаются через Ethernet-кабели.</p>
+            
+            <p><strong>Advanced Enterprise (пошагово):</strong></p>
+            <ol>
+                <li><strong>Добавляем WLC (Wireless LAN Controller):</strong> в Packet Tracer добавляем устройство WLC (например, 2504 или 3504).</li>
+                <li><strong>Подключаем WLC к сети:</strong> соединяем WLC с SW1 (или SW2) через trunk-порт (management VLAN).</li>
+                <li><strong>Настраиваем WLC:</strong> задаём IP-адрес управления (например, 192.168.1.100), создаём SSID (Corp-WiFi), настраиваем WPA2-PSK (AES), привязываем к VLAN 104 (для клиентов).</li>
+                <li><strong>Добавляем AP (Access Point):</strong> подключаем AP к свитчу (например, SW11), настраиваем CAPWAP (протокол управления AP через WLC).</li>
+                <li><strong>Проверяем:</strong> на ПК с Wi-Fi-адаптером (TabletPC или Laptop) подключаемся к SSID Corp-WiFi, вводим пароль. На WLC — <code>show wlan summary</code> (SSID активен), <code>show ap summary</code> (AP подключён).</li>
+                <li><strong>Практический тест:</strong> с беспроводного клиента <code>ping</code> до проводного ПК — пакеты проходят через WLC и AP.</li>
+            </ol>
+        </div>
     </div>
 
-    <!-- 16. Итог -->
+    <!-- 16. Итог: что изменилось -->
     <div class="compare-card">
         <h2>16. Итог: что изменилось</h2>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
-                <p>Базовая сеть: VLAN, Trunk, EtherChannel, STP, OSPF (одна зона), HSRP, NAT, DHCP. Фокус — связность и отказоустойчивость.</p>
+                <p><strong>Базовая сеть:</strong> VLAN, Trunk, EtherChannel (LACP/PAgP), STP, OSPF (одна зона), HSRP, NAT, DHCP. Фокус — связность и отказоустойчивость.</p>
             </div>
             <div class="side side-adv">
                 <h3>🔸 Advanced Enterprise</h3>
-                <p>Добавлены BGP, Multi-Area OSPF, EIGRP + Redistribution, IPv6/OSPFv3, L2-безопасность, DHCP Snooping, Port Security. Фокус — масштабируемость и безопасность.</p>
+                <p><strong>Продвинутая сеть:</strong> добавлены BGP, Multi-Area OSPF, EIGRP + Redistribution, IPv6/OSPFv3, L2-безопасность, DHCP Snooping, Port Security. Фокус — масштабируемость и безопасность.</p>
             </div>
         </div>
-        <div class="evolution-note">📌 Итог: от базовой сети к корпоративной архитектуре с провайдером и безопасностью.</div>
+        <div class="evolution-note">
+            📌 Итог: от базовой сети к корпоративной архитектуре с провайдером и безопасностью.
+        </div>
+        
+        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
+        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Что именно изменилось и почему это важно</h3>
+            
+            <p><strong>1. От плоской сети к иерархической.</strong> В Base Legacy вся маршрутизация была в одной зоне OSPF (Area 0). В Advanced Enterprise появились зоны (Area 1, Area 2) и ABR (пограничные маршрутизаторы). Это снижает нагрузку на CPU и стабилизирует сеть: изменения в одной зоне не «трясут» другую.</p>
+            
+            <p><strong>2. От простого NAT к стыку с провайдером.</strong> В Base Legacy выход в интернет был через NAT (один внешний IP). В Advanced Enterprise добавлен eBGP: теперь сеть не просто «ходит в интернет», а полноценно обменивается маршрутами с провайдером. Это уровень корпоративной сети.</p>
+            
+            <p><strong>3. От одного протокола к мультипротокольной среде.</strong> В Base Legacy был только OSPF. В Advanced Enterprise добавлены EIGRP и Redistribution (перераспределение маршрутов между протоколами). Это нужно, когда сеть состоит из разных доменов (например, после слияния компаний).</p>
+            
+            <p><strong>4. От IPv4-only к двухстековой сети.</strong> В Base Legacy был только IPv4. В Advanced Enterprise добавлены IPv6 и OSPFv3. Это соответствует современным требованиям и готовит сеть к будущему.</p>
+            
+            <p><strong>5. От открытого доступа к безопасности L2.</strong> В Base Legacy не было защиты на канальном уровне. В Advanced Enterprise добавлены Port Security (защита от подключения чужих устройств) и DHCP Snooping (защита от «левых» DHCP-серверов).</p>
+            
+            <p><strong>6. От простого STP к балансировке нагрузки.</strong> В Base Legacy был один корневой мост (SW1). В Advanced Enterprise — два корня (SW1 и SW2 для разных VLAN). Это оптимизирует трафик и убирает «узкие места».</p>
+            
+            <p><strong>7. От простого DHCP к защищённому DHCP.</strong> В Base Legacy DHCP-серверы просто выдавали адреса. В Advanced Enterprise добавлен DHCP Snooping: если злоумышленник поднимет свой DHCP-сервер, его ответы будут блокироваться.</p>
+            
+            <p><strong>8. От статического резервирования к обходу багов PT.</strong> В Base Legacy HSRP работал «как есть». В Advanced Enterprise мы столкнулись с багом PT 6.2 (транзитный SW1 не мог отправить пакет на виртуальный MAC HSRP) и обошли его прямым статическим маршрутом. Это показывает умение решать нестандартные задачи.</p>
+            
+            <p><strong>Что это даёт для портфолио:</strong> Вы показали не просто «я умею настраивать OSPF». Вы показали <strong>инженерную зрелость</strong>: понимание, как масштабируется сеть, как добавляются новые протоколы, как решаются проблемы совместимости. Это именно то, что ищут работодатели на удалёнку.</p>
+        </div>
     </div>
 
 </div>
