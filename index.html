@@ -12,6 +12,8 @@
     --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; 
     --tag: rgba(234, 240, 248, 0.15);
     --bg-overlay: rgba(244, 244, 246, 0.8); 
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --glow: 0 0 20px rgba(127, 168, 212, 0.3);
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
@@ -20,6 +22,8 @@
     --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; 
     --tag: rgba(42, 58, 74, 0.15);
     --bg-overlay: rgba(26, 26, 26, 0.85);
+    --shadow: 0 4px 20px rgba(0,0,0,0.4);
+    --glow: 0 0 20px rgba(163, 196, 232, 0.15);
   }
   * { box-sizing: border-box; }
   
@@ -33,11 +37,12 @@
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
+    min-height: 100vh;
   }
   
   header {
     position: sticky; top: 0; z-index: 100; background: var(--card);
-    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border); padding: 14px 20px;
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
   }
@@ -50,8 +55,10 @@
   header button {
     padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px;
     background: var(--bg); color: var(--fg); cursor: pointer; font-size: 14px;
+    transition: all 0.2s;
   }
   header button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  header button:active { transform: scale(0.95); }
   
   main { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
@@ -59,24 +66,51 @@
   .card {
     display: block; text-decoration: none; color: inherit;
     background: var(--card); 
-    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
-    border: 1px solid var(--border); border-radius: 10px;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    border: 1px solid var(--border); border-radius: 12px;
     padding: 22px; 
-    transition: transform .15s, border-color .15s, box-shadow .15s, background 0.3s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s, border-color 0.2s;
     word-wrap: break-word;
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+    position: relative;
+    overflow: hidden;
   }
   
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.2s; }
+  .card:nth-child(5) { animation-delay: 0.25s; }
+  .card:nth-child(6) { animation-delay: 0.3s; }
+  .card:nth-child(7) { animation-delay: 0.35s; }
+  .card:nth-child(8) { animation-delay: 0.4s; }
+  .card:nth-child(9) { animation-delay: 0.45s; }
+  .card:nth-child(10) { animation-delay: 0.5s; }
+
   .card:hover { 
-    transform: translateY(-3px); 
+    transform: translateY(-4px); 
     border-color: var(--accent); 
-    box-shadow: 0 6px 20px rgba(0,0,0,.15); 
-    background: rgba(255, 255, 255, 0.35);
+    box-shadow: var(--shadow), var(--glow); 
+    background: rgba(255, 255, 255, 0.25);
   }
   [data-theme="dark"] .card:hover {
-    background: rgba(42, 42, 42, 0.45);
+    background: rgba(42, 42, 42, 0.35);
+  }
+
+  /* Эффект нажатия */
+  .card:active {
+    transform: scale(0.97) translateY(0);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: transform 0.05s, box-shadow 0.05s;
   }
   
-  .card .icon { font-size: 2em; margin-bottom: 8px; }
+  .card .icon { font-size: 2em; margin-bottom: 8px; display: block; }
   .card h2 { margin: 0 0 6px; font-size: 1.15em; color: var(--accent); text-shadow: 0 1px 3px rgba(255,255,255,0.8); }
   [data-theme="dark"] .card h2 { text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
   
@@ -91,16 +125,16 @@
   .card .tech { margin-top: 10px; font-size: 12px; color: var(--muted); font-family: "Consolas", "Courier New", monospace; line-height: 1.5; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
   [data-theme="dark"] .card .tech { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
-  /* Стили для кнопок */
   .report-link {
     display: inline-block; margin-top: 15px; font-size: 12px; font-weight: bold;
     text-decoration: none; color: #fff !important; background: #2e7d32;
-    padding: 6px 12px; border-radius: 6px; transition: background 0.2s;
+    padding: 6px 12px; border-radius: 6px; transition: background 0.2s, transform 0.1s;
   }
   .report-link:hover { background: #1b5e20; }
+  .report-link:active { transform: scale(0.95); }
   .report-link.purple { background: #8e44ad; }
   .report-link.purple:hover { background: #6a1b9a; }
-  
+
   footer { max-width: 1200px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
   
   @media (max-width: 600px) {
@@ -134,6 +168,15 @@
       <p>Всё из Лабы 1 + BGP, EIGRP, Redistribution, MSTP, NTP, DHCP Snooping, Port-Security, WLC/AP.</p>
       <div class="tech">VLAN · EtherChannel · MSTP · OSPF · EIGRP · Redistribution · BGP · HSRP · NAT · DHCP · NTP · DHCP-Snooping · Port-Security · WLC · AP</div>
       <span class="badge">CCNP (база)</span>
+    </a>
+
+    <!-- Эволюция конфигураций -->
+    <a class="card" href="evolution.html">
+      <div class="icon">📈</div>
+      <h2>Эволюция конфигураций (Base → Advanced)</h2>
+      <p>Сравнительный анализ: как меняются настройки сетевых технологий при переходе от базовой лабораторной к продвинутой.</p>
+      <div class="tech">Сравнение · Копирование команд · 10 технологий</div>
+      <span class="badge" style="background: #8e44ad; color: #fff; border: none;">Сравнение</span>
     </a>
 
     <!-- Лаба 3 (Заглушка) -->

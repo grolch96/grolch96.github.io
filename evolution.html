@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Эволюция конфигураций: Base → Advanced</title>
+    <style>
+        :root {
+            --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
+            --accent: #7fa8d4; --accent-green: #2e7d32; --accent-red: #c62828;
+            --term-bg: #1e1e1e; --term-fg: #d4d4d4;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
+            --accent: #a3c4e8; --accent-green: #81c784; --accent-red: #ef9a9a;
+            --term-bg: #111; --term-fg: #e0e0e0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--fg); line-height: 1.6;
+            margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+
+        .theme-btn {
+            position: fixed; top: 20px; right: 20px; padding: 10px 15px;
+            background: var(--card); color: var(--fg); border: 1px solid var(--border);
+            border-radius: 20px; cursor: pointer; font-weight: bold; z-index: 100;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .theme-btn:hover { background: var(--accent); color: #fff; }
+        .theme-btn:active { transform: scale(0.95); }
+
+        .compare-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 25px; margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .compare-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+        .layer {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .layer { grid-template-columns: 1fr; }
+        }
+
+        .side { background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .side h3 { margin-top: 0; font-size: 1.1em; }
+        .side-base h3 { color: var(--accent); }
+        .side-adv h3 { color: var(--accent-green); }
+
+        .code-wrap { position: relative; margin-top: 10px; }
+        .code-wrap pre {
+            background: var(--term-bg); color: var(--term-fg); padding: 15px;
+            border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace;
+            font-size: 13px; margin: 0;
+        }
+        .copy-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: #238636; color: #fff; border: none; padding: 5px 12px;
+            border-radius: 4px; cursor: pointer; font-size: 12px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .copy-btn:hover { background: #2ea043; }
+        .copy-btn:active { transform: scale(0.9); }
+        .copy-btn.copied { background: #1f6feb; }
+
+        .evolution-note {
+            margin-top: 20px; padding: 12px 16px;
+            background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green);
+            border-radius: 6px; font-style: italic; font-size: 14px;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+<button class="theme-btn" id="theme-btn">🌙 Тема</button>
+
+<div class="container">
+    <a href="index.html" class="back-link">← На главную</a>
+    <h1>📈 Эволюция конфигураций: Base Legacy → Advanced Enterprise</h1>
+    <p>Сравнительный анализ настройки сетевых технологий на примере двух лабораторных работ. Показано, как усложняется конфигурация и какие новые возможности появляются на каждом этапе. Для каждого пункта указана «ответная часть» (где применимо).</p>
+
+    <!-- 1. VLAN и Trunk -->
+    <div class="compare-card">
+        <h2>1. VLAN и Trunk</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Создание VLAN и настройка магистральных каналов (802.1Q).</p>
+                <div class="code-wrap">
+                    <pre>vlan 100
+ name Users
+interface f0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 1,100,102-108</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>То же самое, плюс безопасность L2 (DHCP Snooping, Port Security).</p>
+                <div class="code-wrap">
+                    <pre>vlan 100
+ name Users
+ip dhcp snooping
+ip dhcp snooping vlan 1,108
+interface f0/10
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простой сегментации к защите канального уровня.</div>
+    </div>
+
+    <!-- 2. EtherChannel LACP (с ответной частью) -->
+    <div class="compare-card">
+        <h2>2. EtherChannel LACP (с ответной частью)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy (SW1 ↔ SW11)</h3>
+                <p>Активная сторона (SW1) и пассивная (SW11).</p>
+                <div class="code-wrap">
+                    <pre>! SW1 (active)
+interface range f0/2, f0/4, f0/6, f0/8-13
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+
+! SW11 (passive)
+interface range f0/1, f0/6-13
+ channel-group 1 mode passive
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise (SW1 ↔ SW11, SW2 ↔ SW22)</h3>
+                <p>Две стороны, с балансировкой и STP.</p>
+                <div class="code-wrap">
+                    <pre>! SW1 (active)
+interface range f0/2, f0/4, f0/6, f0/8-13
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+
+! SW11 (active)
+interface range f0/1, f0/6-13
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+
+! SW2 (active)
+interface range f0/2, f0/5, f0/8, f0/9
+ channel-group 3 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+
+! SW22 (active)
+interface range f0/1, f0/6-8
+ channel-group 3 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простой агрегации к отказоустойчивости и балансировке. Показана ответная часть.</div>
+    </div>
+
+    <!-- 3. EtherChannel PAgP (с ответной частью) -->
+    <div class="compare-card">
+        <h2>3. EtherChannel PAgP (с ответной частью)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy (SW0 ↔ SW00)</h3>
+                <p>SW00 — desirable, SW0 — auto.</p>
+                <div class="code-wrap">
+                    <pre>! SW00 (desirable)
+interface range f0/2-5
+ channel-group 2 mode desirable
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+
+! SW0 (auto)
+interface range f0/3-5
+ channel-group 2 mode auto
+ switchport mode trunk
+ speed 100
+ duplex full</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise (SW0 ↔ SW00)</h3>
+                <p>То же самое, с порт-заглушкой для активации SVI.</p>
+                <div class="code-wrap">
+                    <pre>! SW00 (desirable)
+interface range f0/2-5
+ channel-group 2 mode desirable
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface Port-channel 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+
+! SW0 (auto)
+interface range f0/3-5
+ channel-group 2 mode auto
+ switchport mode trunk
+ speed 100
+ duplex full
+interface Port-channel 2
+ switchport mode trunk</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простой агрегации к интеграции с SVI и DHCP.</div>
+    </div>
+
+    <!-- 4. STP -->
+    <div class="compare-card">
+        <h2>4. STP (Защита от петель)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Rapid-PVST+, назначение корневого моста.</p>
+                <div class="code-wrap">
+                    <pre>spanning-tree mode rapid-pvst
+spanning-tree vlan 1,100,102-107 priority 24576</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>Балансировка нагрузки (разные корни для разных VLAN).</p>
+                <div class="code-wrap">
+                    <pre>spanning-tree mode rapid-pvst
+spanning-tree vlan 1,100,102,104 root primary
+spanning-tree vlan 1,105,106,107,108 root primary</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простой защиты к оптимизации трафика.</div>
+    </div>
+
+    <!-- 5. OSPF (с ответной частью) -->
+    <div class="compare-card">
+        <h2>5. OSPF (Маршрутизация)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy (одна зона)</h3>
+                <p>OSPF Area 0 на всех L3-устройствах.</p>
+                <div class="code-wrap">
+                    <pre>router ospf 1111
+ network 192.168.4.0 0.0.0.255 area 0
+ network 192.168.1.0 0.0.0.255 area 0</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise (Multi-Area + Redistribution)</h3>
+                <p>ABR на SW1 и SW2, перераспределение OSPF ↔ EIGRP.</p>
+                <div class="code-wrap">
+                    <pre>! SW1 (ABR)
+router ospf 1111
+ network 192.168.1.0 0.0.0.255 area 0
+ network 192.168.2.0 0.0.0.15 area 0
+ network 192.168.4.0 0.0.0.255 area 0
+ network 192.168.5.0 0.0.0.255 area 1
+
+! SW2 (ABR + Redistribution)
+router ospf 1222
+ network 192.168.1.0 0.0.0.255 area 0
+ network 192.168.7.0 0.0.0.255 area 2
+ network 192.168.8.0 0.0.0.255 area 2
+ redistribute eigrp 100 subnets
+router eigrp 100
+ redistribute ospf 1222 metric 10000 100 255 1 1500</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от плоской сети к иерархической маршрутизации с ответной частью.</div>
+    </div>
+
+    <!-- 6. HSRP (с ответной частью) -->
+    <div class="compare-card">
+        <h2>6. HSRP (Резервирование шлюза)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy (R1 ↔ R2)</h3>
+                <p>R1 — Active, R2 — Standby.</p>
+                <div class="code-wrap">
+                    <pre>! R1 (Active)
+interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 priority 150
+ standby 1 preempt
+
+! R2 (Standby)
+interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 priority 100
+ standby 1 preempt</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>То же самое + обход бага PT 6.2 (прямой маршрут).</p>
+                <div class="code-wrap">
+                    <pre>! R1 (Active)
+interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 priority 150
+ standby 1 preempt
+ip route 0.0.0.0 0.0.0.0 192.168.1.5
+
+! R2 (Standby)
+interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 preempt</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простого резервирования к обходу ограничений симулятора.</div>
+    </div>
+
+    <!-- 7. BGP -->
+    <div class="compare-card">
+        <h2>7. BGP (Стык с провайдером)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Отсутствует (только NAT).</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>eBGP (AS 65002 ↔ AS 65001).</p>
+                <div class="code-wrap">
+                    <pre>router bgp 65002
+ neighbor 10.0.0.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простого NAT к реальному стыку с провайдером.</div>
+    </div>
+
+    <!-- 8. IPv6 -->
+    <div class="compare-card">
+        <h2>8. IPv6 и OSPFv3</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Отсутствует (только IPv4).</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>Двухстековая маршрутизация (IPv6 + OSPFv3).</p>
+                <div class="code-wrap">
+                    <pre>ipv6 unicast-routing
+interface f0/0
+ ipv6 address 2001:DB8:1::5/64
+ ipv6 ospf 1 area 0</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от IPv4-only к современному двухстековому решению.</div>
+    </div>
+
+    <!-- 9. Безопасность L2 -->
+    <div class="compare-card">
+        <h2>9. Безопасность L2 (Port Security + DHCP Snooping)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Отсутствует.</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>Port Security и DHCP Snooping на SW0.</p>
+                <div class="code-wrap">
+                    <pre>ip dhcp snooping
+ip dhcp snooping vlan 1,108
+no ip dhcp snooping information option
+interface f0/10
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от открытого доступа к защите от атак на канальном уровне.</div>
+    </div>
+
+    <!-- 10. DHCP -->
+    <div class="compare-card">
+        <h2>10. DHCP (Автоматизация)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Пулы для VLAN 105, 106, 108. DHCP-сервер на SW11 и SW00.</p>
+                <div class="code-wrap">
+                    <pre>ip dhcp pool vlan105
+ network 192.168.5.0 255.255.255.0
+ default-router 192.168.5.254</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>Добавлен DHCP Snooping для защиты от «левых» серверов.</p>
+                <div class="code-wrap">
+                    <pre>ip dhcp snooping
+ip dhcp snooping vlan 1,108
+no ip dhcp snooping information option</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простой выдачи адресов к защите DHCP-сервиса.</div>
+    </div>
+
+    <!-- 11. NAT -->
+    <div class="compare-card">
+        <h2>11. NAT/PAT (Выход в интернет)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>NAT Overload на R1 и R2.</p>
+                <div class="code-wrap">
+                    <pre>ip access-list extended NAT
+ permit ip 192.168.0.0 0.0.0.255 any
+ip nat inside source list NAT interface f0/1 overload</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>То же самое, но в связке с BGP.</p>
+                <div class="code-wrap">
+                    <pre>ip access-list extended NAT
+ permit ip 192.168.0.0 0.0.255.255 any
+ip nat inside source list NAT interface FastEthernet0/1 overload</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простого NAT к интеграции с BGP.</div>
+    </div>
+
+    <!-- 12. EIGRP + Redistribution -->
+    <div class="compare-card">
+        <h2>12. EIGRP + Redistribution</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Отсутствует (только OSPF).</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>EIGRP + перераспределение (OSPF ↔ EIGRP).</p>
+                <div class="code-wrap">
+                    <pre>router eigrp 100
+ network 192.168.1.0
+ redistribute ospf 1222 metric 10000 100 255 1 1500
+router ospf 1222
+ redistribute eigrp 100 subnets</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от одной протокольной среды к мультипротокольной.</div>
+    </div>
+
+    <!-- 13. MSTP -->
+    <div class="compare-card">
+        <h2>13. MSTP</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Отсутствует (только Rapid-PVST+).</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>MSTP с инстансами (в планах/теории).</p>
+                <div class="code-wrap">
+                    <pre>spanning-tree mode mst
+spanning-tree mst configuration
+ name LAB
+ instance 1 vlan 100,102,104
+ instance 2 vlan 105,106,107,108
+ exit
+spanning-tree mst 1 root primary
+spanning-tree mst 2 root secondary</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от простого PVST+ к MSTP для больших сетей.</div>
+    </div>
+
+    <!-- 14. NTP -->
+    <div class="compare-card">
+        <h2>14. NTP (Синхронизация времени)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Отсутствует.</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>NTP для логов и сертификатов (в планах/теории).</p>
+                <div class="code-wrap">
+                    <pre>clock timezone MSK 3 0
+ntp master 1
+ntp server 192.168.1.230</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от отсутствия синхронизации к точным логам.</div>
+    </div>
+
+    <!-- 15. WLC/AP -->
+    <div class="compare-card">
+        <h2>15. WLC/AP (Беспроводной сегмент)</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Отсутствует.</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>WLC + AP (в планах/теории).</p>
+                <div class="code-wrap">
+                    <pre>! Конфигурация WLC и AP (в разработке)
+! Пример: настройка SSID и WPA2
+! (будет добавлено в следующих лабах)</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Эволюция: от проводной сети к беспроводному сегменту.</div>
+    </div>
+
+    <!-- 16. Итог -->
+    <div class="compare-card">
+        <h2>16. Итог: что изменилось</h2>
+        <div class="layer">
+            <div class="side side-base">
+                <h3>🔹 Base Legacy</h3>
+                <p>Базовая сеть: VLAN, Trunk, EtherChannel, STP, OSPF (одна зона), HSRP, NAT, DHCP. Фокус — связность и отказоустойчивость.</p>
+            </div>
+            <div class="side side-adv">
+                <h3>🔸 Advanced Enterprise</h3>
+                <p>Добавлены BGP, Multi-Area OSPF, EIGRP + Redistribution, IPv6/OSPFv3, L2-безопасность, DHCP Snooping, Port Security. Фокус — масштабируемость и безопасность.</p>
+            </div>
+        </div>
+        <div class="evolution-note">📌 Итог: от базовой сети к корпоративной архитектуре с провайдером и безопасностью.</div>
+    </div>
+
+</div>
+
+<script>
+    // Тема
+    const themeBtn = document.getElementById('theme-btn');
+    const saved = localStorage.getItem('evolution-theme') || 'light';
+    document.body.dataset.theme = saved;
+    themeBtn.addEventListener('click', () => {
+        const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+        document.body.dataset.theme = next;
+        localStorage.setItem('evolution-theme', next);
+    });
+
+    // Копирование
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const pre = btn.parentElement.querySelector('pre');
+            let text = pre.innerText
+                .split('\n')
+                .filter(line => !line.trim().startsWith('!'))
+                .map(line => line.replace(/\s+$/g, ''))
+                .join('\n')
+                .replace(/^\s*\n+/, '')
+                .replace(/\n+\s*$/, '');
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                btn.textContent = '✅ Скопировано';
+                btn.classList.add('copied');
+                setTimeout(() => { 
+                    btn.textContent = 'Копировать'; 
+                    btn.classList.remove('copied'); 
+                }, 1500);
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btn.textContent = '✅ Скопировано';
+                setTimeout(() => { btn.textContent = 'Копировать'; }, 1500);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
