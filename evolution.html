@@ -58,7 +58,26 @@
             background: var(--term-bg); color: var(--term-fg); padding: 15px;
             border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace;
             font-size: 13px; margin: 0;
+            max-height: 300px; /* Максимальная высота окна */
+            overflow-y: auto;  /* Вертикальная прокрутка */
         }
+        /* ↓↓↓ ВСТАВИТЬ СЮДА ↓↓↓ */
+.code-wrap pre::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.code-wrap pre::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+}
+.code-wrap pre::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+}
+.code-wrap pre::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.4);
+}
+/* ↑↑↑ КОНЕЦ ВСТАВКИ ↑↑↑ */
         .copy-btn {
             position: absolute; top: 8px; right: 8px;
             background: #238636; color: #fff; border: none; padding: 5px 12px;
