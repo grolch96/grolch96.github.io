@@ -55,9 +55,18 @@
 
         .code-wrap { position: relative; margin-top: 10px; }
         .code-wrap pre {
-            background: var(--term-bg); color: var(--term-fg); padding: 15px;
-            border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace;
-            font-size: 13px; margin: 0; max-height: 300px; overflow-y: auto;
+            background: var(--term-bg); 
+            color: var(--term-fg); 
+            padding: 15px;
+            border-radius: 6px; 
+            font-family: Consolas, monospace;
+            font-size: 13px; 
+            margin: 0;
+            max-height: 300px;
+            max-width: 100%;
+            overflow-x: auto;   /* горизонтальная прокрутка */
+            overflow-y: auto;   /* вертикальная прокрутка */
+            white-space: pre;   /* сохраняем длинные строки как есть (без переноса) */
         }
         .copy-btn {
             position: absolute; top: 8px; right: 8px;
@@ -841,9 +850,349 @@ type "%LOG_FILE%"</pre>
         </div>
     </div>
 
-    <!-- Блок 12: Итоговое резюме -->
+    <!-- Блок 12: Управление Active Directory -->
     <div class="script-card">
-        <h2>12. Итог: какие навыки показаны</h2>
+        <h2>13. Управление Active Directory (пользователи и компьютеры)</h2>
+        <p>Автоматическое отключение неактивных учётных записей, массовое создание пользователей, управление группами.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash / ldap-utils)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# ad_manage.sh - управление AD через LDAP
+LDAP_SERVER="ldap://dc.example.com"
+BIND_DN="cn=admin,dc=example,dc=local"
+BIND_PW="password"
+
+# 1. Поиск неактивных пользователей (без входа > 90 дней)
+ldapsearch -x -H "$LDAP_SERVER" -D "$BIND_DN" -w "$BIND_PW" \
+  -b "dc=example,dc=local" \
+  "(&(objectClass=user)(!(objectClass=computer))(!(lastLogonTimestamp=*)))" \
+  sAMAccountName | grep sAMAccountName
+
+# 2. Блокировка пользователя
+ldapmodify -x -H "$LDAP_SERVER" -D "$BIND_DN" -w "$BIND_PW" <<EOF
+dn: cn=user1,cn=Users,dc=example,dc=local
+changetype: modify
+replace: userAccountControl
+userAccountControl: 514
+EOF
+
+# 3. Добавление в группу
+ldapmodify -x -H "$LDAP_SERVER" -D "$BIND_DN" -w "$BIND_PW" <<EOF
+dn: cn=group1,cn=Users,dc=example,dc=local
+changetype: modify
+add: member
+member: cn=user1,cn=Users,dc=example,dc=local
+EOF</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: ad_manage.cmd - управление AD
+@echo off
+set INACTIVE_DAYS=90
+set LOG_FILE=C:\Logs\ad_manage.log
+
+:: Проверка прав администратора
+net session >nul 2>&1 || (echo Ошибка: запустите от администратора & exit /b 1)
+
+:: 1. Поиск неактивных пользователей
+echo === Неактивные пользователи (более %INACTIVE_DAYS% дней) === >> "%LOG_FILE%"
+dsquery user -inactive %INACTIVE_DAYS% -limit 0 >> "%LOG_FILE%" 2>nul
+
+:: 2. Отключение неактивных пользователей
+echo === Отключение неактивных === >> "%LOG_FILE%"
+dsquery user -inactive %INACTIVE_DAYS% -limit 0 | dsmod user -disabled yes >> "%LOG_FILE%" 2>nul
+
+:: 3. Включение критичных учётных записей (чтобы не отключить случайно)
+dsmod user "CN=admin,CN=Users,DC=example,DC=local" -disabled no >> "%LOG_FILE%" 2>nul
+dsmod user "CN=tasker,CN=Users,DC=example,DC=local" -disabled no >> "%LOG_FILE%" 2>nul
+
+:: 4. Отключение неактивных компьютеров
+echo === Отключение неактивных компьютеров === >> "%LOG_FILE%"
+dsquery computer -inactive %INACTIVE_DAYS% -limit 0 | dsmod computer -disabled yes >> "%LOG_FILE%" 2>nul
+
+echo ✅ Аудит AD завершён. Лог: %LOG_FILE%</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">📌 Требуется <b>RSAT</b> (Remote Server Administration Tools) и членство в домене Active Directory.</p>
+            </div>
+        </div>
+        <div class="evolution-note">
+            📌 <strong>Что это даёт:</strong> Автоматизация рутины AD-администратора — отключение «мёртвых душ», защита критичных учёток, массовое управление. Это уровень корпоративного администрирования.
+        </div>
+    </div>
+
+    <!-- Блок 13: Управление питанием -->
+    <div class="script-card">
+        <h2>14. Управление питанием (перезагрузка, выключение, гибернация)</h2>
+        <p>Скрипты для автоматического выключения, перезагрузки и перевода компьютеров в спящий режим по расписанию или команде.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# power_manage.sh - управление питанием
+ACTION="${1:-status}"
+
+case "$ACTION" in
+    reboot)
+        echo "🔄 Перезагрузка системы через 5 секунд..."
+        shutdown -r +0
+        ;;
+    shutdown)
+        echo "⏻ Выключение системы через 5 секунд..."
+        shutdown -h +0
+        ;;
+    suspend)
+        echo "💤 Перевод в спящий режим..."
+        systemctl suspend
+        ;;
+    hibernate)
+        echo "💤 Гибернация..."
+        systemctl hibernate
+        ;;
+    status)
+        echo "=== Статус питания ==="
+        uptime -p 2>/dev/null || uptime
+        echo ""
+        echo "Текущее время: $(date)"
+        echo "Последняя загрузка: $(who -b 2>/dev/null | awk '{print $3, $4}')"
+        ;;
+    *)
+        echo "Использование: $0 {reboot|shutdown|suspend|hibernate|status}"
+        exit 1
+        ;;
+esac</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: power_manage.cmd - управление питанием
+@echo off
+setlocal enabledelayedexpansion
+set ACTION=%1
+if "%ACTION%"=="" set ACTION=status
+
+if /i "%ACTION%"=="reboot" (
+    echo 🔄 Перезагрузка системы через 5 секунд...
+    shutdown /r /t 5 /c "Плановая перезагрузка"
+    goto :eof
+)
+
+if /i "%ACTION%"=="shutdown" (
+    echo ⏻ Выключение системы через 5 секунд...
+    shutdown /s /t 5 /c "Плановое выключение"
+    goto :eof
+)
+
+if /i "%ACTION%"=="hibernate" (
+    echo 💤 Гибернация...
+    rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+    goto :eof
+)
+
+if /i "%ACTION%"=="sleep" (
+    echo 💤 Спящий режим...
+    rundll32.exe powrprof.dll,SetSuspendState 1,1,0
+    goto :eof
+)
+
+if /i "%ACTION%"=="status" (
+    echo === Статус питания ===
+    systeminfo | findstr /C:"System Boot Time" /C:"System Up Time"
+    echo.
+    echo Текущее время: %date% %time%
+    goto :eof
+)
+
+echo Использование: %0 {reboot^|shutdown^|hibernate^|sleep^|status}</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">📌 Для гибернации должен быть включён режим: <code>powercfg /hibernate on</code></p>
+            </div>
+        </div>
+        <div class="evolution-note">
+            📌 <strong>Что это даёт:</strong> Автоматическое управление питанием — полезно для парков компьютеров, серверных комнат и удалённых офисов. Можно вызывать по расписанию (cron / Task Scheduler) или вручную.
+        </div>
+    </div>
+
+    <!-- Блок 14: Сетевые диски -->
+    <div class="script-card">
+        <h2>15. Сетевые диски (подключение, отключение, проверка)</h2>
+        <p>Скрипты для автоматического подключения сетевых дисков (SMB/CIFS) с проверкой доступности и переподключением при сбое.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# mount_network_drive.sh - подключение сетевого диска
+MOUNT_POINT="/mnt/share"
+REMOTE_SHARE="//server.example.com/share"
+USERNAME="domain\\user"
+PASSWORD="password"
+MAX_RETRIES=3
+ATTEMPT=1
+
+# Проверка, смонтирован ли уже
+if mountpoint -q "$MOUNT_POINT"; then
+    echo "✅ Диск уже смонтирован: $MOUNT_POINT"
+    df -h "$MOUNT_POINT" | tail -1
+    exit 0
+fi
+
+# Создание точки монтирования
+sudo mkdir -p "$MOUNT_POINT"
+
+# Попытки монтирования
+while [[ $ATTEMPT -le $MAX_RETRIES ]]; do
+    if sudo mount -t cifs "$REMOTE_SHARE" "$MOUNT_POINT" \
+        -o username="$USERNAME",password="$PASSWORD",vers=3.0,uid=$(id -u),gid=$(id -g); then
+        echo "✅ Диск успешно смонтирован: $MOUNT_POINT"
+        df -h "$MOUNT_POINT" | tail -1
+        exit 0
+    else
+        echo "⚠️ Попытка $ATTEMPT/$MAX_RETRIES не удалась"
+        sleep 2
+        ((ATTEMPT++))
+    fi
+done
+
+echo "❌ Не удалось смонтировать диск после $MAX_RETRIES попыток"
+echo "Проверьте: ping server.example.com, доступность порта 445"
+exit 1</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">📌 Требуется пакет <code>cifs-utils</code>: <code>sudo apt install cifs-utils</code></p>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: mount_network_drive.cmd - подключение сетевого диска
+@echo off
+setlocal enabledelayedexpansion
+set DRIVE=Z:
+set REMOTE_SHARE=\\server\share
+set USERNAME=domain\user
+set PASSWORD=password
+
+:: Проверка, подключён ли уже
+net use %DRIVE% >nul 2>&1
+if %errorlevel% EQU 0 (
+    echo ✅ Диск %DRIVE% уже подключён
+    dir %DRIVE% | find "bytes free"
+    goto :eof
+)
+
+:: Отключение старого (если был)
+net use %DRIVE% /delete /YES >nul 2>&1
+
+:: Подключение
+net use %DRIVE% %REMOTE_SHARE% %PASSWORD% /user:%USERNAME% /persistent:yes
+if %errorlevel% EQU 0 (
+    echo ✅ Диск %DRIVE% успешно подключён к %REMOTE_SHARE%
+    dir %DRIVE% | find "bytes free"
+) else (
+    echo ❌ Не удалось подключить диск %DRIVE%
+    echo Проверьте: ping server, доступность порта 445
+    exit /b 1
+)</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+        <div class="evolution-note">
+            📌 <strong>Что это даёт:</strong> Автоматическое подключение сетевых дисков — критично для офисных сетей, где пользователи работают с общими файлами. Скрипт умеет переподключаться при сбое.
+        </div>
+    </div>
+
+    <!-- Блок 15: SMTP-уведомления -->
+    <div class="script-card">
+        <h2>16. SMTP-уведомления (отправка почты при сбоях)</h2>
+        <p>Автоматическая отправка писем администратору при срабатывании тревоги (ошибка в логах, переполнение диска, падение службы).</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash / msmtp или mail)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# send_alert.sh - отправка уведомления
+ALERT_EMAIL="admin@example.com"
+SUBJECT="ALERT: System Issue on $(hostname)"
+BODY="Обнаружена проблема: $1"
+LOG_FILE="/var/log/alerts.log"
+
+# Логирование
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] $BODY" >> "$LOG_FILE"
+
+# Отправка через msmtp (лёгкий SMTP-клиент)
+if command -v msmtp &>/dev/null; then
+    echo -e "Subject: $SUBJECT\n\n$BODY" | msmtp "$ALERT_EMAIL"
+    echo "✅ Письмо отправлено через msmtp"
+# Или через mail (если установлен mailutils)
+elif command -v mail &>/dev/null; then
+    echo "$BODY" | mail -s "$SUBJECT" "$ALERT_EMAIL"
+    echo "✅ Письмо отправлено через mail"
+else
+    echo "❌ Не найден SMTP-клиент (msmtp или mail)"
+    echo "Установите: sudo apt install msmtp msmtp-mta"
+    exit 1
+fi</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">📌 Установка: <code>sudo apt install msmtp msmtp-mta</code><br>📌 Настройка: <code>~/.msmtprc</code> (SMTP-сервер, логин, пароль)</p>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch / blat)</h3>
+                <div class="code-wrap">
+                    <pre>:: send_alert.cmd - отправка уведомления
+@echo off
+set ALERT_EMAIL=admin@example.com
+set SUBJECT=ALERT: System Issue on %COMPUTERNAME%
+set BODY=Обнаружена проблема: %1
+set LOG_FILE=C:\Logs\alerts.log
+set BLAT=C:\Tools\blat\blat.exe
+
+:: Логирование
+echo [%date% %time%] %BODY% >> "%LOG_FILE%"
+
+:: Отправка через blat
+if exist "%BLAT%" (
+    echo %BODY% > %TEMP%\alert_body.txt
+    "%BLAT%" %TEMP%\alert_body.txt -to %ALERT_EMAIL% -subject "%SUBJECT%"
+    del %TEMP%\alert_body.txt
+    if %errorlevel% EQU 0 (
+        echo ✅ Письмо отправлено через blat
+    ) else (
+        echo ❌ Ошибка отправки через blat
+        exit /b 1
+    )
+) else (
+    echo ❌ Не найден blat.exe
+    echo Скачайте: https://www.blat.net/
+    exit /b 1
+)</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+                <p style="font-size: 12px; color: var(--muted); margin-top: 5px;">📌 <b>blat</b> — бесплатный SMTP-клиент для Windows. Скачать: <code>https://www.blat.net/</code><br>📌 Требуется настроить SMTP-сервер (например, <code>blat -install smtp.example.com admin@example.com</code>)</p>
+            </div>
+        </div>
+        <div class="evolution-note">
+            📌 <strong>Что это даёт:</strong> Админ получает уведомление на почту, как только что-то пошло не так. Не нужно сидеть у монитора — система сама сообщит о проблеме. Это стандарт корпоративного мониторинга.
+        </div>
+    </div>
+
+    <!-- Блок 16: Итоговое резюме -->
+    <div class="script-card">
+        <h2>17. Итог: какие навыки показаны</h2>
         <p>Этот раздел — не просто скрипты, а демонстрация системного мышления и практических навыков администрирования.</p>
         
         <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
