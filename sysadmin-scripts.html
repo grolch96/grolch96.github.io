@@ -42,38 +42,43 @@
         .script-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
 
         .layer {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            .layer { grid-template-columns: 1fr; }
+            display: flex;
+            flex-direction: column; /* одна колонка */
+            gap: 15px;              /* отступ между блоками */
+            margin-top: 20px;
         }
 
-        .side { background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
-        .side h3 { margin-top: 0; font-size: 1.1em; }
-        .side-linux h3 { color: var(--accent-blue); }
-        .side-win h3 { color: var(--accent-green); }
+.side { 
+    background: var(--bg); 
+    padding: 15px; 
+    border-radius: 8px; 
+    border: 1px solid var(--border); 
+    min-width: 0;      /* ← новое: разрешает сжиматься в Grid */
+    overflow: hidden;  /* ← новое: обрезает всё, что вылезает */
+}
+.side h3 { margin-top: 0; font-size: 1.1em; }
+.side-linux h3 { color: var(--accent-blue); }
+.side-win h3 { color: var(--accent-green); }
 
-        .code-wrap { position: relative; margin-top: 10px; }
-        .code-wrap pre {
-            background: var(--term-bg); 
-            color: var(--term-fg); 
-            padding: 15px;
-            border-radius: 6px; 
-            font-family: Consolas, monospace;
-            font-size: 13px; 
-            margin: 0;
-            max-height: 300px;
-            max-width: 100%;
-            overflow-x: auto;   /* горизонтальная прокрутка */
-            overflow-y: auto;   /* вертикальная прокрутка */
-            white-space: pre;   /* сохраняем длинные строки как есть (без переноса) */
-        }
-        .copy-btn {
-            position: absolute; top: 8px; right: 8px;
-            background: #238636; color: #fff; border: none; padding: 5px 12px;
-            border-radius: 4px; cursor: pointer; font-size: 12px;
-            transition: background 0.2s, transform 0.1s;
-        }
+.code-wrap { 
+    position: relative; 
+    margin-top: 10px; 
+    min-width: 0;      /* ← новое: тоже разрешает сжиматься */
+}
+.code-wrap pre {
+    background: var(--term-bg); 
+    color: var(--term-fg); 
+    padding: 15px;
+    border-radius: 6px; 
+    font-family: Consolas, monospace;
+    font-size: 13px; 
+    margin: 0;
+    max-height: 300px;
+    max-width: 100%;
+    overflow-x: auto;   /* горизонтальная прокрутка */
+    overflow-y: auto;   /* вертикальная прокрутка */
+    white-space: pre;   /* сохраняем длинные строки как есть */
+}
         .copy-btn:hover { background: #2ea043; }
         .copy-btn:active { transform: scale(0.9); }
         .copy-btn.copied { background: #1f6feb; }
@@ -1231,7 +1236,9 @@ if exist "%BLAT%" (
 
     document.querySelectorAll('.copy-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
-            const pre = btn.parentElement.querySelector('pre');
+            // Ищем ближайший .code-wrap и внутри него <pre>
+            const pre = btn.closest('.code-wrap').querySelector('pre');
+            
             let text = pre.innerText
                 .split('\n')
                 .filter(line => !line.trim().startsWith('::') && !line.trim().startsWith('#'))
@@ -1239,6 +1246,7 @@ if exist "%BLAT%" (
                 .join('\n')
                 .replace(/^\s*\n+/, '')
                 .replace(/\n+\s*$/, '');
+            
             if (!text.trim()) text = pre.innerText;
             
             try {
