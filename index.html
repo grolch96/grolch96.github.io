@@ -12,8 +12,6 @@
     --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; 
     --tag: rgba(234, 240, 248, 0.15);
     --bg-overlay: rgba(244, 244, 246, 0.8); 
-    --shadow: 0 4px 20px rgba(0,0,0,0.08);
-    --glow: 0 0 20px rgba(127, 168, 212, 0.3);
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
@@ -22,8 +20,6 @@
     --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; 
     --tag: rgba(42, 58, 74, 0.15);
     --bg-overlay: rgba(26, 26, 26, 0.85);
-    --shadow: 0 4px 20px rgba(0,0,0,0.4);
-    --glow: 0 0 20px rgba(163, 196, 232, 0.15);
   }
   * { box-sizing: border-box; }
   
@@ -37,12 +33,11 @@
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
-    min-height: 100vh;
   }
   
   header {
     position: sticky; top: 0; z-index: 100; background: var(--card);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     border-bottom: 1px solid var(--border); padding: 14px 20px;
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
   }
@@ -55,64 +50,89 @@
   header button {
     padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px;
     background: var(--bg); color: var(--fg); cursor: pointer; font-size: 14px;
-    transition: all 0.2s;
+    transition: background .2s, transform .1s;
   }
   header button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-  header button:active { transform: scale(0.95); }
+  header button:active { transform: scale(0.92); }
   
   main { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+  
+  .section-title {
+    font-size: 1.6em; color: var(--accent); 
+    margin: 40px 0 20px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+  }
+  [data-theme="dark"] .section-title { text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
   
   .card {
     display: block; text-decoration: none; color: inherit;
     background: var(--card); 
-    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-    border: 1px solid var(--border); border-radius: 12px;
+    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    border: 1px solid var(--border); border-radius: 10px;
     padding: 22px; 
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s, border-color 0.2s;
-    word-wrap: break-word;
-    animation: fadeInUp 0.5s ease forwards;
-    opacity: 0;
+    cursor: pointer;
+    user-select: none;
     position: relative;
     overflow: hidden;
+    transition: transform .3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                border-color .3s, box-shadow .3s, background .3s;
+    word-wrap: break-word;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
   }
+  
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .card:nth-child(4) { animation-delay: 0.4s; }
+  .card:nth-child(5) { animation-delay: 0.5s; }
   
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
   
-  .card:nth-child(1) { animation-delay: 0.05s; }
-  .card:nth-child(2) { animation-delay: 0.1s; }
-  .card:nth-child(3) { animation-delay: 0.15s; }
-  .card:nth-child(4) { animation-delay: 0.2s; }
-  .card:nth-child(5) { animation-delay: 0.25s; }
-  .card:nth-child(6) { animation-delay: 0.3s; }
-  .card:nth-child(7) { animation-delay: 0.35s; }
-  .card:nth-child(8) { animation-delay: 0.4s; }
-  .card:nth-child(9) { animation-delay: 0.45s; }
-  .card:nth-child(10) { animation-delay: 0.5s; }
-
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(127, 168, 212, 0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .card:hover::before { opacity: 1; }
+  
   .card:hover { 
-    transform: translateY(-4px); 
+    transform: translateY(-5px) rotate(0.5deg); 
     border-color: var(--accent); 
-    box-shadow: var(--shadow), var(--glow); 
-    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 12px 30px rgba(0,0,0,.2), 0 0 20px rgba(127, 168, 212, 0.3); 
+    background: rgba(255, 255, 255, 0.35);
   }
   [data-theme="dark"] .card:hover {
-    background: rgba(42, 42, 42, 0.35);
+    background: rgba(42, 42, 42, 0.45);
+    box-shadow: 0 12px 30px rgba(0,0,0,.5), 0 0 20px rgba(163, 196, 232, 0.2);
   }
 
-  /* Эффект нажатия */
   .card:active {
-    transform: scale(0.97) translateY(0);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    transition: transform 0.05s, box-shadow 0.05s;
+    transform: scale(0.94) translateY(0);
+    box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+    background: rgba(127, 168, 212, 0.35);
+    border-color: var(--accent2);
+    transition: transform 0.05s, box-shadow 0.05s, background 0.05s;
   }
+  [data-theme="dark"] .card:active { background: rgba(163, 196, 232, 0.35); }
   
-  .card .icon { font-size: 2em; margin-bottom: 8px; display: block; }
-  .card h2 { margin: 0 0 6px; font-size: 1.15em; color: var(--accent); text-shadow: 0 1px 3px rgba(255,255,255,0.8); }
+  .card .icon { font-size: 2em; margin-bottom: 8px; display: inline-block; transition: transform 0.3s ease; }
+  .card:hover .icon { transform: scale(1.2) rotate(-5deg); }
+  
+  .card h2 { margin: 0 0 6px; font-size: 1.15em; color: var(--accent); text-shadow: 0 1px 3px rgba(255,255,255,0.8); transition: color 0.3s ease; }
   [data-theme="dark"] .card h2 { text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+  .card:hover h2 { color: var(--accent2); }
   
   .card p { margin: 0; color: var(--muted); font-size: 14px; font-weight: 500; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
   [data-theme="dark"] .card p { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
@@ -121,7 +141,10 @@
     display: inline-block; margin-top: 10px; padding: 2px 8px; border-radius: 12px; 
     background: var(--tag); color: var(--accent); font-size: 12px; font-weight: 600; 
     border: 1px solid var(--border);
+    transition: transform 0.3s ease, background 0.3s;
   }
+  .card:hover .badge { transform: scale(1.1); background: var(--accent); color: #fff; }
+  
   .card .tech { margin-top: 10px; font-size: 12px; color: var(--muted); font-family: "Consolas", "Courier New", monospace; line-height: 1.5; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
   [data-theme="dark"] .card .tech { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 
@@ -131,15 +154,17 @@
     padding: 6px 12px; border-radius: 6px; transition: background 0.2s, transform 0.1s;
   }
   .report-link:hover { background: #1b5e20; }
-  .report-link:active { transform: scale(0.95); }
+  .report-link:active { transform: scale(0.92); background: #1b5e20; }
   .report-link.purple { background: #8e44ad; }
   .report-link.purple:hover { background: #6a1b9a; }
+  .report-link.purple:active { background: #6a1b9a; }
 
   footer { max-width: 1200px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
   
   @media (max-width: 600px) {
     header h1 { font-size: 1.1em; width: 100%; }
     main { padding: 16px; }
+    .section-title { font-size: 1.3em; }
   }
 </style></head>
 <body data-theme="light">
@@ -150,9 +175,10 @@
 </header>
 
 <main>
-  <div class="grid">
 
-    <!-- Лаба 1 -->
+  <!-- ГРУППА 1: СЕТЕВЫЕ ЛАБОРАТОРНЫЕ -->
+  <h2 class="section-title">🌐 Сетевые лабораторные</h2>
+  <div class="grid">
     <a class="card" href="lab1-report.html" target="_blank">
       <div class="icon">1️⃣</div>
       <h2>Лаба 1 — Base Legacy</h2>
@@ -161,7 +187,6 @@
       <span class="badge">CCNA</span>
     </a>
 
-    <!-- Лаба 2 -->
     <a class="card" href="lab2-report.html" target="_blank">
       <div class="icon">2️⃣</div>
       <h2>Лаба 2 — Advanced Enterprise</h2>
@@ -170,26 +195,19 @@
       <span class="badge">CCNP (база)</span>
     </a>
 
-    <!-- Эволюция конфигураций -->
-    <a class="card" href="evolution.html">
+    <a class="card" href="evolution.html" target="_blank">
       <div class="icon">📈</div>
       <h2>Эволюция конфигураций (Base → Advanced)</h2>
       <p>Сравнительный анализ: как меняются настройки сетевых технологий при переходе от базовой лабораторной к продвинутой.</p>
-      <div class="tech">Сравнение · Копирование команд · 10 технологий</div>
+      <div class="tech">Сравнение · Копирование команд · 16 технологий</div>
       <span class="badge" style="background: #8e44ad; color: #fff; border: none;">Сравнение</span>
     </a>
+  </div>
 
-    <!-- Лаба 3 (Заглушка) -->
-    <div class="card" style="opacity: 0.7; cursor: default;">
-      <div class="icon">3️⃣</div>
-      <h2>Лаба 3 — IPv6 Enterprise / Secure WAN</h2>
-      <p>Две подглавы: 3A — Secure WAN (IPsec + GRE), 3B — IPv6 Enterprise (SLAAC, DHCPv6, OSPFv3, HSRPv6).</p>
-      <div class="tech">GRE · IPsec · SLAAC · DHCPv6 · OSPFv3 · HSRPv6</div>
-      <span class="badge" style="background: #555; color: #fff; border: none;">В разработке</span>
-    </div>
-
-    <!-- Справочник -->
-    <div class="card">
+  <!-- ГРУППА 2: СПРАВОЧНИКИ -->
+  <h2 class="section-title">📚 Интерактивные справочники</h2>
+  <div class="grid">
+    <div class="card" style="cursor: default; user-select: none;">
       <div class="icon">📘</div>
       <h2>Справочник</h2>
       <p>Полный конспект Cisco IOS: теория IP, коммутация, маршрутизация, безопасность, NAT, мониторинг, добивка CCNA.</p>
@@ -199,8 +217,7 @@
       <a href="report-reference.html" target="_blank" class="report-link">📄 Открыть отчет о разработке</a>
     </div>
 
-    <!-- Статическая маршрутизация -->
-    <a class="card" href="cisco-static-routing.html">
+    <a class="card" href="cisco-static-routing.html" target="_blank">
       <div class="icon">🛣</div>
       <h2>Статическая маршрутизация</h2>
       <p>Все варианты: next-hop (внутренний/внешний), exit-interface, fully specified, floating static, default route, Windows route add, рекурсивный маршрут.</p>
@@ -208,8 +225,7 @@
       <span class="badge">Практика</span>
     </a>
 
-    <!-- Troubleshooting (Cisco) -->
-    <a class="card" href="cisco-troubleshooting.html">
+    <a class="card" href="cisco-troubleshooting.html" target="_blank">
       <div class="icon">🔧</div>
       <h2>Troubleshooting (Cisco)</h2>
       <p>15 практических сценариев: Floating Static, PBR, VRF, OSPF, BGP, EtherChannel, HSRP, NAT, DHCP Snooping, STP, VLAN, IPv6, IPsec, «маршрут пропал».</p>
@@ -217,17 +233,19 @@
       <span class="badge">Часть IX-A</span>
     </a>
 
-    <!-- Windows -->
-    <a class="card" href="cisco-windows.html">
+    <a class="card" href="cisco-windows.html" target="_blank">
       <div class="icon">🪟</div>
       <h2>Windows — Сетевые команды</h2>
       <p>6 сценариев: route add (VPN + LAN), ipconfig, ping, tracert, nslookup, netstat.</p>
       <div class="tech">route add · ipconfig · ping · tracert · nslookup · netstat</div>
       <span class="badge">Часть IX-B</span>
     </a>
+  </div>
 
-    <!-- Конструктор -->
-    <div class="card">
+  <!-- ГРУППА 3: ИНСТРУМЕНТЫ И СКРИПТЫ -->
+  <h2 class="section-title">🛠️ Инструменты и скрипты</h2>
+  <div class="grid">
+    <div class="card" style="cursor: default; user-select: none;">
       <div class="icon">⚙️</div>
       <h2>Конструктор справочников</h2>
       <p>JS-инструмент для преобразования Word-документов в интерактивные HTML-страницы.</p>
@@ -238,7 +256,27 @@
       <a href="report-constructor.html" target="_blank" class="report-link purple">📄 Открыть отчет о разработке</a>
     </div>
 
+    <a class="card" href="sysadmin-scripts.html" target="_blank">
+      <div class="icon">💻</div>
+      <h2>Скрипты системного администрирования (Linux + Windows)</h2>
+      <p>Автоматизация рутинных задач, резервное копирование, мониторинг, безопасное тестирование (dry-run) и обработка ошибок.</p>
+      <div class="tech">Bash · CMD · Linux · Windows · Автоматизация · CI/CD</div>
+      <span class="badge" style="background: #2980b9; color: #fff; border: none;">Скрипты</span>
+    </a>
   </div>
+
+  <!-- ГРУППА 4: В ПЛАНАХ -->
+  <h2 class="section-title">🚧 В планах</h2>
+  <div class="grid">
+    <div class="card" style="opacity: 0.7; cursor: default; user-select: none;">
+      <div class="icon">3️⃣</div>
+      <h2>Лаба 3 — IPv6 Enterprise / Secure WAN</h2>
+      <p>Две подглавы: 3A — Secure WAN (IPsec + GRE), 3B — IPv6 Enterprise (SLAAC, DHCPv6, OSPFv3, HSRPv6).</p>
+      <div class="tech">GRE · IPsec · SLAAC · DHCPv6 · OSPFv3 · HSRPv6</div>
+      <span class="badge" style="background: #555; color: #fff; border: none;">В разработке</span>
+    </div>
+  </div>
+
 </main>
 
 <footer>

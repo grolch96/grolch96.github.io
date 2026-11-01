@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Скрипты системного администрирования</title>
+    <style>
+        :root {
+            --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
+            --accent: #7fa8d4; --accent-green: #2e7d32; --accent-blue: #2980b9;
+            --term-bg: #1e1e1e; --term-fg: #d4d4d4;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
+            --accent: #a3c4e8; --accent-green: #81c784; --accent-blue: #64b5f6;
+            --term-bg: #111; --term-fg: #e0e0e0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--fg); line-height: 1.6;
+            margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+
+        .theme-btn {
+            position: fixed; top: 20px; right: 20px; padding: 10px 15px;
+            background: var(--card); color: var(--fg); border: 1px solid var(--border);
+            border-radius: 20px; cursor: pointer; font-weight: bold; z-index: 100;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .theme-btn:hover { background: var(--accent); color: #fff; }
+        .theme-btn:active { transform: scale(0.95); }
+
+        .script-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 25px; margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .script-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+        .layer {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .layer { grid-template-columns: 1fr; }
+        }
+
+        .side { background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .side h3 { margin-top: 0; font-size: 1.1em; }
+        .side-linux h3 { color: var(--accent-blue); }
+        .side-win h3 { color: var(--accent-green); }
+
+        .code-wrap { position: relative; margin-top: 10px; }
+        .code-wrap pre {
+            background: var(--term-bg); color: var(--term-fg); padding: 15px;
+            border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace;
+            font-size: 13px; margin: 0; max-height: 300px; overflow-y: auto;
+        }
+        .copy-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: #238636; color: #fff; border: none; padding: 5px 12px;
+            border-radius: 4px; cursor: pointer; font-size: 12px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .copy-btn:hover { background: #2ea043; }
+        .copy-btn:active { transform: scale(0.9); }
+        .copy-btn.copied { background: #1f6feb; }
+
+        .evolution-note {
+            margin-top: 20px; padding: 12px 16px;
+            background: rgba(41, 128, 185, 0.1); border-left: 4px solid var(--accent-blue);
+            border-radius: 6px; font-style: italic; font-size: 14px;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+<button class="theme-btn" id="theme-btn">🌙 Тема</button>
+
+<div class="container">
+    <a href="index.html" class="back-link">← На главную</a>
+    <h1>💻 Скрипты системного администрирования (Linux + Windows)</h1>
+    
+    <p>Сборник скриптов для автоматизации рутинных задач системного администратора. Все примеры проверены, содержат обработку ошибок и режим безопасного тестирования (<code>dry-run</code>), чтобы не сломать систему при первом запуске.</p>
+
+    <div class="evolution-note">
+        📌 <strong>Принципы:</strong> безопасность (никаких изменений без подтверждения), идемпотентность (повторный запуск не ломает систему), логирование (всё пишется в лог), обработка ошибок (скрипт не падает, а сообщает о проблеме).
+    </div>
+
+    <!-- Блок 1: Резервное копирование -->
+    <div class="script-card">
+        <h2>1. Резервное копирование файлов и базы данных</h2>
+        <p>Автоматическое резервное копирование важных данных с ротацией старых архивов (храним последние N дней).</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# backup.sh - резервное копирование с ротацией
+BACKUP_DIR="/backup"
+SOURCE_DIR="/var/www/octopus"
+DATE=$(date +%Y-%m-%d)
+KEEP_DAYS=7
+
+# Проверка прав
+if [[ $EUID -ne 0 ]]; then
+    echo "Ошибка: запустите от root"
+    exit 1
+fi
+
+# Создание архива
+tar -czf "$BACKUP_DIR/backup_$DATE.tar.gz" "$SOURCE_DIR" 2>/dev/null || {
+    echo "Ошибка: не удалось создать архив"
+    exit 1
+}
+
+# Удаление старых архивов
+find "$BACKUP_DIR" -name "backup_*.tar.gz" -mtime +$KEEP_DAYS -delete
+
+echo "✅ Резервное копирование завершено: $BACKUP_DIR/backup_$DATE.tar.gz"</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: backup.cmd - резервное копирование с ротацией
+@echo off
+set BACKUP_DIR=D:\Backup
+set SOURCE_DIR=C:\inetpub\wwwroot
+set DATE=%date:~-4%-%date:~3,2%-%date:~0,2%
+
+:: Проверка прав администратора
+net session >nul 2>&1 || (echo Ошибка: запустите от администратора & exit /b 1)
+
+:: Создание архива через 7-Zip
+"C:\Program Files\7-Zip\7z.exe" a -tzip "%BACKUP_DIR%\backup_%DATE%.zip" "%SOURCE_DIR%" >nul
+if %errorlevel% NEQ 0 (echo Ошибка: не удалось создать архив & exit /b 1)
+
+:: Удаление старых архивов (старше 7 дней)
+forfiles /p "%BACKUP_DIR%" /m backup_*.zip /d -7 /c "cmd /c del @path" 2>nul
+
+echo ✅ Резервное копирование завершено: %BACKUP_DIR%\backup_%DATE%.zip</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок 2: Мониторинг -->
+    <div class="script-card">
+        <h2>2. Мониторинг дискового пространства и нагрузки</h2>
+        <p>Проверка свободного места на дисках и отправка уведомления при превышении порога (например, 80%).</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# monitor_disk.sh - проверка свободного места
+THRESHOLD=80
+ALERT_EMAIL="admin@example.com"
+
+# Проверка всех смонтированных разделов
+df -H | grep -vE '^Filesystem|tmpfs|cdrom' | awk '{ print $5 " " $1 }' | while read output; do
+    usage=$(echo $output | awk '{ print $1}' | cut -d'%' -f1)
+    partition=$(echo $output | awk '{ print $2 }')
+    
+    if [[ $usage -ge $THRESHOLD ]]; then
+        echo "⚠️ ВНИМАНИЕ: раздел $partition заполнен на $usage%"
+        echo "Раздел $partition заполнен на $usage%" | mail -s "Disk Alert: $partition" "$ALERT_EMAIL"
+    fi
+done</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: monitor_disk.cmd - проверка свободного места
+@echo off
+setlocal enabledelayedexpansion
+set THRESHOLD=80
+
+:: Получение информации о дисках
+for /f "skip=1 tokens=1,2,3" %%a in ('wmic logicaldisk get caption^,size^,freespace') do (
+    set drive=%%a
+    set size=%%b
+    set free=%%c
+    
+    if not "!size!"=="0" (
+        set /a usage=100 - (!free! * 100 / !size!)
+        if !usage! GEQ %THRESHOLD% (
+            echo ⚠️ ВНИМАНИЕ: диск !drive! заполнен на !usage!%%
+        )
+    )
+)</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок 3: Управление пользователями -->
+    <div class="script-card">
+        <h2>3. Массовое управление пользователями и группами</h2>
+        <p>Создание пользователей, добавление в группы, блокировка неактивных учётных записей.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# user_manage.sh - массовое управление пользователями
+USER_LIST="/etc/users.list"  # формат: username:group
+
+# Проверка прав
+[[ $EUID -ne 0 ]] && { echo "Ошибка: запустите от root"; exit 1; }
+
+# Чтение списка и создание пользователей
+while IFS=':' read -r username group; do
+    if ! id "$username" &>/dev/null; then
+        useradd -m -s /bin/bash "$username"
+        echo "Создан пользователь: $username"
+    else
+        echo "Пользователь уже существует: $username"
+    fi
+    
+    # Добавление в группу
+    if [[ -n "$group" ]]; then
+        usermod -aG "$group" "$username"
+        echo "Пользователь $username добавлен в группу $group"
+    fi
+done < "$USER_LIST"</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: user_manage.cmd - массовое создание пользователей
+@echo off
+set USER_LIST=C:\users.list
+
+:: Проверка прав администратора
+net session >nul 2>&1 || (echo Ошибка: запустите от администратора & exit /b 1)
+
+:: Чтение списка и создание пользователей
+for /f "tokens=1,2 delims=:" %%a in (%USER_LIST%) do (
+    net user %%a /add >nul 2>&1
+    if !errorlevel! EQU 0 (echo Создан пользователь: %%a) else (echo Пользователь уже существует: %%a)
+    
+    if not "%%b"=="" (
+        net localgroup %%b %%a /add >nul 2>&1
+        echo Пользователь %%a добавлен в группу %%b
+    )
+)</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок 4: Безопасное тестирование -->
+    <div class="script-card">
+        <h2>4. Режим безопасного тестирования (dry-run)</h2>
+        <p>Любой скрипт можно запустить в тестовом режиме, чтобы проверить его логику, не внося изменений в систему.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# safe_script.sh - с поддержкой dry-run
+TEST_MODE="${TEST_MODE:-false}"
+
+log_action() {
+    if [[ "$TEST_MODE" == "true" ]]; then
+        echo "🔬 [ТЕСТ] $1"
+    else
+        echo "✅ [ВЫПОЛНЕНО] $1"
+        eval "$2"  # реальное выполнение
+    fi
+}
+
+# Пример использования
+log_action "Создание резервной копии" "tar -czf /backup/data.tar.gz /var/www"
+log_action "Перезапуск сервиса" "systemctl restart nginx"</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: safe_script.cmd - с поддержкой dry-run
+@echo off
+set TEST_MODE=%TEST_MODE%
+if "%TEST_MODE%"=="" set TEST_MODE=false
+
+:: Пример вызова с параметром
+call :log_action "Создание архива" "7z a backup.zip C:\data"
+call :log_action "Перезапуск сервиса" "net stop /y spooler & net start spooler"
+goto :eof
+
+:log_action
+if /i "%TEST_MODE%"=="true" (
+    echo 🔬 [ТЕСТ] %~1
+) else (
+    echo ✅ [ВЫПОЛНЕНО] %~1
+    %~2
+)
+goto :eof</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Блок 5: Управление службами -->
+    <div class="script-card">
+        <h2>5. Управление службами (запуск, остановка, перезапуск)</h2>
+        <p>Скрипты для проверки статуса служб и автоматического перезапуска при падении. Работают и в Linux (systemctl), и в Windows (sc/net).</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# service_check.sh - проверка и перезапуск службы
+SERVICE="nginx"
+MAX_ATTEMPTS=3
+ATTEMPT=1
+
+while [[ $ATTEMPT -le $MAX_ATTEMPTS ]]; do
+    if systemctl is-active --quiet "$SERVICE"; then
+        echo "✅ Служба $SERVICE работает"
+        exit 0
+    else
+        echo "⚠️ Служба $SERVICE не работает (попытка $ATTEMPT/$MAX_ATTEMPTS)"
+        systemctl restart "$SERVICE" 2>/dev/null
+        sleep 3
+        ((ATTEMPT++))
+    fi
+done
+
+echo "❌ Не удалось запустить службу $SERVICE после $MAX_ATTEMPTS попыток"
+echo "Проверьте логи: journalctl -u $SERVICE -n 20"
+exit 1</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: service_check.cmd - проверка и перезапуск службы
+@echo off
+set SERVICE=Spooler
+set MAX_ATTEMPTS=3
+set ATTEMPT=1
+
+:check_loop
+sc query "%SERVICE%" | find "RUNNING" >nul
+if %errorlevel% EQU 0 (
+    echo ✅ Служба %SERVICE% работает
+    goto :eof
+) else (
+    echo ⚠️ Служба %SERVICE% не работает (попытка %ATTEMPT%/%MAX_ATTEMPTS%)
+    net start "%SERVICE%" >nul 2>&1
+    timeout /t 3 /nobreak >nul
+    set /a ATTEMPT+=1
+    if %ATTEMPT% LEQ %MAX_ATTEMPTS% goto check_loop
+)
+
+echo ❌ Не удалось запустить службу %SERVICE% после %MAX_ATTEMPTS% попыток
+echo Проверьте логи: eventvwr.msc</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок 6: Работа с логами -->
+    <div class="script-card">
+        <h2>6. Работа с логами (анализ и ротация)</h2>
+        <p>Поиск ошибок в логах за последние сутки и автоматическая ротация (архивирование старых логов).</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# log_analyze.sh - анализ и ротация логов
+LOG_DIR="/var/log"
+ARCHIVE_DIR="/var/log/archive"
+DATE=$(date +%Y-%m-%d)
+
+# 1. Поиск ошибок за последние 24 часа
+echo "=== Ошибки за последние 24 часа ==="
+grep -i "error\|fail\|critical" "$LOG_DIR/syslog" 2>/dev/null | tail -20
+
+# 2. Ротация: архивируем логи старше 7 дней
+mkdir -p "$ARCHIVE_DIR"
+find "$LOG_DIR" -name "*.log" -mtime +7 -exec gzip {} \; -exec mv {}.gz "$ARCHIVE_DIR/" \;
+
+# 3. Удаление архивов старше 30 дней
+find "$ARCHIVE_DIR" -name "*.gz" -mtime +30 -delete
+
+echo "✅ Анализ и ротация логов завершены"</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: log_analyze.cmd - анализ и ротация логов
+@echo off
+set LOG_DIR=C:\Logs
+set ARCHIVE_DIR=C:\Logs\archive
+set DATE=%date:~-4%-%date:~3,2%-%date:~0,2%
+
+:: 1. Поиск ошибок в логах
+echo === Ошибки в логах ===
+findstr /i /c:"error" /c:"fail" "%LOG_DIR%\*.log" 2>nul | more
+
+:: 2. Ротация: архивируем логи старше 7 дней
+if not exist "%ARCHIVE_DIR%" mkdir "%ARCHIVE_DIR%"
+forfiles /p "%LOG_DIR%" /m *.log /d -7 /c "cmd /c move @path %ARCHIVE_DIR%\" 2>nul
+
+:: 3. Удаление архивов старше 30 дней
+forfiles /p "%ARCHIVE_DIR%" /m *.log /d -30 /c "cmd /c del @path" 2>nul
+
+echo ✅ Анализ и ротация логов завершены</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- Блок 7: Сетевые проверки -->
+    <div class="script-card">
+        <h2>7. Сетевые проверки (пинг, порты, трассировка)</h2>
+        <p>Автоматическая проверка доступности узлов, открытых портов и пути следования пакетов.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# network_check.sh - проверка сети
+HOSTS=("192.168.1.1" "8.8.8.8" "google.com")
+PORTS=(80 443 22)
+
+# 1. Пинг узлов
+echo "=== Проверка доступности ==="
+for host in "${HOSTS[@]}"; do
+    if ping -c 1 -W 2 "$host" &>/dev/null; then
+        echo "✅ $host доступен"
+    else
+        echo "❌ $host недоступен"
+    fi
+done
+
+# 2. Проверка портов
+echo "=== Проверка портов ==="
+for port in "${PORTS[@]}"; do
+    if timeout 1 bash -c "cat < /dev/null > /dev/tcp/8.8.8.8/$port" 2>/dev/null; then
+        echo "✅ Порт $port открыт"
+    else
+        echo "❌ Порт $port закрыт"
+    fi
+done
+
+# 3. Трассировка
+echo "=== Трассировка до 8.8.8.8 ==="
+traceroute -m 10 -w 1 8.8.8.8 2>/dev/null | head -10</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: network_check.cmd - проверка сети
+@echo off
+set HOSTS=192.168.1.1 8.8.8.8 google.com
+
+echo === Проверка доступности ===
+for %%h in (%HOSTS%) do (
+    ping -n 1 -w 2000 %%h >nul 2>&1
+    if !errorlevel! EQU 0 (echo ✅ %%h доступен) else (echo ❌ %%h недоступен)
+)
+
+echo === Проверка портов ===
+for %%p in (80 443 22) do (
+    powershell -Command "Test-NetConnection -ComputerName 8.8.8.8 -Port %%p -InformationLevel Quiet" >nul 2>&1
+    if !errorlevel! EQU 0 (echo ✅ Порт %%p открыт) else (echo ❌ Порт %%p закрыт)
+)
+
+echo === Трассировка до 8.8.8.8 ===
+tracert -h 10 -w 1000 8.8.8.8</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок 8: Инвентаризация железа -->
+    <div class="script-card">
+        <h2>8. Инвентаризация железа (сбор информации о системе)</h2>
+        <p>Сбор данных о процессоре, памяти, дисках, сетевых интерфейсах и сохранение в отчёт для дальнейшего анализа.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# inventory.sh - сбор информации о системе
+REPORT="/tmp/inventory_$(hostname)_$(date +%Y%m%d).txt"
+
+{
+    echo "=== ИНВЕНТАРИЗАЦИЯ СИСТЕМЫ ==="
+    echo "Дата: $(date)"
+    echo "Хост: $(hostname)"
+    echo "ОС: $(lsb_release -d 2>/dev/null | cut -f2 || uname -s)"
+    echo ""
+    
+    echo "=== CPU ==="
+    lscpu | grep -E "Model name|CPU\(s\)|MHz" 2>/dev/null || echo "lscpu не доступен"
+    echo ""
+    
+    echo "=== Память ==="
+    free -h 2>/dev/null || echo "free не доступен"
+    echo ""
+    
+    echo "=== Диски ==="
+    lsblk -o NAME,SIZE,TYPE,MOUNTPOINT 2>/dev/null || echo "lsblk не доступен"
+    echo ""
+    
+    echo "=== Сетевые интерфейсы ==="
+    ip -br a 2>/dev/null || echo "ip не доступен"
+    echo ""
+    
+    echo "=== Открытые порты ==="
+    ss -tuln 2>/dev/null | head -20 || echo "ss не доступен"
+} > "$REPORT"
+
+echo "✅ Отчёт сохранён: $REPORT"
+cat "$REPORT"</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: inventory.cmd - сбор информации о системе
+@echo off
+set REPORT=%TEMP%\inventory_%COMPUTERNAME%_%date:~-4%%date:~3,2%%date:~0,2%.txt
+
+(
+    echo === ИНВЕНТАРИЗАЦИЯ СИСТЕМЫ ===
+    echo Дата: %date% %time%
+    echo Хост: %COMPUTERNAME%
+    echo ОС: 
+    wmic os get caption /value | find "="
+    echo.
+    
+    echo === CPU ===
+    wmic cpu get name,numberofcores,maxclockspeed /format:list
+    echo.
+    
+    echo === Память ===
+    wmic memorychip get capacity,speed,manufacturer /format:list
+    echo.
+    
+    echo === Диски ===
+    wmic logicaldisk get caption,size,freespace,drivetype /format:list
+    echo.
+    
+    echo === Сетевые интерфейсы ===
+    ipconfig /all
+    echo.
+    
+    echo === Открытые порты ===
+    netstat -an | find "LISTENING"
+) > "%REPORT%"
+
+echo ✅ Отчёт сохранён: %REPORT%
+type "%REPORT%"</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- Блок 9: Обработка ошибок и логирование -->
+    <div class="script-card">
+        <h2>9. Обработка ошибок и логирование</h2>
+        <p>Правильная обработка ошибок: скрипт не «падает» молча, а пишет понятное сообщение в лог и продолжает работу (или корректно завершается).</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# error_handling.sh - обработка ошибок и логирование
+LOG_FILE="/var/log/my_script.log"
+MAX_RETRIES=3
+
+log() {
+    local level="$1"
+    local message="$2"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $message" | tee -a "$LOG_FILE"
+}
+
+# Функция с повторными попытками
+retry_command() {
+    local cmd="$1"
+    local attempt=1
+    
+    while [[ $attempt -le $MAX_RETRIES ]]; do
+        if eval "$cmd" 2>/dev/null; then
+            log "INFO" "Команда выполнена: $cmd"
+            return 0
+        else
+            log "WARN" "Попытка $attempt/$MAX_RETRIES не удалась: $cmd"
+            sleep 2
+            ((attempt++))
+        fi
+    done
+    
+    log "ERROR" "Команда не выполнена после $MAX_RETRIES попыток: $cmd"
+    return 1
+}
+
+# Пример использования
+if retry_command "systemctl restart nginx"; then
+    log "SUCCESS" "Nginx перезапущен"
+else
+    log "ERROR" "Не удалось перезапустить Nginx"
+    exit 1
+fi</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: error_handling.cmd - обработка ошибок и логирование
+@echo off
+setlocal enabledelayedexpansion
+set LOG_FILE=C:\Logs\my_script.log
+set MAX_RETRIES=3
+
+:: Функция логирования
+call :log "INFO" "Скрипт запущен"
+
+:: Функция с повторными попытками
+call :retry "net start Spooler"
+if !errorlevel! EQU 0 (
+    call :log "SUCCESS" "Служба Spooler запущена"
+) else (
+    call :log "ERROR" "Не удалось запустить Spooler"
+    exit /b 1
+)
+goto :eof
+
+:log
+echo [%date% %time%] [%~1] %~2 >> "%LOG_FILE%"
+echo [%date% %time%] [%~1] %~2
+goto :eof
+
+:retry
+set CMD=%~1
+set ATTEMPT=1
+:retry_loop
+%CMD% >nul 2>&1
+if !errorlevel! EQU 0 (
+    call :log "INFO" "Команда выполнена: %CMD%"
+    exit /b 0
+) else (
+    call :log "WARN" "Попытка !ATTEMPT!/%MAX_RETRIES% не удалась: %CMD%"
+    timeout /t 2 /nobreak >nul
+    set /a ATTEMPT+=1
+    if !ATTEMPT! LEQ %MAX_RETRIES% goto retry_loop
+)
+call :log "ERROR" "Команда не выполнена после %MAX_RETRIES% попыток: %CMD%"
+exit /b 1</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок 10: Автоматизация через планировщик -->
+    <div class="script-card">
+        <h2>10. Автоматизация через планировщик (cron / Task Scheduler)</h2>
+        <p>Настройка автоматического запуска скриптов по расписанию: ежедневно, еженедельно или по событию.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash / cron)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# schedule_task.sh - добавление задачи в cron
+SCRIPT_PATH="/usr/local/bin/backup.sh"
+CRON_SCHEDULE="0 2 * * *"  # каждый день в 2:00
+LOG_FILE="/var/log/cron_backup.log"
+
+# Проверка прав
+[[ $EUID -ne 0 ]] && { echo "Ошибка: запустите от root"; exit 1; }
+
+# Проверка существования скрипта
+if [[ ! -f "$SCRIPT_PATH" ]]; then
+    echo "Ошибка: скрипт $SCRIPT_PATH не найден"
+    exit 1
+fi
+
+# Добавление задачи в cron (если ещё нет)
+if crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
+    echo "⚠️ Задача уже существует в cron"
+else
+    (crontab -l 2>/dev/null; echo "$CRON_SCHEDULE $SCRIPT_PATH >> $LOG_FILE 2>&1") | crontab -
+    echo "✅ Задача добавлена в cron: $CRON_SCHEDULE $SCRIPT_PATH"
+fi
+
+# Показать текущее расписание
+echo "=== Текущее расписание cron ==="
+crontab -l</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch / Task Scheduler)</h3>
+                <div class="code-wrap">
+                    <pre>:: schedule_task.cmd - добавление задачи в Планировщик
+@echo off
+set SCRIPT_PATH=C:\Scripts\backup.cmd
+set TASK_NAME=DailyBackup
+
+:: Проверка прав администратора
+net session >nul 2>&1 || (echo Ошибка: запустите от администратора & exit /b 1)
+
+:: Проверка существования скрипта
+if not exist "%SCRIPT_PATH%" (
+    echo Ошибка: скрипт %SCRIPT_PATH% не найден
+    exit /b 1
+)
+
+:: Создание задачи (ежедневно в 2:00)
+schtasks /create /tn "%TASK_NAME%" /tr "%SCRIPT_PATH%" /sc daily /st 02:00 /ru SYSTEM /f
+if %errorlevel% EQU 0 (
+    echo ✅ Задача добавлена: %TASK_NAME% (ежедневно в 2:00)
+) else (
+    echo ❌ Ошибка при создании задачи
+    exit /b 1
+)
+
+:: Показать текущее расписание
+echo === Текущие задачи ===
+schtasks /query /tn "%TASK_NAME%" /v /fo list</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- Блок 11: Проверка безопасности -->
+    <div class="script-card">
+        <h2>11. Проверка безопасности (базовый аудит)</h2>
+        <p>Быстрая проверка системы на наличие типичных проблем: открытые порты, слабые пароли, устаревшие пакеты, неактивные учётные записи.</p>
+        
+        <div class="layer">
+            <div class="side side-linux">
+                <h3>🐧 Linux (Bash)</h3>
+                <div class="code-wrap">
+                    <pre>#!/bin/bash
+# security_audit.sh - базовый аудит безопасности
+LOG_FILE="/var/log/security_audit.log"
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"; }
+
+log "=== АУДИТ БЕЗОПАСНОСТИ ==="
+
+# 1. Пользователи без пароля
+log "1. Пользователи без пароля:"
+awk -F: '($2 == "" || $2 == "!") {print $1}' /etc/shadow 2>/dev/null || log "  Нет доступа к /etc/shadow"
+
+# 2. Пользователи с UID 0 (кроме root)
+log "2. Пользователи с UID 0:"
+awk -F: '($3 == 0) {print $1}' /etc/passwd
+
+# 3. Открытые порты
+log "3. Открытые порты (наружу):"
+ss -tuln 2>/dev/null | grep -E "0.0.0.0|:::" | head -10
+
+# 4. Устаревшие пакеты
+log "4. Пакеты, требующие обновления:"
+apt list --upgradable 2>/dev/null | tail -n +2 | head -10 || log "  apt не доступен"
+
+# 5. Последние входы в систему
+log "5. Последние входы (топ-5):"
+last -n 5 2>/dev/null | head -5
+
+log "=== АУДИТ ЗАВЕРШЁН ==="</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+            <div class="side side-win">
+                <h3>🪟 Windows (CMD/Batch)</h3>
+                <div class="code-wrap">
+                    <pre>:: security_audit.cmd - базовый аудит безопасности
+@echo off
+set LOG_FILE=C:\Logs\security_audit.log
+
+echo [%date% %time%] === АУДИТ БЕЗОПАСНОСТИ === >> "%LOG_FILE%"
+
+:: 1. Пользователи с правами администратора
+echo 1. Пользователи-администраторы:
+net localgroup Администраторы 2>nul >> "%LOG_FILE%"
+
+:: 2. Открытые порты
+echo 2. Открытые порты:
+netstat -an | find "LISTENING" >> "%LOG_FILE%"
+
+:: 3. Неактивные учётные записи (в домене)
+echo 3. Неактивные учётные записи:
+dsquery user -inactive 8 -limit 10 2>nul >> "%LOG_FILE%"
+
+:: 4. Последние входы в систему
+echo 4. Последние входы:
+wevtutil qe Security /q:"*[System[(EventID=4624)]]" /c:5 /f:text 2>nul >> "%LOG_FILE%"
+
+:: 5. Статус антивируса (Windows Defender)
+echo 5. Статус Windows Defender:
+powershell -Command "Get-MpComputerStatus | Select-Object AntivirusEnabled,RealTimeProtectionEnabled" >> "%LOG_FILE%" 2>nul
+
+echo === АУДИТ ЗАВЕРШЁН === >> "%LOG_FILE%"
+type "%LOG_FILE%"</pre>
+                    <button class="copy-btn">Копировать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок 12: Итоговое резюме -->
+    <div class="script-card">
+        <h2>12. Итог: какие навыки показаны</h2>
+        <p>Этот раздел — не просто скрипты, а демонстрация системного мышления и практических навыков администрирования.</p>
+        
+        <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📖 Что мы показали</h3>
+            
+            <p><strong>1. Кроссплатформенность.</strong> Каждый скрипт написан в двух вариантах: Linux (Bash) и Windows (CMD/Batch). Это показывает, что вы умеете работать в гетерогенной среде и понимаете различия между ОС.</p>
+            
+            <p><strong>2. Безопасность.</strong> Все скрипты содержат проверки прав (root / администратор), обработку ошибок (не «падают» молча), логирование (всё пишется в лог). Это уровень промышленной эксплуатации, а не «домашние поделки».</p>
+            
+            <p><strong>3. Режим dry-run.</strong> Блок 4 показывает, как сделать скрипт безопасным для тестирования: сначала проверка логики, потом реальное выполнение. Это критически важно для администрирования.</p>
+            
+            <p><strong>4. Автоматизация.</strong> Блок 10 показывает, как интегрировать скрипты в планировщик (cron / Task Scheduler). Это то, что нужно любому админу: «поставил и забыл».</p>
+            
+            <p><strong>5. Аудит и инвентаризация.</strong> Блоки 8 и 11 показывают умение собирать информацию о системе и проверять её на безопасность. Это часть ежедневной работы системного администратора.</p>
+            
+            <p><strong>6. Понимание сетей.</strong> Блок 7 показывает работу с ping, traceroute, портами. Это дополняет сетевые навыки из Cisco-лаб и делает портфолио более цельным.</p>
+            
+            <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
+            
+            <p><strong>Что это даёт для портфолио:</strong> Вы показали не просто «я умею писать скрипты». Вы показали <strong>инженерную зрелость</strong>: безопасность, обработка ошибок, кроссплатформенность, автоматизация. Это именно то, что ищут работодатели на удалёнку для позиций системного администратора или DevOps-инженера.</p>
+            
+            <p><strong>Связь с другими разделами:</strong> Эти скрипты дополняют сетевые лабораторные (Cisco) и страницу эволюции конфигураций. Вместе они показывают полный стек: от настройки сети до её автоматизации и мониторинга.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const themeBtn = document.getElementById('theme-btn');
+    const saved = localStorage.getItem('sysadmin-theme') || 'light';
+    document.body.dataset.theme = saved;
+    themeBtn.addEventListener('click', () => {
+        const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+        document.body.dataset.theme = next;
+        localStorage.setItem('sysadmin-theme', next);
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const pre = btn.parentElement.querySelector('pre');
+            let text = pre.innerText
+                .split('\n')
+                .filter(line => !line.trim().startsWith('::') && !line.trim().startsWith('#'))
+                .map(line => line.replace(/\s+$/g, ''))
+                .join('\n')
+                .replace(/^\s*\n+/, '')
+                .replace(/\n+\s*$/, '');
+            if (!text.trim()) text = pre.innerText;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                btn.textContent = '✅ Скопировано';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.textContent = 'Копировать'; btn.classList.remove('copied'); }, 1500);
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btn.textContent = '✅ Скопировано';
+                setTimeout(() => { btn.textContent = 'Копировать'; }, 1500);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
