@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Практикум: решение задач по технологиям Cisco</title>
+    <style>
+        :root {
+            --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
+            --accent: #7fa8d4; --accent-green: #2e7d32; --accent-blue: #2980b9;
+            --term-bg: #1e1e1e; --term-fg: #d4d4d4;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
+            --accent: #a3c4e8; --accent-green: #81c784; --accent-blue: #64b5f6;
+            --term-bg: #111; --term-fg: #e0e0e0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--fg); line-height: 1.6;
+            margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+
+        .theme-btn {
+            position: fixed; top: 20px; right: 20px; padding: 10px 15px;
+            background: var(--card); color: var(--fg); border: 1px solid var(--border);
+            border-radius: 20px; cursor: pointer; font-weight: bold; z-index: 100;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .theme-btn:hover { background: var(--accent); color: #fff; }
+        .theme-btn:active { transform: scale(0.95); }
+
+        .script-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 25px; margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .script-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+        .task-block {
+            margin-top: 15px; padding: 15px; 
+            background: var(--bg); border-radius: 8px; 
+            border: 1px solid var(--border);
+        }
+        .task-block h3 { margin-top: 0; color: var(--accent-blue); }
+        .check-block {
+            margin-top: 15px; padding: 15px; 
+            background: rgba(46, 125, 50, 0.1); 
+            border-left: 4px solid var(--accent-green); 
+            border-radius: 6px;
+        }
+        .check-block h3 { margin-top: 0; color: var(--accent-green); }
+
+        .code-wrap { position: relative; margin-top: 10px; min-width: 0; }
+        .code-wrap pre {
+            background: var(--term-bg); color: var(--term-fg); 
+            padding: 15px; border-radius: 6px; 
+            font-family: Consolas, monospace; font-size: 13px; 
+            margin: 0; max-height: 300px; max-width: 100%;
+            overflow-x: auto; overflow-y: auto; 
+            white-space: pre;
+        }
+        .copy-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: #238636; color: #fff; border: none; padding: 5px 12px;
+            border-radius: 4px; cursor: pointer; font-size: 12px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .copy-btn:hover { background: #2ea043; }
+        .copy-btn:active { transform: scale(0.9); }
+        .copy-btn.copied { background: #1f6feb; }
+
+        /* Скроллбар */
+        .code-wrap pre::-webkit-scrollbar { width: 8px; height: 8px; }
+        .code-wrap pre::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+        .code-wrap pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .code-wrap pre::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+        .intro {
+            background: rgba(127, 168, 212, 0.1); border-left: 4px solid var(--accent);
+            padding: 12px 16px; border-radius: 6px; margin: 20px 0;
+            font-style: italic;
+        }
+
+        footer { max-width: 1000px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
+    </style>
+</head>
+<body data-theme="light">
+
+<button class="theme-btn" id="theme-btn">🌙 Тема</button>
+
+<div class="container">
+    <a href="index.html" class="back-link">← На главную</a>
+    <h1>🎯 Практикум: решение задач по технологиям Cisco</h1>
+    
+    <p>Здесь собраны практические задачи по каждой технологии из Лабораторных 1 и 2. Для каждой — условие, пошаговое решение и проверка. Это не просто теория, а отработка навыков на конкретных сценариях.</p>
+
+    <div class="intro">
+        📌 <strong>Как пользоваться:</strong> Прочитайте задачу, попробуйте решить сами, затем сверьтесь с решением. Все команды можно скопировать в терминал.
+    </div>
+
+    <!-- Задача 1: VLAN и Trunk -->
+    <div class="script-card">
+        <h2>1. VLAN и Trunk</h2>
+        <p><strong>Задача:</strong> Разделить сеть на два VLAN (10 — IT, 20 — Бухгалтерия) и настроить trunk между коммутаторами.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>Коммутатор SW1 (доступ к VLAN 10 и 20).</li>
+                <li>Коммутатор SW2 (доступ к VLAN 10 и 20).</li>
+                <li>Между SW1 и SW2 — trunk (802.1Q).</li>
+                <li>ПК1 в VLAN 10, ПК2 в VLAN 20 (на SW1).</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Создать VLAN на SW1 и SW2:</strong></p>
+            <div class="code-wrap">
+                <pre>vlan 10
+ name IT
+vlan 20
+ name Accounting</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить access-порты для ПК:</strong></p>
+            <div class="code-wrap">
+                <pre>interface f0/1
+ switchport mode access
+ switchport access vlan 10
+interface f0/2
+ switchport mode access
+ switchport access vlan 20</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Настроить trunk между SW1 и SW2:</strong></p>
+            <div class="code-wrap">
+                <pre>interface f0/24
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show vlan brief</code> — VLAN 10 и 20 на месте, порты назначены.</li>
+                <li><code>show interfaces trunk</code> — порт f0/24 в режиме trunk, allowed VLAN 10,20.</li>
+                <li><code>ping</code> с ПК1 (VLAN 10) до ПК2 (VLAN 20) — <strong>не проходит</strong> (разные VLAN, нет маршрутизации).</li>
+            </ul>
+    <!-- Задача 2: EtherChannel LACP -->
+    <div class="script-card">
+        <h2>2. EtherChannel LACP</h2>
+        <p><strong>Задача:</strong> Объединить 4 физических линка между SW1 и SW2 в один логический канал (Po1) с помощью LACP.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>SW1 и SW2 соединены 4 портами (f0/1–f0/4).</li>
+                <li>Нужно объединить их в Po1 (LACP, active).</li>
+                <li>Проверить, что при падении одного порта канал остаётся рабочим.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. На SW1 (активная сторона):</strong></p>
+            <div class="code-wrap">
+                <pre>interface range f0/1-4
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. На SW2 (активная сторона):</strong></p>
+            <div class="code-wrap">
+                <pre>interface range f0/1-4
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show etherchannel summary</code> — Po1 в статусе <code>SU</code>, порты <code>P</code>.</li>
+                <li><strong>Тест на отказ:</strong> на SW1 выполнить <code>shutdown</code> на f0/1. Канал остаётся <code>SU</code>, пинги не прерываются.</li>
+                <li>Вернуть порт: <code>no shutdown</code> на f0/1.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Задача 3: EtherChannel PAgP -->
+    <div class="script-card">
+        <h2>3. EtherChannel PAgP</h2>
+        <p><strong>Задача:</strong> Объединить 4 физических линка между SW3 и SW4 в один логический канал (Po2) с помощью PAgP.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>SW3 и SW4 соединены 4 портами (f0/1–f0/4).</li>
+                <li>Нужно объединить их в Po2 (PAgP).</li>
+                <li>Одна сторона — <code>desirable</code>, другая — <code>auto</code>.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. На SW3 (desirable):</strong></p>
+            <div class="code-wrap">
+                <pre>interface range f0/1-4
+ channel-group 2 mode desirable
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. На SW4 (auto):</strong></p>
+            <div class="code-wrap">
+                <pre>interface range f0/1-4
+ channel-group 2 mode auto
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show etherchannel summary</code> — Po2 в статусе <code>SU</code>, порты <code>P</code>.</li>
+                <li><code>show interfaces trunk</code> — Po2 в режиме trunk.</li>
+                <li><strong>Тест на отказ:</strong> на SW3 выполнить <code>shutdown</code> на f0/2. Канал остаётся <code>SU</code>.</li>
+            </ul>
+        </div>
+    </div>
+    <!-- Задача 4: STP -->
+    <div class="script-card">
+        <h2>4. STP (Защита от петель)</h2>
+        <p><strong>Задача:</strong> Настроить Rapid-PVST+ так, чтобы SW1 был корневым мостом, а избыточные порты на SW3 заблокировались.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>Три коммутатора (SW1, SW2, SW3) соединены в кольцо.</li>
+                <li>SW1 должен стать Root Bridge (приоритет 24576).</li>
+                <li>На SW3 избыточные порты должны быть в статусе <code>Altn BLK</code>.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Включить Rapid-PVST+ на всех свитчах:</strong></p>
+            <div class="code-wrap">
+                <pre>spanning-tree mode rapid-pvst</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Назначить SW1 корневым мостом:</strong></p>
+            <div class="code-wrap">
+                <pre>spanning-tree vlan 1,100,102-107 priority 24576</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li>На SW1: <code>show spanning-tree vlan 1</code> — строка <code>This bridge is the root</code>.</li>
+                <li>На SW3: <code>show spanning-tree vlan 1</code> — порты, ведущие к SW2, должны быть в <code>Altn BLK</code>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Задача 5: OSPF -->
+    <div class="script-card">
+        <h2>5. OSPF (Динамическая маршрутизация)</h2>
+        <p><strong>Задача:</strong> Настроить OSPF между двумя роутерами (R1 и R2) и проверить, что они видят сети друг друга.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1: сеть 10.0.0.0/30 на f0/0, сеть 192.168.1.0/24 на f0/1 (LAN).</li>
+                <li>R2: сеть 10.0.0.0/30 на f0/0, сеть 192.168.2.0/24 на f0/1 (LAN).</li>
+                <li>Настроить OSPF Area 0, чтобы R1 и R2 обменялись маршрутами.</li>
+                <li>Включить аутентификацию MD5.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Настроить R1:</strong></p>
+            <div class="code-wrap">
+                <pre>router ospf 1
+ router-id 1.1.1.1
+ network 10.0.0.0 0.0.0.3 area 0
+ network 192.168.1.0 0.0.0.255 area 0
+ area 0 authentication
+interface f0/0
+ ip ospf authentication-key secret
+interface f0/1
+ ip ospf authentication-key secret</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить R2:</strong></p>
+            <div class="code-wrap">
+                <pre>router ospf 1
+ router-id 2.2.2.2
+ network 10.0.0.0 0.0.0.3 area 0
+ network 192.168.2.0 0.0.0.255 area 0
+ area 0 authentication
+interface f0/0
+ ip ospf authentication-key secret
+interface f0/1
+ ip ospf authentication-key secret</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show ip ospf neighbor</code> — сосед в статусе <code>FULL</code>.</li>
+                <li><code>show ip route ospf</code> — маршрут до сети 192.168.2.0 с меткой <code>O</code>.</li>
+                <li><code>ping 192.168.2.1</code> (с R1) — успешно.</li>
+            </ul>
+        </div>
+    </div>
+        <!-- Задача 6: HSRP -->
+    <div class="script-card">
+        <h2>6. HSRP (Резервирование шлюза)</h2>
+        <p><strong>Задача:</strong> Настроить HSRP на двух роутерах (R1 и R2), чтобы при падении R1 трафик перехватывал R2 без обрыва связи у клиентов.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1 и R2 в одной сети (192.168.1.0/24).</li>
+                <li>Виртуальный IP-шлюз: 192.168.1.2.</li>
+                <li>R1 — Active (приоритет 150, preempt).</li>
+                <li>R2 — Standby (приоритет 100).</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Настроить R1 (Active):</strong></p>
+            <div class="code-wrap">
+                <pre>interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 priority 150
+ standby 1 preempt</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить R2 (Standby):</strong></p>
+            <div class="code-wrap">
+                <pre>interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 priority 100
+ standby 1 preempt</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show standby brief</code> на R1 — <code>Active</code> (Pri 150). На R2 — <code>Standby</code> (Pri 100).</li>
+                <li><strong>Тест Failover:</strong> на R1 выполнить <code>shutdown</code> на f0/0. На R2 статус меняется на <code>Active</code>.</li>
+                <li>С ПК <code>ping 192.168.1.2</code> — не прерывается (R2 перехватил IP).</li>
+                <li>Вернуть R1: <code>no shutdown</code> на f0/0 (R1 вернёт роль Active из-за <code>preempt</code>).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Задача 7: BGP -->
+    <div class="script-card">
+        <h2>7. BGP (Стык с провайдером)</h2>
+        <p><strong>Задача:</strong> Настроить eBGP между корпоративным роутером (R1) и провайдером (ISP), чтобы R1 получал маршрут в интернет.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1: AS 65002, IP 10.0.0.2/30 на f0/1 (к ISP).</li>
+                <li>ISP: AS 65001, IP 10.0.0.1/30 на f0/0.</li>
+                <li>R1 должен анонсировать сеть 192.168.1.0/24.</li>
+                <li>ISP анонсирует маршрут по умолчанию (0.0.0.0/0).</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Настроить ISP:</strong></p>
+            <div class="code-wrap">
+                <pre>router bgp 65001
+ neighbor 10.0.0.2 remote-as 65002
+ network 0.0.0.0 mask 0.0.0.0
+ default-information originate</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить R1:</strong></p>
+            <div class="code-wrap">
+                <pre>router bgp 65002
+ neighbor 10.0.0.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show ip bgp summary</code> на R1 — сессия с 10.0.0.1 в статусе <code>Established</code>.</li>
+                <li><code>show ip bgp</code> на R1 — маршрут <code>0.0.0.0/0</code> (дефолт) получен от ISP.</li>
+                <li><code>show ip bgp neighbors 10.0.0.1 advertised-routes</code> — R1 анонсирует сеть 192.168.1.0/24.</li>
+                <li><code>ping 8.8.8.8</code> с ПК за R1 — успешно (при наличии NAT).</li>
+            </ul>
+        </div>
+    </div>
+        <!-- Задача 8: IPv6 и OSPFv3 -->
+    <div class="script-card">
+        <h2>8. IPv6 и OSPFv3 (Двухстековая маршрутизация)</h2>
+        <p><strong>Задача:</strong> Настроить IPv6-адресацию и OSPFv3 между двумя роутерами, проверить связность по IPv6.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1: сеть 2001:DB8:1::/64 на f0/0, сеть 2001:DB8:10::/64 на f0/1 (к R2).</li>
+                <li>R2: сеть 2001:DB8:10::/64 на f0/0, сеть 2001:DB8:2::/64 на f0/1.</li>
+                <li>Настроить OSPFv3 Area 0 для динамической маршрутизации.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Настроить R1:</strong></p>
+            <div class="code-wrap">
+                <pre>ipv6 unicast-routing
+interface f0/0
+ ipv6 address 2001:DB8:1::1/64
+ ipv6 ospf 1 area 0
+interface f0/1
+ ipv6 address 2001:DB8:10::1/64
+ ipv6 ospf 1 area 0
+router ospfv3 1
+ router-id 1.1.1.1</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить R2:</strong></p>
+            <div class="code-wrap">
+                <pre>ipv6 unicast-routing
+interface f0/0
+ ipv6 address 2001:DB8:10::2/64
+ ipv6 ospf 1 area 0
+interface f0/1
+ ipv6 address 2001:DB8:2::1/64
+ ipv6 ospf 1 area 0
+router ospfv3 1
+ router-id 2.2.2.2</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show ospfv3 neighbor</code> — сосед в статусе <code>FULL</code>.</li>
+                <li><code>show ipv6 route ospf</code> — маршрут до 2001:DB8:2::/64.</li>
+                <li><code>ping ipv6 2001:DB8:2::1</code> (с R1) — успешно.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Задача 9: Безопасность L2 (Port Security + DHCP Snooping) -->
+    <div class="script-card">
+        <h2>9. Безопасность L2 (Port Security + DHCP Snooping)</h2>
+        <p><strong>Задача:</strong> Защитить порт коммутатора от подключения чужих устройств и включить DHCP Snooping для защиты от левых DHCP-серверов.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>Коммутатор SW1. Порт f0/10 — доступ для клиента.</li>
+                <li>Транк-порт Po1 — к реальному DHCP-серверу (trust).</li>
+                <li>Включить Port Security на f0/10 (1 MAC, violation shutdown).</li>
+                <li>Включить DHCP Snooping в VLAN 10, доверенный порт — только Po1.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Включить DHCP Snooping глобально и в VLAN:</strong></p>
+            <div class="code-wrap">
+                <pre>ip dhcp snooping
+ip dhcp snooping vlan 10
+no ip dhcp snooping information option</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить доверенный порт (транк):</strong></p>
+            <div class="code-wrap">
+                <pre>interface Port-channel 1
+ ip dhcp snooping trust</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Включить Port Security на порту клиента:</strong></p>
+            <div class="code-wrap">
+                <pre>interface f0/10
+ switchport mode access
+ switchport access vlan 10
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show ip dhcp snooping</code> — Po1 в статусе <code>trust</code>, f0/10 — нет.</li>
+                <li><code>show port-security interface f0/10</code> — статус <code>Secure-up</code>, maximum 1.</li>
+                <li><strong>Тест Port Security:</strong> сменить MAC на ПК (или подключить другое устройство), <code>ping</code> — порт уходит в <code>err-disabled</code>.</li>
+                <li><strong>Тест DHCP Snooping:</strong> если поднять «левый» DHCP-сервер на f0/10, его ответы не пройдут (порт untrusted).</li>
+            </ul>
+        </div>
+    </div>
+        <!-- Задача 10: DHCP -->
+    <div class="script-card">
+        <h2>10. DHCP (Автоматизация выдачи адресов)</h2>
+        <p><strong>Задача:</strong> Настроить DHCP-сервер на L3-коммутаторе для выдачи адресов клиентам в VLAN 10 и VLAN 20.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>SW1 (L3-коммутатор) с VLAN 10 (192.168.10.0/24) и VLAN 20 (192.168.20.0/24).</li>
+                <li>Шлюзы: .254 в каждом VLAN (SVI).</li>
+                <li>Исключить из выдачи адреса шлюзов и серверов (.1–.10).</li>
+                <li>Клиенты должны получать IP, маску, шлюз и DNS (8.8.8.8).</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Создать SVI и включить маршрутизацию:</strong></p>
+            <div class="code-wrap">
+                <pre>ip routing
+interface Vlan10
+ ip address 192.168.10.254 255.255.255.0
+ no shutdown
+interface Vlan20
+ ip address 192.168.20.254 255.255.255.0
+ no shutdown</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Исключить адреса и создать пулы:</strong></p>
+            <div class="code-wrap">
+                <pre>ip dhcp excluded-address 192.168.10.1 192.168.10.10
+ip dhcp excluded-address 192.168.20.1 192.168.20.10
+ip dhcp pool VLAN10
+ network 192.168.10.0 255.255.255.0
+ default-router 192.168.10.254
+ dns-server 8.8.8.8
+ip dhcp pool VLAN20
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.254
+ dns-server 8.8.8.8</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li>На ПК в VLAN 10 выбрать «DHCP» — получить IP из диапазона 192.168.10.11–253.</li>
+                <li>На SW1: <code>show ip dhcp binding</code> — увидеть выданные адреса и MAC-адреса клиентов.</li>
+                <li><code>show ip dhcp pool</code> — статистика по пулам.</li>
+                <li><code>ping 192.168.20.254</code> с ПК VLAN 10 — успешно (маршрутизация между VLAN).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Задача 11: NAT/PAT -->
+    <div class="script-card">
+        <h2>11. NAT/PAT (Выход в интернет)</h2>
+        <p><strong>Задача:</strong> Настроить PAT (Overload) на граничном роутере, чтобы все клиенты внутренней сети выходили в интернет под одним внешним IP.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1: f0/0 — внутренний (192.168.10.0/24), f0/1 — внешний (10.0.0.2/30, к ISP).</li>
+                <li>Внутренняя сеть 192.168.10.0/24.</li>
+                <li>Все клиенты должны выходить в интернет под IP 10.0.0.2.</li>
+                <li>Сервер 192.168.10.10 должен быть доступен извне (Static NAT).</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Пометить интерфейсы inside/outside:</strong></p>
+            <div class="code-wrap">
+                <pre>interface f0/0
+ ip nat inside
+interface f0/1
+ ip nat outside</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Создать ACL для NAT и включить PAT:</strong></p>
+            <div class="code-wrap">
+                <pre>ip access-list extended NAT
+ permit ip 192.168.10.0 0.0.0.255 any
+ip nat inside source list NAT interface f0/1 overload</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Static NAT для сервера (проброс порта):</strong></p>
+            <div class="code-wrap">
+                <pre>ip nat inside source static tcp 192.168.10.10 80 interface f0/1 80</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li>С ПК: <code>ping 8.8.8.8</code> — успешно (через PAT).</li>
+                <li>На R1: <code>show ip nat translations</code> — записи с внутренним IP ПК и внешним 10.0.0.2.</li>
+                <li><code>show ip nat statistics</code> — счётчик hits увеличивается.</li>
+                <li>С внешнего хоста: <code>telnet 10.0.0.2 80</code> — должен попасть на сервер 192.168.10.10.</li>
+            </ul>
+        </div>
+    </div>
+        <!-- Задача 12: EIGRP + Redistribution -->
+    <div class="script-card">
+        <h2>12. EIGRP + Redistribution</h2>
+        <p><strong>Задача:</strong> Настроить EIGRP между двумя роутерами и перераспределить маршруты между OSPF и EIGRP на граничном роутере.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1 (OSPF) — сеть 10.0.0.0/24.</li>
+                <li>R2 (граничный) — связь с R1 по OSPF и с R3 по EIGRP.</li>
+                <li>R3 (EIGRP) — сеть 20.0.0.0/24.</li>
+                <li>Настроить OSPF AS 1 и EIGRP AS 100, перераспределить маршруты.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Настроить R1 (OSPF):</strong></p>
+            <div class="code-wrap">
+                <pre>router ospf 1
+ network 10.0.0.0 0.0.0.255 area 0</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить R3 (EIGRP):</strong></p>
+            <div class="code-wrap">
+                <pre>router eigrp 100
+ network 20.0.0.0 0.0.0.255
+ no auto-summary</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Настроить R2 (граничный, redistribution):</strong></p>
+            <div class="code-wrap">
+                <pre>router ospf 1
+ network 10.0.0.0 0.0.0.255 area 0
+ redistribute eigrp 100 subnets
+router eigrp 100
+ network 20.0.0.0 0.0.0.255
+ no auto-summary
+ redistribute ospf 1 metric 10000 100 255 1 1500</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li>На R2: <code>show ip route</code> — маршруты OSPF (<code>O</code>) и EIGRP (<code>D</code>), а также внешние (<code>O E2</code>, <code>D EX</code>).</li>
+                <li>На R1: <code>show ip route 20.0.0.0</code> — маршрут с меткой <code>O E2</code> (перераспределён из EIGRP).</li>
+                <li>На R3: <code>show ip route 10.0.0.0</code> — маршрут с меткой <code>D EX</code> (перераспределён из OSPF).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Задача 13: MSTP -->
+    <div class="script-card">
+        <h2>13. MSTP (Multiple Spanning Tree Protocol)</h2>
+        <p><strong>Задача:</strong> Настроить MSTP с двумя инстансами (для разных групп VLAN) и балансировкой нагрузки между двумя корневыми коммутаторами.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>SW1 и SW2 — корневые для разных инстансов.</li>
+                <li>Instance 1 — VLAN 100, 102, 104. Instance 2 — VLAN 105, 106, 107, 108.</li>
+                <li>На SW1: Instance 1 — root primary, Instance 2 — root secondary.</li>
+                <li>На SW2: наоборот.</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Включить MSTP и создать регион на обоих коммутаторах:</strong></p>
+            <div class="code-wrap">
+                <pre>spanning-tree mode mst
+spanning-tree mst configuration
+ name LAB
+ revision 1
+ instance 1 vlan 100,102,104
+ instance 2 vlan 105,106,107,108
+ exit</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить корневые мосты на SW1:</strong></p>
+            <div class="code-wrap">
+                <pre>spanning-tree mst 1 root primary
+spanning-tree mst 2 root secondary</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Настроить корневые мосты на SW2:</strong></p>
+            <div class="code-wrap">
+                <pre>spanning-tree mst 1 root secondary
+spanning-tree mst 2 root primary</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li>На SW1: <code>show spanning-tree mst 1</code> — «This bridge is the root». <code>show spanning-tree mst 2</code> — не root.</li>
+                <li>На SW2: наоборот (root для instance 2).</li>
+                <li><code>show spanning-tree mst configuration</code> — проверить, что имена региона и инстансы совпадают.</li>
+            </ul>
+        </div>
+    </div>
+        <!-- Задача 14: NTP -->
+    <div class="script-card">
+        <h2>14. NTP (Синхронизация времени)</h2>
+        <p><strong>Задача:</strong> Настроить синхронизацию времени между сетевыми устройствами, чтобы логи и сертификаты работали корректно.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1 — NTP-сервер (источник времени).</li>
+                <li>SW1 — NTP-клиент (синхронизируется с R1).</li>
+                <li>Часовой пояс — Москва (UTC+3).</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Настроить R1 как NTP-сервер:</strong></p>
+            <div class="code-wrap">
+                <pre>clock timezone MSK 3 0
+ntp master 1</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить SW1 как NTP-клиент:</strong></p>
+            <div class="code-wrap">
+                <pre>clock timezone MSK 3 0
+ntp server 192.168.1.5</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li><code>show ntp status</code> на SW1 — статус <code>synchronized</code>.</li>
+                <li><code>show clock</code> на SW1 и R1 — время совпадает (с точностью до секунды).</li>
+                <li><code>show ntp associations</code> — сервер в статусе <code>*</code> (выбран).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Задача 15: WLC/AP -->
+    <div class="script-card">
+        <h2>15. WLC/AP (Беспроводной сегмент)</h2>
+        <p><strong>Задача:</strong> Настроить беспроводную сеть с контроллером (WLC) и точкой доступа (AP), чтобы клиенты подключались по Wi-Fi.</p>
+        
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>WLC — контроллер (management IP 192.168.1.100).</li>
+                <li>AP — точка доступа, подключена к SW1.</li>
+                <li>SSID: Corp-WiFi. Шифрование: WPA2-PSK (AES).</li>
+                <li>Клиенты получают IP из VLAN 10 (через DHCP).</li>
+            </ul>
+        </div>
+        
+        <div class="task-block">
+            <h3>🛠️ Решение</h3>
+            <p><strong>Шаг 1. Настроить WLC (через GUI или CLI):</strong></p>
+            <div class="code-wrap">
+                <pre>! Настройка WLC (пример для Packet Tracer)
+! В GUI: Wireless → WLANs → Create New → SSID: Corp-WiFi
+! Security: WPA2-PSK (AES), пароль: MySecretPass
+! Interface: VLAN 10 (192.168.10.1)
+! Management IP: 192.168.1.100</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Подключить AP к SW1:</strong></p>
+            <div class="code-wrap">
+                <pre>interface f0/15
+ switchport mode trunk
+ switchport trunk native vlan 1
+ switchport trunk allowed vlan 1,10</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Настроить AP (в Packet Tracer):</strong></p>
+            <div class="code-wrap">
+                <pre>! На AP: Config → Wireless → SSID: Corp-WiFi
+! Security: WPA2-PSK, пароль: MySecretPass
+! Канал: 6 (2.4 GHz) или 36 (5 GHz)</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+            <ul>
+                <li>На WLC: <code>show wlan summary</code> — SSID <code>Corp-WiFi</code> активен.</li>
+                <li>На WLC: <code>show ap summary</code> — AP подключён (CAPWAP).</li>
+                <li>С ноутбука (Wi-Fi): подключиться к <code>Corp-WiFi</code>, ввести пароль.</li>
+                <li>На ноутбуке: <code>ipconfig</code> — получен IP из 192.168.10.0/24.</li>
+                <li><code>ping 192.168.1.5</code> (R1) — успешно.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Итог практикума -->
+    <div class="script-card">
+        <h2>📊 Итог практикума</h2>
+        <p>Все задачи охватывают технологии из Лабораторных 1 и 2. Каждая задача содержит условие, пошаговое решение и проверку.</p>
+        
+        <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📋 Что проверяется</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: var(--accent); color: #fff;">
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">№</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">Технология</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">Ключевая команда</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">1</td><td style="padding: 8px; border: 1px solid var(--border);">VLAN и Trunk</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show vlan brief</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">2</td><td style="padding: 8px; border: 1px solid var(--border);">EtherChannel LACP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show etherchannel summary</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">3</td><td style="padding: 8px; border: 1px solid var(--border);">EtherChannel PAgP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show etherchannel summary</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">4</td><td style="padding: 8px; border: 1px solid var(--border);">STP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show spanning-tree vlan 1</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">5</td><td style="padding: 8px; border: 1px solid var(--border);">OSPF</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip ospf neighbor</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">6</td><td style="padding: 8px; border: 1px solid var(--border);">HSRP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show standby brief</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">7</td><td style="padding: 8px; border: 1px solid var(--border);">BGP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip bgp summary</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">8</td><td style="padding: 8px; border: 1px solid var(--border);">IPv6/OSPFv3</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ospfv3 neighbor</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">9</td><td style="padding: 8px; border: 1px solid var(--border);">L2-безопасность</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show port-security</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">10</td><td style="padding: 8px; border: 1px solid var(--border);">DHCP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip dhcp binding</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">11</td><td style="padding: 8px; border: 1px solid var(--border);">NAT/PAT</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip nat translations</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">12</td><td style="padding: 8px; border: 1px solid var(--border);">EIGRP/Redistribution</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip route</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">13</td><td style="padding: 8px; border: 1px solid var(--border);">MSTP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show spanning-tree mst 1</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">14</td><td style="padding: 8px; border: 1px solid var(--border);">NTP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ntp status</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">15</td><td style="padding: 8px; border: 1px solid var(--border);">WLC/AP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show wlan summary</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const themeBtn = document.getElementById('theme-btn');
+    const saved = localStorage.getItem('practice-theme') || 'light';
+    document.body.dataset.theme = saved;
+    themeBtn.addEventListener('click', () => {
+        const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+        document.body.dataset.theme = next;
+        localStorage.setItem('practice-theme', next);
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const pre = btn.closest('.code-wrap').querySelector('pre');
+            let text = pre.innerText
+                .split('\n')
+                .filter(line => !line.trim().startsWith('!') && !line.trim().startsWith('#'))
+                .map(line => line.replace(/\s+$/g, ''))
+                .join('\n')
+                .replace(/^\s*\n+/, '')
+                .replace(/\n+\s*$/, '');
+            if (!text.trim()) text = pre.innerText;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                btn.textContent = '✅ Скопировано';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.textContent = 'Копировать'; btn.classList.remove('copied'); }, 1500);
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btn.textContent = '✅ Скопировано';
+                setTimeout(() => { btn.textContent = 'Копировать'; }, 1500);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
