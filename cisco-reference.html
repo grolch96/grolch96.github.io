@@ -1189,9 +1189,11 @@ reload</pre><button class="copy-btn">Копировать</button></div>
         (card.getAttribute('data-tags') || '') + ' ' +
         card.querySelector('h2').textContent
       ).toLowerCase();
-      const words = q.split(/\s+/).filter(Boolean);
+      // Убираем пробелы вокруг слешей и дефисов (NAT / PAT -> NAT/PAT)
+      const normalizedQ = q.replace(/\s*\/\s*/g, '/').replace(/\s*-\s*/g, '-');
+      const words = normalizedQ.split(/\s+/).filter(Boolean);
       const matches = words.every(word => {
-        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const re = new RegExp('\\b' + escaped, 'i');
         return re.test(haystack);
       });
