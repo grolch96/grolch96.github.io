@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модель OSI — Технологии из лабораторных</title>
+    <style>
+        :root {
+            --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
+            --accent: #7fa8d4; --accent-green: #2e7d32; --accent-purple: #8e44ad;
+            --term-bg: #1e1e1e; --term-fg: #d4d4d4;
+            --l1: #e74c3c; --l2: #e67e22; --l3: #f1c40f; --l4: #2ecc71;
+            --l5: #3498db; --l6: #9b59b6; --l7: #e84393;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
+            --accent: #a3c4e8; --accent-green: #81c784; --accent-purple: #b39ddb;
+            --term-bg: #111; --term-fg: #e0e0e0;
+            --l1: #ef5350; --l2: #ffb74d; --l3: #fff176; --l4: #81c784;
+            --l5: #64b5f6; --l6: #ba68c8; --l7: #f06292;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--fg); line-height: 1.6;
+            margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+
+        .theme-btn {
+            position: fixed; top: 20px; right: 20px; padding: 10px 15px;
+            background: var(--card); color: var(--fg); border: 1px solid var(--border);
+            border-radius: 20px; cursor: pointer; font-weight: bold; z-index: 100;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .theme-btn:hover { background: var(--accent); color: #fff; }
+        .theme-btn:active { transform: scale(0.95); }
+
+        .osi-stack {
+            display: flex; flex-direction: column; gap: 10px;
+            margin: 30px 0;
+        }
+        .osi-layer {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px;
+            border-left: 6px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .osi-layer:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .osi-layer h2 {
+            margin: 0 0 10px; font-size: 1.3em;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .osi-layer .num {
+            display: inline-block; width: 32px; height: 32px;
+            border-radius: 50%; background: var(--accent); color: #fff;
+            text-align: center; line-height: 32px; font-weight: bold; font-size: 16px;
+        }
+        .osi-layer .tech-tags { margin: 10px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+        .osi-layer .tech-tag {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            background: var(--border); font-size: 12px; font-weight: 600;
+        }
+        .osi-layer .example {
+            background: var(--bg); padding: 10px 15px; border-radius: 6px;
+            font-family: Consolas, monospace; font-size: 13px;
+            margin-top: 10px; overflow-x: auto; white-space: pre;
+        }
+
+        /* Цвета уровней */
+        .osi-layer.l1 { border-left-color: var(--l1); }
+        .osi-layer.l1 h2 { color: var(--l1); }
+        .osi-layer.l2 { border-left-color: var(--l2); }
+        .osi-layer.l2 h2 { color: var(--l2); }
+        .osi-layer.l3 { border-left-color: var(--l3); }
+        .osi-layer.l3 h2 { color: var(--l3); }
+        .osi-layer.l4 { border-left-color: var(--l4); }
+        .osi-layer.l4 h2 { color: var(--l4); }
+        .osi-layer.l5 { border-left-color: var(--l5); }
+        .osi-layer.l5 h2 { color: var(--l5); }
+        .osi-layer.l6 { border-left-color: var(--l6); }
+        .osi-layer.l6 h2 { color: var(--l6); }
+        .osi-layer.l7 { border-left-color: var(--l7); }
+        .osi-layer.l7 h2 { color: var(--l7); }
+
+        /* Таблица */
+        .summary-table {
+            width: 100%; border-collapse: collapse; margin: 20px 0;
+            background: var(--card); border-radius: 8px; overflow: hidden;
+        }
+        .summary-table th, .summary-table td {
+            border: 1px solid var(--border); padding: 12px; text-align: left;
+        }
+        .summary-table th { background: var(--accent); color: #fff; }
+        .summary-table tr:nth-child(even) { background: var(--bg); }
+
+        /* Пояснение */
+        .note {
+            background: rgba(127, 168, 212, 0.1); border-left: 4px solid var(--accent);
+            padding: 12px 16px; border-radius: 6px; margin: 20px 0;
+            font-style: italic;
+        }
+
+        footer { max-width: 1000px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
+    </style>
+</head>
+<body data-theme="light">
+
+<button class="theme-btn" id="theme-btn">🌙 Тема</button>
+
+<div class="container">
+    <a href="index.html" class="back-link">← На главную</a>
+    <h1>🧱 Модель OSI — Технологии из лабораторных работ</h1>
+    
+    <p>Ниже — интерактивная схема уровней OSI с примерами технологий из Лабораторных работ 1 и 2. Для каждого уровня указано, какие протоколы и технологии там работают, и как они использовались в наших лабораторных.</p>
+
+    <div class="note">
+        📌 <strong>Зачем это нужно:</strong> Понимание модели OSI помогает диагностировать проблемы (на каком уровне искать) и объяснять, как работают технологии. На собеседованиях это один из ключевых вопросов.
+    </div>
+
+    <!-- Схема уровней (сверху вниз: L7 → L1) -->
+    <div class="osi-stack">
+
+        <!-- L7 -->
+        <div class="osi-layer l7">
+            <h2><span class="num">7</span> Прикладной (Application)</h2>
+            <p>Взаимодействие с пользователем и приложениями. Здесь работают DHCP, NTP, SMTP, HTTP, SSH (частично).</p>
+            <div class="tech-tags">
+                <span class="tech-tag">DHCP (Лаба 1, 2)</span>
+                <span class="tech-tag">NTP (Лаба 2)</span>
+                <span class="tech-tag">SMTP (скрипты)</span>
+                <span class="tech-tag">HTTP/HTTPS</span>
+            </div>
+            <div class="example">ip dhcp pool vlan108
+network 192.168.8.0 255.255.255.0
+default-router 192.168.8.254</div>
+        </div>
+
+        <!-- L6 -->
+        <div class="osi-layer l6">
+            <h2><span class="num">6</span> Представления (Presentation)</h2>
+            <p>Шифрование, сжатие, кодировка. SSH использует шифрование (AES, RSA), TLS/SSL — для HTTPS.</p>
+            <div class="tech-tags">
+                <span class="tech-tag">SSH (шифрование)</span>
+                <span class="tech-tag">TLS/SSL</span>
+                <span class="tech-tag">Кодировки</span>
+            </div>
+            <div class="example">crypto key generate rsa modulus 1024
+ip ssh version 2</div>
+        </div>
+
+        <!-- L5 -->
+        <div class="osi-layer l5">
+            <h2><span class="num">5</span> Сеансовый (Session)</h2>
+            <p>Установка, поддержание и завершение сеансов. BGP устанавливает TCP-сессию, HSRP обменивается hello-пакетами.</p>
+            <div class="tech-tags">
+                <span class="tech-tag">BGP (сессия, Лаба 2)</span>
+                <span class="tech-tag">HSRP (hello, Лаба 1, 2)</span>
+            </div>
+            <div class="example">router bgp 65002
+neighbor 10.0.0.1 remote-as 65001</div>
+        </div>
+
+        <!-- L4 -->
+        <div class="osi-layer l4">
+            <h2><span class="num">4</span> Транспортный (Transport)</h2>
+            <p>Надёжная (TCP) или быстрая (UDP) доставка. PAT использует порты для различения сессий.</p>
+            <div class="tech-tags">
+                <span class="tech-tag">TCP (BGP, SSH)</span>
+                <span class="tech-tag">UDP (DHCP, NTP, HSRP)</span>
+                <span class="tech-tag">PAT (Лаба 1, 2)</span>
+            </div>
+            <div class="example">ip nat inside source list NAT interface f0/1 overload</div>
+        </div>
+
+        <!-- L3 -->
+        <div class="osi-layer l3">
+            <h2><span class="num">3</span> Сетевой (Network)</h2>
+            <p>Логическая адресация и маршрутизация. OSPF, EIGRP, BGP, HSRP, NAT, IPv6.</p>
+            <div class="tech-tags">
+                <span class="tech-tag">OSPF (Лаба 1, 2)</span>
+                <span class="tech-tag">EIGRP (Лаба 2)</span>
+                <span class="tech-tag">BGP (Лаба 2)</span>
+                <span class="tech-tag">HSRP (Лаба 1, 2)</span>
+                <span class="tech-tag">NAT (Лаба 1, 2)</span>
+                <span class="tech-tag">IPv6 (Лаба 2)</span>
+                <span class="tech-tag">Статические маршруты</span>
+            </div>
+            <div class="example">router ospf 1111
+network 192.168.1.0 0.0.0.255 area 0
+ipv6 unicast-routing</div>
+        </div>
+
+        <!-- L2 -->
+        <div class="osi-layer l2">
+            <h2><span class="num">2</span> Канальный (Data Link)</h2>
+            <p>MAC-адресация, коммутация, VLAN, агрегация, защита от петель.</p>
+            <div class="tech-tags">
+                <span class="tech-tag">VLAN (Лаба 1, 2)</span>
+                <span class="tech-tag">Trunk 802.1Q (Лаба 1, 2)</span>
+                <span class="tech-tag">EtherChannel (Лаба 1, 2)</span>
+                <span class="tech-tag">STP / Rapid-PVST+ (Лаба 1, 2)</span>
+                <span class="tech-tag">MSTP (Лаба 2)</span>
+                <span class="tech-tag">Port Security (Лаба 2)</span>
+                <span class="tech-tag">DHCP Snooping (Лаба 2)</span>
+            </div>
+            <div class="example">vlan 100
+switchport mode trunk
+channel-group 1 mode active
+spanning-tree mode rapid-pvst</div>
+        </div>
+
+        <!-- L1 -->
+        <div class="osi-layer l1">
+            <h2><span class="num">1</span> Физический (Physical)</h2>
+            <p>Кабели, разъёмы, скорость, дуплекс. Физическая передача битов.</p>
+            <div class="tech-tags">
+                <span class="tech-tag">Кабели (Ethernet, оптика)</span>
+                <span class="tech-tag">Speed 100 / duplex full (Лаба 1, 2)</span>
+                <span class="tech-tag">Интерфейсы Fa0/1, Gi0/1</span>
+                <span class="tech-tag">Состояние up/down</span>
+            </div>
+            <div class="example">interface f0/1
+ speed 100
+ duplex full</div>
+        </div>
+
+    </div>
+
+    <!-- Сводная таблица -->
+    <h2>📊 Сводная таблица (для отчёта)</h2>
+    <table class="summary-table">
+        <thead>
+            <tr>
+                <th>Уровень OSI</th>
+                <th>Технологии в лабах</th>
+                <th>Примеры команд</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>7. Прикладной</strong></td>
+                <td>DHCP, NTP, SMTP</td>
+                <td><code>ip dhcp pool</code>, <code>ntp server</code>, <code>blat</code></td>
+            </tr>
+            <tr>
+                <td><strong>6. Представления</strong></td>
+                <td>SSH, TLS/SSL</td>
+                <td><code>crypto key generate rsa</code></td>
+            </tr>
+            <tr>
+                <td><strong>5. Сеансовый</strong></td>
+                <td>BGP (сессия), HSRP (hello)</td>
+                <td><code>neighbor ... remote-as</code>, <code>standby 1 ip</code></td>
+            </tr>
+            <tr>
+                <td><strong>4. Транспортный</strong></td>
+                <td>TCP, UDP, PAT</td>
+                <td><code>ip nat inside source ... overload</code></td>
+            </tr>
+            <tr>
+                <td><strong>3. Сетевой</strong></td>
+                <td>IP, OSPF, EIGRP, BGP, HSRP, NAT, IPv6</td>
+                <td><code>router ospf</code>, <code>ip route</code>, <code>ipv6 address</code></td>
+            </tr>
+            <tr>
+                <td><strong>2. Канальный</strong></td>
+                <td>VLAN, Trunk, EtherChannel, STP, Port Security, DHCP Snooping</td>
+                <td><code>vlan 100</code>, <code>switchport mode trunk</code>, <code>channel-group</code></td>
+            </tr>
+            <tr>
+                <td><strong>1. Физический</strong></td>
+                <td>Кабели, speed/duplex, интерфейсы</td>
+                <td><code>speed 100</code>, <code>duplex full</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="note">
+        📌 <strong>Что это даёт:</strong> Понимание уровней OSI помогает быстро диагностировать проблемы (L1 — кабель, L2 — VLAN, L3 — маршрут, L4 — порт) и объяснять работу технологий на собеседованиях.
+    </div>
+
+</div>
+
+<script>
+    const themeBtn = document.getElementById('theme-btn');
+    const saved = localStorage.getItem('osi-theme') || 'light';
+    document.body.dataset.theme = saved;
+    themeBtn.addEventListener('click', () => {
+        const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+        document.body.dataset.theme = next;
+        localStorage.setItem('osi-theme', next);
+    });
+</script>
+
+</body>
+</html>
