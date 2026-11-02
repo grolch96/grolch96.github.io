@@ -857,7 +857,7 @@ type "%LOG_FILE%"</pre>
 
     <!-- Блок 12: Управление Active Directory -->
     <div class="script-card">
-        <h2>13. Управление Active Directory (пользователи и компьютеры)</h2>
+        <h2>12. Управление Active Directory (пользователи и компьютеры)</h2>
         <p>Автоматическое отключение неактивных учётных записей, массовое создание пользователей, управление группами.</p>
         
         <div class="layer">
@@ -934,7 +934,7 @@ echo ✅ Аудит AD завершён. Лог: %LOG_FILE%</pre>
 
     <!-- Блок 13: Управление питанием -->
     <div class="script-card">
-        <h2>14. Управление питанием (перезагрузка, выключение, гибернация)</h2>
+        <h2>13. Управление питанием (перезагрузка, выключение, гибернация)</h2>
         <p>Скрипты для автоматического выключения, перезагрузки и перевода компьютеров в спящий режим по расписанию или команде.</p>
         
         <div class="layer">
@@ -1031,7 +1031,7 @@ echo Использование: %0 {reboot^|shutdown^|hibernate^|sleep^|status}
 
     <!-- Блок 14: Сетевые диски -->
     <div class="script-card">
-        <h2>15. Сетевые диски (подключение, отключение, проверка)</h2>
+        <h2>14. Сетевые диски (подключение, отключение, проверка)</h2>
         <p>Скрипты для автоматического подключения сетевых дисков (SMB/CIFS) с проверкой доступности и переподключением при сбое.</p>
         
         <div class="layer">
@@ -1121,7 +1121,7 @@ if %errorlevel% EQU 0 (
 
     <!-- Блок 15: SMTP-уведомления -->
     <div class="script-card">
-        <h2>16. SMTP-уведомления (отправка почты при сбоях)</h2>
+        <h2>15. SMTP-уведомления (отправка почты при сбоях)</h2>
         <p>Автоматическая отправка писем администратору при срабатывании тревоги (ошибка в логах, переполнение диска, падение службы).</p>
         
         <div class="layer">
@@ -1195,7 +1195,89 @@ if exist "%BLAT%" (
         </div>
     </div>
 
-    <!-- Блок 16: Итоговое резюме -->
+    <!-- Блок 16: Справка оркестратора OCTOPUS -->
+    <div class="script-card">
+        <h2>16. Оркестратор миграции OCTOPUS (справка по командам)</h2>
+        <p>Полная справка по командам оркестратора миграции. Скопируйте нужную команду или используйте её как шпаргалку.</p>
+        
+        <div class="side side-linux" style="margin-top: 20px;">
+            <h3>📖 Справка по командам</h3>
+            <div class="code-wrap">
+                <pre>====================================================================
+                    OCTOPUS Migration Orchestrator v2.0.0
+====================================================================
+
+ИСПОЛЬЗОВАНИЕ: $0 [КОМАНДА]
+
+ОСНОВНЫЕ КОМАНДЫ:
+  --recover         Восстановление после "горячего" снапшота ВМ 
+                    (Frontend → Cache → Backend → Database), 
+                    после чего --cleanup для каждой
+  --migrate, -m     Миграции для текущей роли 
+                    (Database → Backend → Cache → Frontend)
+  --verify, -v      Проверка после миграции
+  --full, -f        Полный цикл миграции (диагностика+миграция+проверка)
+  --cleanup, -c     Очистка для новой версии (без бэкапов)
+  --test-syntax     Проверка синтаксиса, логики и взаимосвязей семейства
+  
+ДИАГНОСТИКА:
+  --diagnostic-safe  Безопасная диагностика (без sudo)
+  --diagnostic-full  Полная диагностика (требует sudo)
+  --status, -s       Статус сервера
+
+ТЕСТОВЫЕ КОМАНДЫ (не требуют sudo):
+  --test-syntax      Проверка синтаксиса всех скриптов
+  --test-all-roles   Тестирование всех 5 ролей
+  --test-cleanup     Тестирование очистки
+
+СПЕЦИАЛЬНЫЕ:
+  --copy-configs USER@SERVER  Копирование конфигураций
+                                 • /var/www/octopus/frontend-ng5/application/config.json
+                                 • /etc/nginx/sites-enabled/octopus.ini
+                                 • /etc/octopus/octopus-backend-config.ini
+                                 • /etc/uwsgi/apps-enabled/octopus-backend.ini
+  --help, -h        Эта справка
+
+ТЕСТОВЫЙ РЕЖИМ:
+  🔬 Алгоритмы grolch: test-all-roles-auto.sh, final_test.sh, 
+     run-all-tests.sh, migration-tests-with-files.sh, 
+     migration-tests-guide.sh, create-and-run-tests.sh
+  🔬 Автоматически для --test-* команд
+  🔬 Или вручную: TEST_MODE=true $0 --команда, 
+     FORCE_ROLE=... TEST_MODE=true ... --команда
+
+ПРИМЕРЫ:
+  $0 --help                   # Эта справка (без sudo)
+  $0 --test-syntax            # Проверка синтаксиса и логики (без sudo)
+  $0 --status                 # Статус сервера (без sudo)
+  sudo $0 --diagnostic-full   # Полная диагностика (требует sudo)
+  sudo $0 --migrate           # Миграция (может требовать sudo)
+  TEST_MODE=true ./orchestrate-migration.sh --cleanup # Проверка логики очистки
+  TEST_MODE=true ./cleanup-database.sh # Проверка очистки базы данных
+  TEST_MODE=true ./cleanup-certificates.sh # Проверка очистки сертификата текущей роли
+  KEEP_USERS=true sudo ./orchestrate-migration.sh --cleanup # с сохранением пользователей  
+  FORCE_ROLE=frontend TEST_MODE=true ./orchestrate-migration.sh --migrate # Проверка миграции конкретной роли
+  TEST_MODE=true ./orchestrate-migration.sh --copy-configs name_user@name_server # Копирование конфигов (укажите требуемое имя и сервер)
+  TEST_MODE=true ./orchestrate-migration.sh --recover FORCE_ROLE=frontend TEST_MODE=true ./orchestrate-migration.sh --recover # Для конкретной роли
+  
+РОЛИ СЕРВЕРА (4+1):
+  1. Frontend - веб-интерфейс (nginx)
+  2. Backend - API и логика (uWSGI, Django)
+  3. Database - база данных (PostgreSQL)
+  4. Cache - кэш и файлы (Redis)
+  5. Client - клиентский доступ
+===============================================================================</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📌 Что это даёт</h3>
+            <p>Справка позволяет быстро найти нужную команду без чтения всего кода. Все команды сгруппированы по назначению: основные, диагностика, тестовые, специальные. В тестовом режиме (<code>TEST_MODE=true</code>) можно безопасно проверять логику миграции без реальных изменений.</p>
+        </div>
+    </div>
+
+    <!-- Блок 17: Итоговое резюме -->
     <div class="script-card">
         <h2>17. Итог: какие навыки показаны</h2>
         <p>Этот раздел — не просто скрипты, а демонстрация системного мышления и практических навыков администрирования.</p>
