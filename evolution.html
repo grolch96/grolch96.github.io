@@ -136,6 +136,9 @@ interface f0/10
                 </div>
             </div>
         </div>
+                <div style="margin-top: 15px; padding: 12px 16px; background: rgba(127, 168, 212, 0.1); border-left: 4px solid var(--accent-blue); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> VLAN (Virtual LAN) — это технология логической сегментации сети на канальном уровне (L2). Она позволяет разделить один физический коммутатор на несколько изолированных «виртуальных» сетей. Trunk (802.1Q) — это магистральный канал, который передаёт трафик нескольких VLAN по одному физическому линку с помощью тегов. <strong>Где используется:</strong> в корпоративных сетях для разделения отделов (бухгалтерия, IT, гости) и повышения безопасности. <strong>Уровень OSI:</strong> L2 (канальный).
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простой сегментации к защите канального уровня.
         </div>
@@ -240,6 +243,9 @@ interface port-channel 3
                 </div>
             </div>
         </div>
+                <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> EtherChannel (агрегация каналов) — это объединение нескольких физических линков в один логический канал. LACP (IEEE 802.3ad) — открытый протокол согласования, который проверяет, что все порты настроены одинаково. PAgP — проприетарный протокол Cisco. <strong>Где используется:</strong> между коммутаторами и серверами для увеличения пропускной способности и отказоустойчивости (если один кабель порвётся, канал продолжит работать). <strong>Уровень OSI:</strong> L2 (канальный).
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простой агрегации к отказоустойчивости и балансировке. Показана ответная часть.
         </div>
@@ -326,6 +332,9 @@ interface f0/10
                 </div>
             </div>
         </div>
+                <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> PAgP (Port Aggregation Protocol) — это проприетарный протокол Cisco для агрегации каналов. В отличие от LACP, он не является открытым стандартом, но выполняет ту же задачу: объединяет несколько физических портов в один логический канал. Режимы: <code>desirable</code> (активная сторона) и <code>auto</code> (пассивная). <strong>Где используется:</strong> в сетях, где всё оборудование Cisco, для увеличения пропускной способности между коммутаторами. <strong>Уровень OSI:</strong> L2 (канальный).
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простой агрегации к интеграции с SVI и DHCP.
         </div>
@@ -381,6 +390,9 @@ spanning-tree vlan 1,105,106,107,108 root primary</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
+        </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--l3); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> STP (Spanning Tree Protocol) — это протокол, который предотвращает петли в сети на канальном уровне. Если между коммутаторами есть несколько путей, STP выбирает один основной (Root Port) и блокирует остальные (Alternate Port), чтобы кадры не ходили по кругу. Rapid-PVST+ — ускоренная версия, которая быстрее реагирует на изменения. <strong>Где используется:</strong> в любой сети с избыточными линками между коммутаторами (кольца, резервные каналы). <strong>Уровень OSI:</strong> L2 (канальный).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простой защиты к оптимизации трафика.
@@ -444,6 +456,9 @@ router eigrp 100
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
+        </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(127, 168, 212, 0.1); border-left: 4px solid var(--accent-blue); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> OSPF (Open Shortest Path First) — это протокол динамической маршрутизации, который работает на сетевом уровне. Он строит полную карту сети (LSDB) и вычисляет кратчайшие пути по алгоритму Дейкстры. В отличие от статических маршрутов, OSPF автоматически перестраивает маршруты при изменении топологии (например, при падении линка). <strong>Где используется:</strong> в средних и крупных корпоративных сетях, где важна отказоустойчивость и быстрая сходимость. Multi-Area OSPF (из Лабы 2) позволяет разбить сеть на зоны и снизить нагрузку на CPU. <strong>Уровень OSI:</strong> L3 (сетевой). Работает поверх IP (протокол 89).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от плоской сети к иерархической маршрутизации с ответной частью.
@@ -514,6 +529,9 @@ interface f0/0
                 </div>
             </div>
         </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border-left: 4px solid var(--l1); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> HSRP (Hot Standby Router Protocol) — это проприетарный протокол Cisco для резервирования шлюза. Два роутера делят один виртуальный IP-адрес, который клиенты используют как шлюз. Один роутер активен (Active), другой — в режиме ожидания (Standby). Если Active падает, Standby мгновенно перехватывает IP, и клиенты не замечают обрыва. <strong>Где используется:</strong> на граничных роутерах в корпоративных сетях, где важна непрерывность доступа в интернет. <strong>Уровень OSI:</strong> L3 (сетевой) — виртуальный IP-шлюз; служебные сообщения HSRP работают поверх UDP (порт 1985).
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простого резервирования к обходу ограничений симулятора.
         </div>
@@ -574,6 +592,9 @@ router bgp 65001
                 </div>
             </div>
         </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(155, 89, 182, 0.1); border-left: 4px solid var(--l6); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> BGP (Border Gateway Protocol) — это протокол маршрутизации между автономными системами (AS). Он используется для обмена маршрутной информацией между провайдерами и корпоративными сетями. В отличие от OSPF (внутренний протокол), BGP работает поверх TCP (порт 179) и обеспечивает стабильность маршрутов в глобальном интернете. eBGP (внешний BGP) используется для связи с провайдером, iBGP — внутри корпоративной сети. <strong>Где используется:</strong> при подключении корпоративной сети к интернет-провайдеру, когда нужно анонсировать свои сети и получать маршруты провайдера. <strong>Уровень OSI:</strong> L3 (сетевой) с сессией на L4 (TCP 179). Логически — управление маршрутами (L3).
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простого NAT к реальному стыку с провайдером.
         </div>
@@ -617,6 +638,9 @@ router ospfv3 1
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
+        </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid var(--l5); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> IPv6 — это современный протокол сетевого уровня (128 бит вместо 32 в IPv4). OSPFv3 — это версия OSPF для IPv6, которая работает на сетевом уровне и обеспечивает динамическую маршрутизацию. В отличие от OSPFv2, OSPFv3 использует link-local адреса для соседства и не требует network-команд на интерфейсах (всё настраивается на самом интерфейсе). <strong>Где используется:</strong> в современных корпоративных сетях и у провайдеров, которые переходят на IPv6. Двухстековая маршрутизация (IPv4 + IPv6) позволяет поддерживать старые и новые устройства одновременно. <strong>Уровень OSI:</strong> L3 (сетевой).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от IPv4-only к современному двухстековому решению.
@@ -664,6 +688,9 @@ interface f0/10
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
+        </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border-left: 4px solid var(--l1); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> Port Security — это механизм защиты на коммутаторе, который ограничивает количество MAC-адресов на порту и блокирует порт при подключении несанкционированного устройства. DHCP Snooping — это защита от «левых» DHCP-серверов: коммутатор проверяет, с какого порта пришёл DHCP-ответ, и пропускает только доверенные (trust) порты. <strong>Где используется:</strong> в офисных сетях, где к портам могут подключить чужой ноутбук или поднять свой DHCP-сервер. <strong>Уровень OSI:</strong> L2 (канальный) — фильтрация MAC-адресов и DHCP-пакетов на уровне коммутатора.
         </div>
         <div class="evolution-note">
             📌 Эволюция: от открытого доступа к защите от атак на канальном уровне.
@@ -732,6 +759,9 @@ ip dhcp pool vlan108
                 </div>
             </div>
         </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(230, 126, 34, 0.1); border-left: 4px solid var(--l2); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> DHCP (Dynamic Host Configuration Protocol) — это протокол прикладного уровня, который автоматически выдаёт клиентам IP-адрес, маску, шлюз и DNS. Работает по схеме DORA (Discover → Offer → Request → Ack) поверх UDP (порты 67 и 68). <strong>Где используется:</strong> в любой сети, где есть клиентские устройства (ПК, телефоны, принтеры), чтобы не настраивать IP вручную. В Лабе 2 добавлен DHCP Snooping для защиты от подмены сервера. <strong>Уровень OSI:</strong> L7 (прикладной) — логика DHCP; L4 (UDP) — транспорт; L3 (IP) — для адресации.
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простой выдачи адресов к защите DHCP-сервиса.
         </div>
@@ -799,6 +829,9 @@ ip nat inside source list NAT interface FastEthernet0/1 overload</pre>
                 </div>
             </div>
         </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(155, 89, 182, 0.1); border-left: 4px solid var(--l6); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> NAT (Network Address Translation) — это механизм трансляции IP-адресов, который позволяет устройствам с приватными адресами (192.168.x.x) выходить в интернет через один публичный IP. PAT (Port Address Translation) — это разновидность NAT (Overload), которая использует порты для различения сессий разных клиентов. <strong>Где используется:</strong> на граничных роутерах любой корпоративной или домашней сети для экономии публичных IPv4-адресов и сокрытия внутренней структуры сети. <strong>Уровень OSI:</strong> L3 (сетевой) — меняет IP-адреса; L4 (транспортный) — для PAT использует порты.
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простого NAT к интеграции с BGP.
         </div>
@@ -853,6 +886,9 @@ router eigrp 100
                 </div>
             </div>
         </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--l3); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> EIGRP (Enhanced Interior Gateway Routing Protocol) — это гибридный протокол динамической маршрутизации (проприетарный Cisco, но открыт по RFC 7868). Он использует алгоритм DUAL для быстрой сходимости и поддерживает резервные маршруты (Feasible Successor). Redistribution (перераспределение) — это процесс «перелива» маршрутов из одного протокола в другой (например, OSPF ↔ EIGRP). <strong>Где используется:</strong> EIGRP — в сетях Cisco; Redistribution — при слиянии сетей с разными протоколами (например, после покупки компании с другой инфраструктурой). <strong>Уровень OSI:</strong> L3 (сетевой).
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от одной протокольной среды к мультипротокольной.
         </div>
@@ -904,6 +940,9 @@ spanning-tree mst 2 root secondary</pre>
                 </div>
             </div>
         </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--l4); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> MSTP (Multiple Spanning Tree Protocol) — это эволюция STP, которая позволяет объединять несколько VLAN в один «инстанс» (экземпляр) дерева. В отличие от Rapid-PVST+ (где каждый VLAN — отдельное дерево), MSTP создаёт 2–3 дерева для групп VLAN. Это снижает нагрузку на CPU и ускоряет сходимость. <strong>Где используется:</strong> в крупных корпоративных сетях с десятками VLAN, где Rapid-PVST+ уже не справляется. <strong>Уровень OSI:</strong> L2 (канальный).
+        </div>
         <div class="evolution-note">
             📌 Эволюция: от простого PVST+ к MSTP для больших сетей.
         </div>
@@ -948,6 +987,9 @@ ntp server 192.168.1.5</pre>
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
+        </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid var(--l5); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> NTP (Network Time Protocol) — это протокол синхронизации времени. Он позволяет всем устройствам в сети иметь одинаковое время (с точностью до миллисекунд). Это критически важно для логов (чтобы сопоставить события), сертификатов (чтобы не было ошибок проверки) и расписаний (cron). Работает поверх UDP (порт 123). <strong>Где используется:</strong> на всех сетевых устройствах и серверах, особенно в доменах Active Directory и системах мониторинга. <strong>Уровень OSI:</strong> L7 (прикладной) — логика синхронизации; L4 (UDP) — транспорт.
         </div>
         <div class="evolution-note">
             📌 Эволюция: от отсутствия синхронизации к точным логам.
@@ -1000,6 +1042,9 @@ wlan interface Corp-WiFi 104
                     <button class="copy-btn">Копировать</button>
                 </div>
             </div>
+        </div>
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid var(--l5); border-radius: 6px; font-size: 14px;">
+            <strong>📖 Что это такое:</strong> WLC (Wireless LAN Controller) — это устройство, которое централизованно управляет точками доступа (AP). AP (Access Point) — это беспроводная точка, которая обеспечивает связь клиентов (ноутбуков, телефонов) с проводной сетью. Протокол CAPWAP используется для связи AP с WLC (настройка SSID, шифрование WPA2/WPA3, VLAN). <strong>Где используется:</strong> в офисах, складах, университетах для обеспечения Wi-Fi. WLC упрощает управление десятками точек доступа. <strong>Уровень OSI:</strong> L1 (физический) — радиоволны; L2 (канальный) — MAC-адресация и шифрование (WPA2); L3 (сетевой) — туннелирование CAPWAP (поверх UDP).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от проводной сети к беспроводному сегменту.
@@ -1061,6 +1106,7 @@ wlan interface Corp-WiFi 104
             <p><strong>8. От статического резервирования к обходу багов PT.</strong> В Base Legacy HSRP работал «как есть». В Advanced Enterprise мы столкнулись с багом PT 6.2 (транзитный SW1 не мог отправить пакет на виртуальный MAC HSRP) и обошли его прямым статическим маршрутом. Это показывает умение решать нестандартные задачи.</p>
             
             <p><strong>Что это даёт для портфолио:</strong> Вы показали не просто «я умею настраивать OSPF». Вы показали <strong>инженерную зрелость</strong>: понимание, как масштабируется сеть, как добавляются новые протоколы, как решаются проблемы совместимости. Это именно то, что ищут работодатели на удалёнку.</p>
+            <p><strong>9. Связь с моделью OSI.</strong> Все технологии в этой эволюции чётко ложатся на уровни модели OSI: от физического (speed/duplex) до прикладного (DHCP, NTP). Понимание этой связи позволяет быстро диагностировать проблемы (на каком уровне искать) и объяснять работу сети на собеседованиях. Подробная интерактивная схема уровней OSI с примерами из этих лабораторных доступна в разделе <a href="osi-model.html" style="color: var(--accent); font-weight: bold;">«Модель OSI»</a>.</p>
         </div>
     </div>
 
