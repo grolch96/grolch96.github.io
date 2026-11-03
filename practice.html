@@ -88,6 +88,31 @@
         }
 
         footer { max-width: 1000px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
+        /* Режим обучения */
+.hidden-blur {
+    filter: blur(6px);
+    opacity: 0.6;
+    pointer-events: none;
+    transition: filter 0.4s ease, opacity 0.4s ease;
+}
+
+.reveal-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.reveal-btn:hover { background: var(--accent-green); }
+.reveal-btn:active { transform: scale(0.96); }
     </style>
 </head>
 <body data-theme="light">
@@ -99,7 +124,7 @@
     <h1>🎯 Практикум: решение задач по технологиям Cisco</h1>
     
     <p>Здесь собраны практические задачи по каждой технологии из Лабораторных 1 и 2. Для каждой — условие, пошаговое решение и проверка. Это не просто теория, а отработка навыков на конкретных сценариях.</p>
-
+    <button id="toggle-learn-btn" class="reveal-btn">🎓 Включить режим обучения (скрыть ответы)</button>
     <div class="intro">
         📌 <strong>Как пользоваться:</strong> Прочитайте задачу, попробуйте решить сами, затем сверьтесь с решением. Все команды можно скопировать в терминал.
     </div>
@@ -934,6 +959,44 @@ ntp server 192.168.1.5</pre>
         });
     });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('toggle-learn-btn');
+    
+    // Находим все блоки с решением (класс .task-block, внутри которого есть заголовок "Решение")
+    // Но проще: ищем все .task-block, в которых есть текст "Решение"
+    const allTaskBlocks = document.querySelectorAll('.task-block');
+    const solutionBlocks = [];
+    
+    allTaskBlocks.forEach(block => {
+        if (block.innerText.includes('🛠️ Решение') || block.innerText.includes('Решение')) {
+            solutionBlocks.push(block);
+        }
+    });
 
+    let isLearningMode = false;
+
+    btn.addEventListener('click', () => {
+        isLearningMode = !isLearningMode;
+        
+        solutionBlocks.forEach(block => {
+            if (isLearningMode) {
+                block.classList.add('hidden-blur');
+            } else {
+                block.classList.remove('hidden-blur');
+            }
+        });
+
+        // Меняем текст и цвет кнопки
+        if (isLearningMode) {
+            btn.textContent = '👁️ Показать все решения';
+            btn.style.background = '#e67e22'; // Оранжевый
+        } else {
+            btn.textContent = '🎓 Включить режим обучения (скрыть ответы)';
+            btn.style.background = 'var(--accent)';
+        }
+    });
+});
+</script>
 </body>
 </html>

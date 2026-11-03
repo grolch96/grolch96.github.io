@@ -93,6 +93,31 @@
             background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green);
             border-radius: 6px; font-style: italic; font-size: 14px;
         }
+        /* Режим обучения */
+.hidden-blur {
+    filter: blur(6px);
+    opacity: 0.6;
+    pointer-events: none;
+    transition: filter 0.4s ease, opacity 0.4s ease;
+}
+
+.reveal-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.reveal-btn:hover { background: var(--accent-green); }
+.reveal-btn:active { transform: scale(0.96); }
     </style>
 </head>
 <body data-theme="light">
@@ -103,7 +128,7 @@
     <a href="index.html" class="back-link">← На главную</a>
     <h1>📈 Эволюция конфигураций: Base Legacy → Advanced Enterprise</h1>
     <p>Сравнительный анализ настройки сетевых технологий на примере двух лабораторных работ. Показано, как усложняется конфигурация и какие новые возможности появляются на каждом этапе. Для каждого пункта указана «ответная часть» (где применимо).</p>
-
+    <button id="toggle-learn-btn" class="reveal-btn">🎓 Включить режим обучения (скрыть ответы)</button>
     <!-- 1. VLAN и Trunk -->
     <div class="compare-card">
         <h2>1. VLAN и Trunk</h2>
@@ -1163,6 +1188,42 @@ document.querySelectorAll('.copy-btn').forEach(btn => {
     });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('toggle-learn-btn');
+    
+    // Находим все блоки, которые нужно скрыть:
+    // 1. Блоки "Что это такое" (добавленные недавно)
+    // 2. Блоки "Как это делается" (учебный материал)
+    const blocks = document.querySelectorAll('.compare-card > div[style*="margin-top: 15px"]');
+    const studyBlocks = document.querySelectorAll('.compare-card > div[style*="margin-top: 25px"]');
+    
+    let isLearningMode = false;
 
+    btn.addEventListener('click', () => {
+        isLearningMode = !isLearningMode;
+        
+        // Применяем/снимаем размытие
+        blocks.forEach(block => {
+            if (isLearningMode) block.classList.add('hidden-blur');
+            else block.classList.remove('hidden-blur');
+        });
+        
+        studyBlocks.forEach(block => {
+            if (isLearningMode) block.classList.add('hidden-blur');
+            else block.classList.remove('hidden-blur');
+        });
+
+        // Меняем текст и цвет кнопки
+        if (isLearningMode) {
+            btn.textContent = '👁️ Показать все ответы';
+            btn.style.background = '#e67e22'; // Оранжевый
+        } else {
+            btn.textContent = '🎓 Включить режим обучения (скрыть ответы)';
+            btn.style.background = 'var(--accent)';
+        }
+    });
+});
+</script>
 </body>
 </html>

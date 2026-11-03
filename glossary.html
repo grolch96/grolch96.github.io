@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Словарь терминов Cisco</title>
     <style>
+    /* Режим обучения */
+.hidden-blur {
+    filter: blur(6px);
+    opacity: 0.6;
+    pointer-events: none;
+    transition: filter 0.4s ease, opacity 0.4s ease;
+}
+
+.reveal-btn {
+    display: block;
+    margin: 0 auto 20px;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.reveal-btn:hover { background: var(--accent-blue); }
+.reveal-btn:active { transform: scale(0.96); }
+
         :root {
             --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
             --accent: #7fa8d4; --accent-green: #2e7d32; --accent-blue: #2980b9;
@@ -100,7 +126,7 @@
     <p>Ключевые термины и определения по сетевым технологиям. Все термины сгруппированы по категориям и связаны с задачами из практикума.</p>
 
     <input type="text" class="search-box" id="search" placeholder="🔍 Поиск термина (например, OSPF, VLAN, HSRP)...">
-
+    <button id="toggle-learn-btn" class="reveal-btn" style="margin-top: -10px;">🎓 Включить режим обучения (скрыть ответы)</button>
     <div id="glossary-content">
 
         <!-- Категория 1: Базовая терминология -->
@@ -435,6 +461,34 @@
         noResults.style.display = visibleCount === 0 ? 'block' : 'none';
     });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('toggle-learn-btn');
+    const blocks = document.querySelectorAll('.term-def'); // Блоки, которые нужно скрыть
+    
+    let isLearningMode = false;
 
+    btn.addEventListener('click', () => {
+        isLearningMode = !isLearningMode;
+        
+        blocks.forEach(block => {
+            if (isLearningMode) {
+                block.classList.add('hidden-blur');
+            } else {
+                block.classList.remove('hidden-blur');
+            }
+        });
+
+        // Меняем текст кнопки
+        if (isLearningMode) {
+            btn.textContent = '👁️ Показать все ответы';
+            btn.style.background = '#e67e22'; // Оранжевый цвет для "показать"
+        } else {
+            btn.textContent = '🎓 Включить режим обучения (скрыть ответы)';
+            btn.style.background = 'var(--accent)'; // Синий цвет для "включить"
+        }
+    });
+});
+</script>
 </body>
 </html>
