@@ -209,14 +209,16 @@
   <!-- ГРУППА 2: СПРАВОЧНИКИ -->
   <h2 class="section-title">📚 Интерактивные справочники</h2>
   <div class="grid">
-    <div class="card" style="cursor: default; user-select: none;">
+    <div class="card" style="position: relative; cursor: pointer;" onclick="window.open('cisco-reference.html', '_blank');">
       <div class="icon">📘</div>
       <h2>Справочник</h2>
       <p>Полный конспект Cisco IOS: теория IP, коммутация, маршрутизация, безопасность, NAT, мониторинг, добивка CCNA.</p>
       <div class="tech">Части 0–VIII · CCNA ~95% · CCNP ~50–55%</div>
-      <a href="cisco-reference.html" class="report-link" style="margin-top: 15px;">📘 Открыть справочник</a>
+      
+      <!-- Кнопки (перехватывают клик на себя) -->
+      <a href="cisco-reference.html" class="report-link" style="margin-top: 15px; position: relative; z-index: 2;" onclick="event.stopPropagation();">📘 Открыть справочник</a>
       <br>
-      <a href="report-reference.html" target="_blank" class="report-link">📄 Открыть отчет о разработке</a>
+      <a href="report-reference.html" target="_blank" class="report-link" style="position: relative; z-index: 2;" onclick="event.stopPropagation();">📄 Открыть отчет о разработке</a>
     </div>
 
     <a class="card" href="cisco-troubleshooting.html" target="_blank">
@@ -227,31 +229,31 @@
       <span class="badge">Часть IX-A</span>
     </a>
     
-        <!-- Конструктор -->
-    <div class="card">
+    <!-- Конструктор -->
+    <div class="card" style="position: relative; cursor: pointer;" onclick="window.open('constructor.html', '_blank');">
       <div class="icon">⚙️</div>
       <h2>Конструктор справочников</h2>
       <p>JS-инструмент для преобразования Word-документов в интерактивные HTML-страницы.</p>
       <p style="margin-top: 5px; font-style: italic; color: var(--fg);">(В память о Владимире Олеговиче).</p>
       <div class="tech">JavaScript · HTML5 File API · CSS3 · Mammoth.js</div>
-      <a href="constructor.html" class="badge" style="text-decoration: none; display: inline-block; margin-top: 15px; color: var(--accent);">Открыть конструктор</a>
+      
+      <!-- Кнопки (они перехватывают клик на себя) -->
+      <a href="constructor.html" class="report-link purple" style="margin-top: 15px; position: relative; z-index: 2;" onclick="event.stopPropagation();">⚙️ Открыть конструктор</a>
       <br>
-      <a href="report-constructor.html" target="_blank" class="report-link purple">📄 Открыть отчет о разработке</a>
+      <a href="report-constructor.html" target="_blank" class="report-link purple" style="position: relative; z-index: 2;" onclick="event.stopPropagation();">📄 Открыть отчет о разработке</a>
     </div>
 
   </div>
 
   <!-- ГРУППА 3: В ПЛАНАХ -->
   <h2 class="section-title">🚧 В планах</h2>
-  <div class="grid">
-    <div class="card" style="opacity: 0.7; cursor: default; user-select: none;">
+    <div class="card" style="opacity: 0.7; cursor: pointer; user-select: none;" onclick="this.querySelector('.badge').style.background='#ffeb3b'; this.querySelector('.badge').style.color='#000'; setTimeout(() => { this.querySelector('.badge').style.background='#555'; this.querySelector('.badge').style.color='#fff'; }, 2000);">
       <div class="icon">3️⃣</div>
       <h2>Лаба 3 — IPv6 Enterprise / Secure WAN</h2>
       <p>Две подглавы: 3A — Secure WAN (IPsec + GRE), 3B — IPv6 Enterprise (SLAAC, DHCPv6, OSPFv3, HSRPv6).</p>
       <div class="tech">GRE · IPsec · SLAAC · DHCPv6 · OSPFv3 · HSRPv6</div>
-      <span class="badge" style="background: #555; color: #fff; border: none;">В разработке</span>
+      <span class="badge" style="background: #555; color: #fff; border: none; transition: background 0.3s, color 0.3s;">В разработке</span>
     </div>
-  </div>
 
 </main>
 
