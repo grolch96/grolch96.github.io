@@ -158,7 +158,24 @@
 </header>
 
 <main>
-
+    <!-- Дополнительные материалы (сворачиваемые) -->
+    <details style="margin-bottom: 25px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px 20px;">
+        <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.2em;">🔗</span> Дополнительные материалы (Windows и статическая маршрутизация)
+        </summary>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
+            <a href="cisco-windows.html" target="_blank" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
+                <div style="font-size: 1.5em;">🪟</div>
+                <strong style="color: var(--accent);">Windows — Сетевые команды</strong>
+                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">route add, ipconfig, ping, tracert, nslookup, netstat.</p>
+            </a>
+            <a href="cisco-static-routing.html" target="_blank" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
+                <div style="font-size: 1.5em;">🛣</div>
+                <strong style="color: var(--accent);">Статическая маршрутизация</strong>
+                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">next-hop, exit-interface, floating static, default route.</p>
+            </a>
+        </div>
+    </details>
 <div class="intro">
   <h2>📌 Как пользоваться</h2>
   <p>Каждая карточка — <strong>конкретная проблема</strong> и её решение. Внутри — три слоя: <strong>📌 Кратко</strong> (принцип), <strong>🗺 Схема</strong> (где применяется, ваши адреса), <strong>⚙️ Пример</strong> (команды с кнопкой «Копировать»).</p>

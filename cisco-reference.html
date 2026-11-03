@@ -187,7 +187,34 @@
     <span class="chip" data-q="qos">QoS</span>
   </div>
 </header>
-
+    <!-- Дополнительные материалы (сворачиваемые) -->
+    <details style="margin-bottom: 25px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px 20px;">
+        <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.2em;">🔗</span> Дополнительные материалы (теория, практика, скрипты)
+        </summary>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
+            <a href="osi-model.html" target="_blank" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
+                <div style="font-size: 1.5em;">🧱</div>
+                <strong style="color: var(--accent);">Модель OSI</strong>
+                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Интерактивная схема уровней с примерами из лабораторных.</p>
+            </a>
+            <a href="glossary.html" target="_blank" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
+                <div style="font-size: 1.5em;">📖</div>
+                <strong style="color: var(--accent);">Словарь терминов</strong>
+                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Ключевые термины и определения по сетевым технологиям.</p>
+            </a>
+            <a href="practice.html" target="_blank" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
+                <div style="font-size: 1.5em;">🎯</div>
+                <strong style="color: var(--accent);">Практикум</strong>
+                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Решение задач по технологиям из Лабораторных 1 и 2.</p>
+            </a>
+            <a href="sysadmin-scripts.html" target="_blank" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
+                <div style="font-size: 1.5em;">💻</div>
+                <strong style="color: var(--accent);">Скрипты администрирования</strong>
+                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Linux + Windows: автоматизация, мониторинг, безопасность.</p>
+            </a>
+        </div>
+    </details>
 <main>
   <div class="stats" id="stats">Загрузка...</div>
   <div id="cards">
@@ -1148,6 +1175,7 @@ reload</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
   </div>
+  
   <div class="empty hidden" id="empty">Ничего не найдено. Попробуйте другой запрос или выберите тему из списка.</div>
 </main>
 
