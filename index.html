@@ -6,14 +6,12 @@
 <title>Лаборатория сетевого инженера | Портфолио</title>
 <style>
   :root {
-    /*--bg: #e9e9ec; --fg: #1a1a2e; /* Чуть темнее фон */
-    /*--card: rgba(255, 255, 255, 0.85); /* Карточка чуть плотнее, чтобы контраст был лучше */
-    --bg: #f0ece1; --fg: #2c2c2c; 
+    --bg: #dcdcdc; /* Серый фон для полей */
     --card: rgba(255, 255, 255, 0.9); 
     --border: rgba(208, 215, 222, 0.4);
     --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; 
     --tag: rgba(234, 240, 248, 0.15);
-    --bg-overlay: rgba(244, 244, 246, 0.95); 
+    --bg-overlay: rgba(244, 244, 246, 0.8); /* Почти прозрачный, картинка яркая */
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
@@ -21,7 +19,7 @@
     --border: rgba(58, 58, 58, 0.4);
     --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; 
     --tag: rgba(42, 58, 74, 0.15);
-    --bg-overlay: rgba(26, 26, 26, 0.85);
+    --bg-overlay: rgba(26, 26, 26, 0.9); /* Тёмный, картинка приглушена */
   }
   * { box-sizing: border-box; }
   
@@ -29,12 +27,13 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     color: var(--fg); margin: 0; padding: 0;
     line-height: 1.6; transition: color .2s;
+    
     background-color: var(--bg);
     background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-index.jpg');
-    background-size: auto 100%; 
-    background-position: center;
-    background-attachment: fixed;
+    background-size: 50% auto; /* 80% ширины экрана, высота по пропорции */
+    background-position: center;   /* Центрируем */
     background-repeat: no-repeat;
+    min-height: 100vh;             /* Тело занимает минимум весь экран */
   }
   
   header {
@@ -112,12 +111,16 @@
   .card:hover { 
     transform: translateY(-5px) rotate(0.5deg); 
     border-color: var(--accent); 
-    box-shadow: 0 12px 30px rgba(0,0,0,.2), 0 0 20px rgba(127, 168, 212, 0.3); 
-    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 15px 35px rgba(0,0,0,.3), 0 5px 15px rgba(127, 168, 212, 0.4); /* Усилили тень */
+    background: rgba(255, 255, 255, 0.95); /* Сделали карточку плотнее, чтобы тень не «просвечивала» */
   }
   [data-theme="dark"] .card:hover {
-    background: rgba(42, 42, 42, 0.45);
-    box-shadow: 0 12px 30px rgba(0,0,0,.5), 0 0 20px rgba(163, 196, 232, 0.2);
+    background: rgba(42, 42, 42, 0.85); /* Чуть прозрачнее, чтобы тень пробивалась */
+    /* Мощный ореол: широкий, яркий, снаружи */
+    box-shadow: 0 0 50px rgba(163, 196, 232, 0.8), 
+                0 0 20px rgba(163, 196, 232, 0.6), 
+                0 15px 35px rgba(0, 0, 0, 0.8);
+    border-color: #a3c4e8; /* Яркая голубая рамка */
   }
 
   .card:active {
