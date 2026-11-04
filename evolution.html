@@ -9,7 +9,7 @@
     --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
     --accent: #7fa8d4; --accent-green: #2e7d32; --accent-red: #c62828;
     --term-bg: #1e1e1e; --term-fg: #d4d4d4;
-    --bg-overlay: rgba(244, 244, 246, 0.85); /* Затемнение для дневной темы */
+    --bg-overlay: rgba(244, 244, 246, 0.80); /* Затемнение для дневной темы */
 }
 [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
@@ -24,13 +24,13 @@
     
     /* ФОН С КАРТИНКОЙ (как на главной) */
     background-color: var(--bg);
-    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-vas.jpg');
-    background-size: 80% auto; /* Картинка будет занимать 80% ширины экрана, высота подстроится */
+    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-vas2.jpg');
+    background-size: 85% auto; /* Картинка будет занимать 80% ширины экрана, высота подстроится */
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
 }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
         h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
         .back-link:hover { text-decoration: underline; }
