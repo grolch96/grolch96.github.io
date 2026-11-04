@@ -31,7 +31,15 @@
     background-repeat: no-repeat;
 }
         .container { width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
-        h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        h1 { 
+            color: #4a4a4a; /* Тёмно-серый */
+            border-bottom: 2px solid #4a4a4a; 
+            padding-bottom: 10px; 
+           }
+[data-theme="dark"] h1 {
+    color: #cccccc; /* Светло-серый для тёмной темы, чтобы читалось */
+    border-bottom: 2px solid #cccccc;
+}
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
         .back-link:hover { text-decoration: underline; }
 
