@@ -113,6 +113,44 @@
         }
 
         footer { max-width: 1000px; margin: 40px auto 0; text-align: center; color: var(--muted, #888); font-size: 13px; }
+        
+        /* Чекбоксы для самопроверки */
+.self-check {
+    display: none;
+    margin-left: 10px;
+    vertical-align: middle;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent-green);
+    transform: scale(1.1);
+}
+
+body.learning-mode .self-check { display: inline-block; }
+
+/* Стиль для выученного термина */
+.term-card.checked .term-name {
+    opacity: 0.5;
+    text-decoration: line-through;
+    transition: all 0.3s ease;
+}
+
+/* Блок счётчика */
+.progress-summary {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 40px auto;
+    text-align: center;
+    max-width: 600px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: none;
+}
+body.learning-mode .progress-summary { display: block; }
+.progress-summary h3 { margin-top: 0; color: var(--accent); font-size: 1.4em; }
+.progress-summary .counter { font-size: 2em; font-weight: bold; color: var(--accent-green); }
+.progress-summary .total { font-size: 1.2em; color: var(--muted); }
     </style>
 </head>
 <body data-theme="light">
@@ -414,78 +452,97 @@
 </div>
 
 <script>
-    // Тема
-    const themeBtn = document.getElementById('theme-btn');
-    const saved = localStorage.getItem('glossary-theme') || 'light';
-    document.body.dataset.theme = saved;
-    themeBtn.addEventListener('click', () => {
-        const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
-        document.body.dataset.theme = next;
-        localStorage.setItem('glossary-theme', next);
-    });
-
-    // Поиск
-    const searchInput = document.getElementById('search');
-    const cards = document.querySelectorAll('.term-card');
-    const noResults = document.getElementById('no-results');
-    const categoryTitles = document.querySelectorAll('.category-title');
-
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.trim().toLowerCase();
-        let visibleCount = 0;
-
-        cards.forEach(card => {
-            const searchText = (card.getAttribute('data-search') || '') + ' ' + card.innerText.toLowerCase();
-            if (!query || searchText.includes(query)) {
-                card.style.display = 'block';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        // Скрываем заголовки категорий, если под ними нет видимых карточек
-        categoryTitles.forEach(title => {
-            let hasVisible = false;
-            let next = title.nextElementSibling;
-            while (next && !next.classList.contains('category-title')) {
-                if (next.classList.contains('term-card') && next.style.display !== 'none') {
-                    hasVisible = true;
-                    break;
-                }
-                next = next.nextElementSibling;
-            }
-            title.style.display = hasVisible ? 'block' : 'none';
-        });
-
-        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-    });
-</script>
-<script>
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Управление темой
+    const themeBtn = document.getElementById('theme-btn');
+    if (themeBtn) {
+        const saved = localStorage.getItem('glossary-theme') || 'light';
+        document.body.dataset.theme = saved;
+        themeBtn.addEventListener('click', () => {
+            const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+            document.body.dataset.theme = next;
+            localStorage.setItem('glossary-theme', next);
+        });
+    }
+
+    // 2. Логика режима обучения и чекбоксов
     const btn = document.getElementById('toggle-learn-btn');
-    const blocks = document.querySelectorAll('.term-def'); // Блоки, которые нужно скрыть
+    const blocks = document.querySelectorAll('.term-def');
+    const termCards = document.querySelectorAll('.term-card');
     
     let isLearningMode = false;
+    let totalTerms = termCards.length;
 
+    // Внедряем чекбоксы в каждый .term-name
+    termCards.forEach((card, index) => {
+        const termName = card.querySelector('.term-name');
+        if (termName) {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'self-check';
+            checkbox.id = `term-check-${index}`;
+            
+            termName.appendChild(checkbox);
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    card.classList.add('checked');
+                    // Снимаем размытие с определения в этой карточке
+                    const def = card.querySelector('.term-def');
+                    if (def) def.classList.remove('hidden-blur');
+                } else {
+                    card.classList.remove('checked');
+                    // Если режим обучения включён, возвращаем размытие
+                    if (document.body.classList.contains('learning-mode')) {
+                        const def = card.querySelector('.term-def');
+                        if (def) def.classList.add('hidden-blur');
+                    }
+                }
+                updateCounter();
+            });
+        }
+    });
+
+    // Блок счётчика в конце контейнера
+    const container = document.querySelector('.container');
+    const summary = document.createElement('div');
+    summary.className = 'progress-summary';
+    summary.innerHTML = `
+        <h3>📊 Ваш прогресс</h3>
+        <p><span class="counter" id="checked-count">0</span> <span class="total">из ${totalTerms} терминов выучено</span></p>
+    `;
+    container.appendChild(summary);
+
+    function updateCounter() {
+        const checked = document.querySelectorAll('.self-check:checked').length;
+        document.getElementById('checked-count').textContent = checked;
+    }
+
+    // Логика кнопки
     btn.addEventListener('click', () => {
         isLearningMode = !isLearningMode;
+        document.body.classList.toggle('learning-mode', isLearningMode);
         
         blocks.forEach(block => {
-            if (isLearningMode) {
-                block.classList.add('hidden-blur');
-            } else {
-                block.classList.remove('hidden-blur');
-            }
+            if (isLearningMode) block.classList.add('hidden-blur');
+            else block.classList.remove('hidden-blur');
         });
 
-        // Меняем текст кнопки
         if (isLearningMode) {
             btn.textContent = '👁️ Показать все ответы';
-            btn.style.background = '#e67e22'; // Оранжевый цвет для "показать"
+            btn.style.background = '#e67e22';
+            
+            // Сразу показываем те определения, которые уже отмечены галочкой
+            document.querySelectorAll('.self-check:checked').forEach(cb => {
+                const parent = cb.closest('.term-card');
+                if (parent) {
+                    const def = parent.querySelector('.term-def');
+                    if (def) def.classList.remove('hidden-blur');
+                }
+            });
         } else {
             btn.textContent = '🎓 Включить режим обучения (скрыть ответы)';
-            btn.style.background = 'var(--accent)'; // Синий цвет для "включить"
+            btn.style.background = 'var(--accent)';
         }
     });
 });

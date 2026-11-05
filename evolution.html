@@ -6,13 +6,13 @@
     <title>Эволюция конфигураций: Base → Advanced</title>
     <style>
 :root {
-    --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
+    --bg: #f4f4f6; --fg: #1a1a2e;--card: rgba(255, 255, 255, 0.25); --border: #d0d7de;
     --accent: #7fa8d4; --accent-green: #2e7d32; --accent-red: #c62828;
     --term-bg: #1e1e1e; --term-fg: #d4d4d4;
     --bg-overlay: rgba(244, 244, 246, 0.80); /* Затемнение для дневной темы */
 }
 [data-theme="dark"] {
-    --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
+    --bg: #1a1a1a; --fg: #c9d1d9;--card: rgba(42, 42, 42, 0.45); --border: #444;
     --accent: #a3c4e8; --accent-green: #81c784; --accent-red: #ef9a9a;
     --term-bg: #111; --term-fg: #e0e0e0;
     --bg-overlay: rgba(26, 26, 26, 0.75); /* Затемнение для тёмной темы */
@@ -136,6 +136,64 @@
 
 .reveal-btn:hover { background: var(--accent-green); }
 .reveal-btn:active { transform: scale(0.96); }
+
+/* Чекбоксы для самопроверки */
+.self-check {
+    display: none; /* По умолчанию скрыты */
+    margin-left: 15px;
+    vertical-align: middle;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent-green);
+    transform: scale(1.2);
+}
+
+/* Показываем чекбоксы только в режиме обучения */
+body.learning-mode .self-check {
+    display: inline-block;
+}
+
+/* Стиль для заголовка, когда галочка стоит */
+h2.checked {
+    opacity: 0.6;
+    text-decoration: line-through;
+    transition: all 0.3s ease;
+}
+
+/* Блок счётчика */
+.progress-summary {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 40px auto;
+    text-align: center;
+    max-width: 600px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: none; /* Скрыт по умолчанию */
+}
+
+body.learning-mode .progress-summary {
+    display: block;
+}
+
+.progress-summary h3 {
+    margin-top: 0;
+    color: var(--accent);
+    font-size: 1.4em;
+}
+
+.progress-summary .counter {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--accent-green);
+}
+
+.progress-summary .total {
+    font-size: 1.2em;
+    color: var(--muted);
+}
     </style>
 </head>
 <body data-theme="light">
@@ -1156,72 +1214,84 @@ wlan interface Corp-WiFi 104
 </div>
 
 <script>
-    // Тема
-    const themeBtn = document.getElementById('theme-btn');
-    const saved = localStorage.getItem('evolution-theme') || 'light';
-    document.body.dataset.theme = saved;
-    themeBtn.addEventListener('click', () => {
-        const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
-        document.body.dataset.theme = next;
-        localStorage.setItem('evolution-theme', next);
-    });
-
-    // Копирование
-document.querySelectorAll('.copy-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        const pre = btn.parentElement.querySelector('pre');
-        // Убираем комментарии (строки с !) и пустые строки
-        let text = pre.innerText
-            .split('\n')
-            .filter(line => !line.trim().startsWith('!'))
-            .map(line => line.replace(/\s+$/g, ''))
-            .join('\n')
-            .replace(/^\s*\n+/, '')
-            .replace(/\n+\s*$/, '');
-
-        // Если после чистки ничего не осталось — копируем оригинальный текст (с комментариями)
-        if (!text.trim()) {
-            text = pre.innerText;
-        }
-
-        try {
-            await navigator.clipboard.writeText(text);
-            btn.textContent = '✅ Скопировано';
-            btn.classList.add('copied');
-            setTimeout(() => { 
-                btn.textContent = 'Копировать'; 
-                btn.classList.remove('copied'); 
-            }, 1500);
-        } catch (e) {
-            // Fallback для старых браузеров
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            btn.textContent = '✅ Скопировано';
-            setTimeout(() => { btn.textContent = 'Копировать'; }, 1500);
-        }
-    });
-});
-</script>
-<script>
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Управление темой
+    const themeBtn = document.getElementById('theme-btn');
+    if (themeBtn) {
+        const saved = localStorage.getItem('evolution-theme') || 'light';
+        document.body.dataset.theme = saved;
+        themeBtn.addEventListener('click', () => {
+            const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+            document.body.dataset.theme = next;
+            localStorage.setItem('evolution-theme', next);
+        });
+    }
+
+    // 2. Логика режима обучения
     const btn = document.getElementById('toggle-learn-btn');
-    
-    // Находим все блоки, которые нужно скрыть:
-    // 1. Блоки "Что это такое" (добавленные недавно)
-    // 2. Блоки "Как это делается" (учебный материал)
     const blocks = document.querySelectorAll('.compare-card > div[style*="margin-top: 15px"]');
     const studyBlocks = document.querySelectorAll('.compare-card > div[style*="margin-top: 25px"]');
+    const compareCards = document.querySelectorAll('.compare-card');
     
     let isLearningMode = false;
+    let totalTopics = compareCards.length;
 
+    // Внедряем чекбоксы
+    compareCards.forEach((card, index) => {
+        const h2 = card.querySelector('h2');
+        if (h2) {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'self-check';
+            checkbox.id = `check-${index}`;
+            
+            h2.appendChild(checkbox);
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    h2.classList.add('checked');
+                    const parentCard = h2.closest('.compare-card');
+                    if (parentCard) {
+                        parentCard.querySelectorAll('.hidden-blur').forEach(block => {
+                            block.classList.remove('hidden-blur');
+                        });
+                    }
+                } else {
+                    h2.classList.remove('checked');
+                    if (document.body.classList.contains('learning-mode')) {
+                        const parentCard = h2.closest('.compare-card');
+                        if (parentCard) {
+                            parentCard.querySelectorAll('div[style*="margin-top: 15px"], div[style*="margin-top: 25px"]').forEach(block => {
+                                block.classList.add('hidden-blur');
+                            });
+                        }
+                    }
+                }
+                updateCounter();
+            });
+        }
+    });
+
+    // Блок счётчика
+    const container = document.querySelector('.container');
+    const summary = document.createElement('div');
+    summary.className = 'progress-summary';
+    summary.innerHTML = `
+        <h3>📊 Ваш прогресс</h3>
+        <p><span class="counter" id="checked-count">0</span> <span class="total">из ${totalTopics} зачтено тем</span></p>
+    `;
+    container.appendChild(summary);
+
+    function updateCounter() {
+        const checked = document.querySelectorAll('.self-check:checked').length;
+        document.getElementById('checked-count').textContent = checked;
+    }
+
+    // Логика кнопки
     btn.addEventListener('click', () => {
         isLearningMode = !isLearningMode;
+        document.body.classList.toggle('learning-mode', isLearningMode);
         
-        // Применяем/снимаем размытие
         blocks.forEach(block => {
             if (isLearningMode) block.classList.add('hidden-blur');
             else block.classList.remove('hidden-blur');
@@ -1232,10 +1302,19 @@ document.addEventListener('DOMContentLoaded', () => {
             else block.classList.remove('hidden-blur');
         });
 
-        // Меняем текст и цвет кнопки
         if (isLearningMode) {
             btn.textContent = '👁️ Показать все ответы';
-            btn.style.background = '#e67e22'; // Оранжевый
+            btn.style.background = '#e67e22';
+            
+            // Сразу показываем те, что уже отмечены
+            document.querySelectorAll('.self-check:checked').forEach(cb => {
+                const parent = cb.closest('.compare-card');
+                if (parent) {
+                    parent.querySelectorAll('.hidden-blur').forEach(block => {
+                        block.classList.remove('hidden-blur');
+                    });
+                }
+            });
         } else {
             btn.textContent = '🎓 Включить режим обучения (скрыть ответы)';
             btn.style.background = 'var(--accent)';

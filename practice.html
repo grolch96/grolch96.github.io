@@ -113,6 +113,41 @@
 
 .reveal-btn:hover { background: var(--accent-green); }
 .reveal-btn:active { transform: scale(0.96); }
+
+/* Чекбоксы для самопроверки */
+.self-check {
+    display: none;
+    margin-left: 15px;
+    vertical-align: middle;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent-green);
+    transform: scale(1.2);
+}
+body.learning-mode .self-check { display: inline-block; }
+
+h2.checked {
+    opacity: 0.6;
+    text-decoration: line-through;
+    transition: all 0.3s ease;
+}
+
+.progress-summary {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 40px auto;
+    text-align: center;
+    max-width: 600px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: none;
+}
+body.learning-mode .progress-summary { display: block; }
+.progress-summary h3 { margin-top: 0; color: var(--accent); font-size: 1.4em; }
+.progress-summary .counter { font-size: 2em; font-weight: bold; color: var(--accent-green); }
+.progress-summary .total { font-size: 1.2em; color: var(--muted); }
     </style>
 </head>
 <body data-theme="light">
@@ -181,6 +216,8 @@ interface f0/2
                 <li><code>show interfaces trunk</code> — порт f0/24 в режиме trunk, allowed VLAN 10,20.</li>
                 <li><code>ping</code> с ПК1 (VLAN 10) до ПК2 (VLAN 20) — <strong>не проходит</strong> (разные VLAN, нет маршрутизации).</li>
             </ul>
+        </div> <!-- Закрываем script-card -->
+            
     <!-- Задача 2: EtherChannel LACP -->
     <div class="script-card">
         <h2>2. EtherChannel LACP</h2>
@@ -920,6 +957,7 @@ ntp server 192.168.1.5</pre>
 </div>
 
 <script>
+    // Тема
     const themeBtn = document.getElementById('theme-btn');
     const saved = localStorage.getItem('practice-theme') || 'light';
     document.body.dataset.theme = saved;
@@ -929,6 +967,7 @@ ntp server 192.168.1.5</pre>
         localStorage.setItem('practice-theme', next);
     });
 
+    // Копирование
     document.querySelectorAll('.copy-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const pre = btn.closest('.code-wrap').querySelector('pre');
@@ -958,45 +997,102 @@ ntp server 192.168.1.5</pre>
             }
         });
     });
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('toggle-learn-btn');
-    
-    // Находим все блоки с решением (класс .task-block, внутри которого есть заголовок "Решение")
-    // Но проще: ищем все .task-block, в которых есть текст "Решение"
-    const allTaskBlocks = document.querySelectorAll('.task-block');
-    const solutionBlocks = [];
-    
-    allTaskBlocks.forEach(block => {
-        if (block.innerText.includes('🛠️ Решение') || block.innerText.includes('Решение')) {
-            solutionBlocks.push(block);
-        }
-    });
 
-    let isLearningMode = false;
-
-    btn.addEventListener('click', () => {
-        isLearningMode = !isLearningMode;
+    // Режим обучения + Чекбоксы + Счётчик
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('toggle-learn-btn');
+        const allTaskBlocks = document.querySelectorAll('.task-block');
+        const solutionBlocks = [];
         
-        solutionBlocks.forEach(block => {
-            if (isLearningMode) {
-                block.classList.add('hidden-blur');
-            } else {
-                block.classList.remove('hidden-blur');
+        allTaskBlocks.forEach(block => {
+            if (block.innerText.includes('🛠️ Решение') || block.innerText.includes('Решение')) {
+                solutionBlocks.push(block);
             }
         });
 
-        // Меняем текст и цвет кнопки
-        if (isLearningMode) {
-            btn.textContent = '👁️ Показать все решения';
-            btn.style.background = '#e67e22'; // Оранжевый
-        } else {
-            btn.textContent = '🎓 Включить режим обучения (скрыть ответы)';
-            btn.style.background = 'var(--accent)';
+        const taskCards = document.querySelectorAll('.script-card');
+        let isLearningMode = false;
+        let totalTasks = taskCards.length;
+
+        // 1. Внедряем чекбоксы
+        taskCards.forEach((card, index) => {
+            const h2 = card.querySelector('h2');
+            if (h2) {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'self-check';
+                checkbox.id = `task-check-${index}`;
+                h2.appendChild(checkbox);
+
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        h2.classList.add('checked');
+                        const parentCard = h2.closest('.script-card');
+                        if (parentCard) {
+                            parentCard.querySelectorAll('.task-block').forEach(block => {
+                                if (block.innerText.includes('Решение')) block.classList.remove('hidden-blur');
+                            });
+                        }
+                    } else {
+                        h2.classList.remove('checked');
+                        if (document.body.classList.contains('learning-mode')) {
+                            const parentCard = h2.closest('.script-card');
+                            if (parentCard) {
+                                parentCard.querySelectorAll('.task-block').forEach(block => {
+                                    if (block.innerText.includes('Решение')) block.classList.add('hidden-blur');
+                                });
+                            }
+                        }
+                    }
+                    updateCounter();
+                });
+            }
+        });
+
+        // 2. Блок счётчика
+        const container = document.querySelector('.container');
+        const summary = document.createElement('div');
+        summary.className = 'progress-summary';
+        summary.innerHTML = `
+            <h3>📊 Ваш прогресс</h3>
+            <p><span class="counter" id="checked-count">0</span> <span class="total">из ${totalTasks} задач решено</span></p>
+        `;
+        container.appendChild(summary);
+
+        function updateCounter() {
+            const checked = document.querySelectorAll('.self-check:checked').length;
+            document.getElementById('checked-count').textContent = checked;
         }
+
+        // 3. Кнопка режима обучения
+        btn.addEventListener('click', () => {
+            isLearningMode = !isLearningMode;
+            document.body.classList.toggle('learning-mode', isLearningMode);
+            
+            solutionBlocks.forEach(block => {
+                if (isLearningMode) block.classList.add('hidden-blur');
+                else block.classList.remove('hidden-blur');
+            });
+
+            if (isLearningMode) {
+                btn.textContent = '👁️ Показать все решения';
+                btn.style.background = '#e67e22';
+                
+                // Показываем те, что уже отмечены
+                document.querySelectorAll('.self-check:checked').forEach(cb => {
+                    const parent = cb.closest('.script-card');
+                    if (parent) {
+                        parent.querySelectorAll('.task-block').forEach(block => {
+                            if (block.innerText.includes('Решение')) block.classList.remove('hidden-blur');
+                        });
+                    }
+                });
+            } else {
+                btn.textContent = '🎓 Включить режим обучения (скрыть решения)';
+                btn.style.background = 'var(--accent)';
+            }
+        });
     });
-});
 </script>
 </body>
 </html>

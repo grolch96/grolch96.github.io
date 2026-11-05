@@ -15,11 +15,11 @@
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
-    --card: rgba(42, 42, 42, 0.85);
+    --card: rgba(42, 42, 42, 0.5);
     --border: rgba(58, 58, 58, 0.4);
     --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; 
     --tag: rgba(42, 58, 74, 0.15);
-    --bg-overlay: rgba(26, 26, 26, 0.9); /* Тёмный, картинка приглушена */
+    --bg-overlay: rgba(26, 26, 26, 0.85); /* Тёмный, картинка приглушена */
   }
   * { box-sizing: border-box; }
   
@@ -30,7 +30,7 @@
     
     background-color: var(--bg);
     background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-index.jpg');
-    background-size: 50% auto; /* 80% ширины экрана, высота по пропорции */
+    background-size: 40% auto; /* 40% ширины экрана, высота по пропорции */
     background-position: center;   /* Центрируем */
     background-repeat: no-repeat;
     min-height: 100vh;             /* Тело занимает минимум весь экран */
@@ -38,7 +38,7 @@
   
   header {
     position: sticky; top: 0; z-index: 100; background: var(--card);
-    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border); padding: 14px 20px;
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
   }
@@ -111,16 +111,18 @@
   .card:hover { 
     transform: translateY(-5px) rotate(0.5deg); 
     border-color: var(--accent); 
-    box-shadow: 0 15px 35px rgba(0,0,0,.3), 0 5px 15px rgba(127, 168, 212, 0.4); /* Усилили тень */
-    background: rgba(255, 255, 255, 0.95); /* Сделали карточку плотнее, чтобы тень не «просвечивала» */
+    /* Мощная, контрастная тень для дневной темы */
+    box-shadow: 0 15px 35px rgba(0,0,0,.4), 0 0 20px rgba(127, 168, 212, 0.6); 
+    /* Карточка остается полупрозрачной, фон виден */
+    background: rgba(255, 255, 255, 0.65); 
   }
+  
   [data-theme="dark"] .card:hover {
-    background: rgba(42, 42, 42, 0.85); /* Чуть прозрачнее, чтобы тень пробивалась */
-    /* Мощный ореол: широкий, яркий, снаружи */
-    box-shadow: 0 0 50px rgba(163, 196, 232, 0.8), 
-                0 0 20px rgba(163, 196, 232, 0.6), 
-                0 15px 35px rgba(0, 0, 0, 0.8);
-    border-color: #a3c4e8; /* Яркая голубая рамка */
+    /* Полупрозрачный фон для темной темы */
+    background: rgba(42, 42, 42, 0.65);
+    /* Мощный светло-голубой ореол + черная тень, чтобы пробить темный фон */
+    box-shadow: 0 15px 35px rgba(0,0,0,.8), 0 0 25px rgba(163, 196, 232, 0.5);
+    border-color: var(--accent);
   }
 
   .card:active {
