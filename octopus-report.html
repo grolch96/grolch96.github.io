@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кейс: Восстановление legacy-сервера | Портфолио</title>
+<style>
+  :root {
+    --bg: #dcdcdc;
+    --bg-grad-top: rgba(0, 0, 0, 0.22);
+    --card: rgba(255, 255, 255, 0.9);
+    --border: rgba(208, 215, 222, 0.4);
+    --accent: #7fa8d4;
+    --accent2: #e8a0a8;
+    --muted: #57606a;
+    --fg: #1f2328;
+    --tag: rgba(234, 240, 248, 0.15);
+    --bg-overlay: rgba(244, 244, 246, 0.85);
+    --code-bg: rgba(0, 0, 0, 0.05);
+  }
+  [data-theme="dark"] {
+    --bg: #1f2023;
+    --bg-grad-top: rgba(0, 0, 0, 0.45);
+    --fg: #c9d1d9;
+    --card: rgba(42, 42, 42, 0.5);
+    --border: rgba(58, 58, 58, 0.4);
+    --accent: #a3c4e8;
+    --accent2: #f0b8c0;
+    --muted: #8b949e;
+    --tag: rgba(42, 58, 74, 0.15);
+    --bg-overlay: rgba(31, 32, 35, 0.8);
+    --code-bg: rgba(255, 255, 255, 0.06);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.65;
+    transition: color .2s, background-color .2s;
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(var(--bg-grad-top), transparent 100%),
+      linear-gradient(var(--bg-overlay), var(--bg-overlay));
+    background-size: auto, auto;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background:
+      linear-gradient(to bottom, var(--bg-grad-top), transparent 70%),
+      var(--bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: nowrap;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+
+  header::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right,
+      rgba(208, 215, 222, 0.3) 33%,
+      rgba(127, 168, 212, 0.7) 33%,
+      rgba(127, 168, 212, 0.7) 66%,
+      rgba(232, 160, 168, 0.7) 66%);
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .header-text { display: flex; flex-direction: column; flex: 1; min-width: 200px; }
+  header h1 { font-size: 1.25em; margin: 0; line-height: 1.2; }
+  header .subtitle { margin: 4px 0 0; font-size: 0.9em; color: var(--muted); }
+
+  header button, .btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    color: var(--fg);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+    backdrop-filter: blur(4px);
+    flex-shrink: 0;
+    display: inline-block;
+  }
+  [data-theme="dark"] header button, [data-theme="dark"] .btn { background: rgba(255,255,255,0.06); }
+  header button:hover, .btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(127, 168, 212, 0.35);
+  }
+  header button:active, .btn:active { transform: scale(0.95); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 30px 24px 60px; }
+
+  .article-card {
+    background: var(--card);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 40px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+  [data-theme="dark"] .article-card { box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;
+  }
+  .meta .badge {
+    font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 12px;
+    background: var(--tag); color: var(--accent); border: 1px solid var(--border);
+  }
+
+  h2 {
+    font-size: 1.4em; color: var(--accent); margin: 36px 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  h3 { font-size: 1.1em; margin: 24px 0 10px; color: var(--fg); }
+
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 18px; padding-left: 24px; }
+  li { margin-bottom: 8px; }
+
+  code {
+    font-family: "Consolas", "Courier New", monospace;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    border-left: 3px solid var(--accent);
+  }
+
+  .callout {
+    background: var(--tag);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 18px 0;
+    font-size: 0.95em;
+  }
+  .callout.warning { border-left-color: var(--accent2); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .result-item {
+    background: var(--tag);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .result-item .status { font-weight: 700; font-size: 0.9em; margin-bottom: 4px; }
+  .status.ok { color: #2e7d32; }
+  .status.partial { color: #e67e22; }
+  .status.fail { color: #c0392b; }
+  .status.pending { color: var(--muted); }
+
+  .toc {
+    background: var(--tag);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin-bottom: 28px;
+  }
+  .toc ul { margin: 6px 0 0; padding-left: 20px; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 40px; }
+
+  @media (max-width: 600px) {
+    header { flex-wrap: wrap; padding: 14px 16px; }
+    .header-text { flex-basis: 100%; margin-bottom: 10px; }
+    header button { width: 100%; }
+    main { padding: 16px; }
+    .article-card { padding: 20px; }
+    h2 { font-size: 1.2em; }
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <div class="header-text">
+    <h1>🛠️ Кейс: Восстановление legacy-сервера</h1>
+    <p class="subtitle">Миграция системы с жёсткой привязкой к оборудованию</p>
+  </div>
+  <a href="index.html" class="btn">← На главную</a>
+  <button id="theme-btn">🌙 Тема</button>
+</header>
+
+<main>
+  <article class="article-card">
+
+    <div class="meta">
+      <span class="badge">Legacy Migration</span>
+      <span class="badge">VirtualBox / VMware</span>
+      <span class="badge">Linux Ubuntu 14.04</span>
+      <span class="badge">Troubleshooting</span>
+    </div>
+
+    <div class="toc">
+      <strong>Содержание:</strong>
+      <ul>
+        <li><a href="#context">Контекст и задача</a></li>
+        <li><a href="#diagnostics">Диагностика и выявленные зависимости</a></li>
+        <li><a href="#solution1">Решение 1: VMware (отрицательный результат)</a></li>
+        <li><a href="#solution2">Решение 2: VirtualBox — обход через импорт VMX</a></li>
+        <li><a href="#current">Текущий статус и открытые вопросы</a></li>
+        <li><a href="#summary">Итоги</a></li>
+      </ul>
+    </div>
+
+    <h2 id="context">Контекст и задача</h2>
+    <p>Требовалось восстановить работоспособность устаревшей информационной системы (далее — «система») после выхода из строя физического оборудования. Система построена на базе <strong>Ubuntu 14.04</strong>, работает в кластерной конфигурации и содержит встроенные механизмы защиты от тиражирования — жёсткую привязку к аппаратному обеспечению.</p>
+    <p>Стандартные методы миграции (преобразование дисков, перенос в новую среду) не работали: при попытке загрузки возникали паника ядра и BSOD. Требовалось найти способ запустить систему в виртуальной среде, сохранив целостность кластера и данных.</p>
+
+    <h2 id="diagnostics">Диагностика и выявленные зависимости</h2>
+    <p>В ходе анализа бэкапа и тестового стенда были выявлены следующие взаимосвязи, критичные для стабильной работы системы:</p>
+    <ul>
+      <li><strong>Архитектура процессора</strong> — критическая зависимость (при несовпадении — немедленная перезагрузка).</li>
+      <li><strong>Мосты материнской платы</strong> — аналогичная критическая зависимость.</li>
+      <li><strong>Сетевые правила (iptables/firewall)</strong> — критическая зависимость.</li>
+      <li><strong>Сетевые устройства</strong> — критическая зависимость: связь не должна быть разорвана, устройство не должно быть выключено.</li>
+      <li><strong>Сетевая адресация (MAC-адреса)</strong> — жёсткая привязка как к логическим, так и к физическим адресам. При изменении MAC после импорта система повреждает сетевые конфиги.</li>
+    </ul>
+    <p>Также на уровне ОС были обнаружены скрытые скриптовые механизмы (три ветви) и «спрятанные» правила фаервола, влияющие на поведение системы.</p>
+
+    <h2 id="solution1">Решение 1: VMware — отрицательный результат</h2>
+    <p>Первая попытка заключалась в последовательном исключении компонентов из конфигурации <code>.vmx</code> и замедлении загрузки для выигрыша времени:</p>
+    <ul>
+      <li>Разработаны скрипты <code>boot-delay.cmd</code> (задержка загрузки) и <code>clear-cache.cmd</code> (очистка кэша проблемных правил).</li>
+      <li>Написаны аппаратные скрипты для хоста и новые конфиги виртуальной машины.</li>
+    </ul>
+    <div class="callout warning">
+      <strong>Результат:</strong> отрицательный. Даже при максимальном «раздевании» конфигурации система работала не более 2 минут, после чего следовал сбой. Метод был признан тупиковым.
+    </div>
+
+    <h2 id="solution2">Решение 2: VirtualBox — обход через импорт VMX</h2>
+    <p>Ключевая идея заключалась в использовании <strong>механизма импорта конфигурации VMware (.vmx) в VirtualBox</strong>, который появился в VirtualBox относительно недавно. На момент создания системы защиты производитель не мог учесть эту возможность: тогда поддерживалось лишь прямое открытие виртуальных дисков (<code>.vmdk</code>), но не импорт всей разметки <code>.vmx</code>.</p>
+    <p>Таким образом, был найден не «взлом», а <strong>архитектурная брешь</strong>: система сопротивлялась конвертации дисков и прямому запуску, но не была рассчитана на то, что гипервизор в будущем научится «понимать» родную конфигурацию VMware. Это позволило опираться на источник проблемы, а не преодолевать его.</p>
+
+    <h3>Шаги восстановления:</h3>
+    <ol>
+      <li><strong>Импорт из VMware в OVF</strong> — строго через <code>.vmx</code> (чтобы сохранить кластерную конфигурацию), <em>без</em> конвертации дисков в <code>.vdi</code>. Это позволило обойти привязку к оборудованию за счёт использования стандартных драйверов проблемных устройств.</li>
+      <li><strong>Подключение новых OVF в VirtualBox</strong> — система загрузилась, но MAC-адреса изменились, что вызвало повреждение сети.</li>
+      <li><strong>Ручное восстановление MAC-адресов</strong> — повторное прописывание требуемых MAC в менеджере виртуальных машин. После этого конфигурация перестала «ломаться».</li>
+      <li><strong>Правка сетевых конфигов</strong> — в файле <code>/etc/network/interfaces</code> переименован интерфейс <code>ens160</code> → <code>enp0s3</code> (система выборочно переименовывала подключение в двух местах конфига).</li>
+      <li><strong>Настройка клиента</strong> — исправлен файл <code>hosts</code>:
+        <pre>10.29.96.24   octopus.example.local
+10.29.64.3    datastore.example.local</pre>
+        Также назначено имя, суффикс домена и псевдоним для DataStore.</li>
+    </ol>
+
+    <div class="callout">
+      <strong>Результат:</strong> система стабильно работает длительное время. Задача «Восстановление из горячего бэкапа на новом железе» выполнена.
+    </div>
+
+    <h3>Восстановление доступа и функциональности</h3>
+    <ul>
+      <li><strong>Права администратора</strong> — восстановлены под прежним логином без повреждения базы данных.</li>
+      <li><strong>File-manager (backend)</strong> — частично функционален:
+        <ul>
+          <li><span class="status ok">✔</span> Метод <code>Get</code> (просмотр файлов через браузер) — работает.</li>
+          <li><span class="status partial">◐</span> Метод <code>Post/Put</code> (загрузка файлов) — не выгружается в систему, требуется API с инструкциями для базы.</li>
+          <li><span class="status fail">✘</span> Метод <code>Mkcol</code> (создание папок) — без удалённого модуля невозможно. Через консоль работает частично, <code>POST</code> блокируется на уровне ядра.</li>
+          <li><span class="status partial">◐</span> Метод <code>Delete</code> — удаляет не всё.</li>
+        </ul>
+      </li>
+    </ul>
+    <p>Выяснено, что полноценное выкладывание данных (особенно результатов расчётов) работает <strong>только с рабочего стола расчётного модуля</strong>. Для нормального режима требуется дистрибутив; администратору системы предложено создать виртуальный образ действующего сервера.</p>
+
+    <h2 id="current">Текущий статус и открытые вопросы</h2>
+    <div class="result-grid">
+      <div class="result-item">
+        <div class="status ok">✔ Выполнено</div>
+        <div>Восстановление из горячего бэкапа на новом железе</div>
+      </div>
+      <div class="result-item">
+        <div class="status ok">✔ Выполнено</div>
+        <div>Получение админских полномочий</div>
+      </div>
+      <div class="result-item">
+        <div class="status partial">◐ Частично</div>
+        <div>Подъём File-manager на backend</div>
+      </div>
+      <div class="result-item">
+        <div class="status pending">⏳ В планах</div>
+        <div>Установка доп. софта с расчётным модулем, очистка системы, создание чистой версии для распространения</div>
+      </div>
+    </div>
+
+    <h3>Невыясненные вопросы</h3>
+    <ul>
+      <li>Скриптовая система на сервере присутствует, но полное удаление невозможно — «разваливается» кластер. Оставлена для проверки на стабильность.</li>
+      <li>Иногда включается <code>iptables</code>, и сервер закрывается от backend — причина не установлена (правила с текстовика не грузятся).</li>
+      <li>В сетевой конфиг явно что-то вмешивается (прячется кэш) — возможно, при импорте в систему «ныряет» необнаруженное устройство.</li>
+      <li>Исправлено: сервер доступен постоянно; кэш больше не мешает.</li>
+    </ul>
+
+    <h2 id="summary">Итоги</h2>
+    <p>Проект продемонстрировал, что стандартные методы миграции неприменимы к системам со скрытой аппаратной привязкой. <strong>Обход защиты через импорт конфигурации .vmx в VirtualBox</strong> и ручную правку сетевых параметров позволил восстановить работоспособность кластера без потери данных — именно за счёт использования возможностей, которых не существовало на момент создания системы.</p>
+    <p>Работа законсервирована для возможности повторения в будущем. Следующий этап — создание чистой версии системы для распространения и полноценная настройка File-manager.</p>
+
+  </article>
+
+  <footer>
+    Кейс из практики · Работает офлайн
+  </footer>
+</main>
+
+<script>
+  const themeBtn = document.getElementById('theme-btn');
+  const saved = localStorage.getItem('cisco-index-theme') || 'light';
+  document.body.dataset.theme = saved;
+  themeBtn.addEventListener('click', () => {
+    const next = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+    document.body.dataset.theme = next;
+    localStorage.setItem('cisco-index-theme', next);
+  });
+</script>
+
+</body>
+</html>
