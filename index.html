@@ -364,13 +364,62 @@
     width: 18px;
     height: 18px;
   }
+    /* ================= ИКОНКА РОУТЕРА ================= */
+  .router-icon {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: -0.2em;
+    margin-right: 6px;
+    color: var(--accent);
+    transition: color 0.3s;
+  }
+
+  /* Вращение антенны */
+  .router-antenna {
+    transform-origin: 12px 14px; /* точка крепления антенны к корпусу */
+    animation: antenna-swing 2.5s ease-in-out infinite;
+  }
+
+  @keyframes antenna-swing {
+    0%   { transform: rotate(-12deg); }
+    50%  { transform: rotate(12deg); }
+    100% { transform: rotate(-12deg); }
+  }
+
+  /* Лёгкое свечение при наведении на заголовок */
+  header h1:hover .router-icon {
+    color: var(--accent2);
+    filter: drop-shadow(0 0 6px var(--accent));
+  }
+
+  /* Уважаем настройки пользователя (уменьшенное движение) */
+  @media (prefers-reduced-motion: reduce) {
+    .router-antenna {
+      animation: none;
+    }
+  }
 </style>
 </head>
 <body data-theme="light">
 
 <header>
   <div class="header-text">
-    <h1>🧪 Лаборатория сетевого инженера</h1>
+<h1>
+  <svg class="router-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Корпус роутера -->
+    <rect x="2" y="14" width="20" height="7" rx="1.5"/>
+    <!-- Индикаторы на корпусе -->
+    <circle cx="6" cy="17.5" r="0.8" fill="currentColor" stroke="none"/>
+    <circle cx="9" cy="17.5" r="0.8" fill="currentColor" stroke="none"/>
+    <circle cx="18" cy="17.5" r="0.8" fill="currentColor" stroke="none"/>
+    <!-- Антенна (вращается) -->
+    <g class="router-antenna">
+      <line x1="12" y1="14" x2="12" y2="6"/>
+      <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/>
+    </g>
+  </svg>
+  Лаборатория сетевого инженера
+</h1>
     <p class="subtitle">Сети Cisco, системное администрирование, автоматизация и веб-инструменты</p>
   </div>
   <button id="theme-btn">🌙 Тема</button>
