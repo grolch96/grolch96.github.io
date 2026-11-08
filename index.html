@@ -19,8 +19,8 @@
   }
   
   [data-theme="dark"] {
-    --bg: #1f2023; /* Угольно-серый, а не глухой черный */
-    --bg-grad-top: rgba(0, 0, 0, 0.45); /* Мягче градиент */
+    --bg: #1f2023;
+    --bg-grad-top: rgba(0, 0, 0, 0.45);
     --fg: #c9d1d9;
     --card: rgba(42, 42, 42, 0.5);
     --border: rgba(58, 58, 58, 0.4);
@@ -28,7 +28,7 @@
     --accent2: #f0b8c0;
     --muted: #8b949e;
     --tag: rgba(42, 58, 74, 0.15);
-    --bg-overlay: rgba(31, 32, 35, 0.8); /* Оверлей не делает фон слишком черным */
+    --bg-overlay: rgba(31, 32, 35, 0.8);
   }
 
   * { box-sizing: border-box; }
@@ -40,14 +40,10 @@
     line-height: 1.6;
     transition: color .2s, background-color .2s;
     background-color: var(--bg);
-
-    /* Используем разные оверлеи для светлой и темной темы */
     background-image:
       linear-gradient(var(--bg-grad-top), transparent 100%),
       linear-gradient(var(--bg-overlay), var(--bg-overlay)),
       url('img/bg-index.jpg');
-
-    /* Флаг увеличен на 25% (0.5%) */
     background-size: auto, auto, 50% auto;
     background-position: center top, center top, center; 
     background-repeat: no-repeat;
@@ -55,9 +51,8 @@
     min-height: 100vh;
   }
 
-  /* В темной теме убираем жесткий белый фон у картинки флага (если он есть на jpg) */
   [data-theme="dark"] body {
-    background-blend-mode: normal, normal, multiply; /* Смешивает флаг с фоном, убирая яркие пятна */
+    background-blend-mode: normal, normal, multiply;
   }
 
   /* ================= ШАПКА ================= */
@@ -151,10 +146,13 @@
   }
   [data-theme="dark"] .section-title { text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
+  /* ================= ГИБКАЯ СЕТКА ================= */
   .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 20px;
+    align-items: flex-start;
   }
 
   /* ================= КАРТОЧКИ ================= */
@@ -172,8 +170,27 @@
     user-select: none;
     position: relative;
     overflow: hidden;
-    transition: transform .3s, border-color .3s, box-shadow .3s, background .3s;
     word-wrap: break-word;
+
+    flex: 0 1 340px;
+    max-width: 400px;
+    min-height: 300px;
+    box-sizing: border-box;
+
+    /* Базовое состояние */
+    transform: scale(0.97);
+    transform-origin: center;
+    top: 0;
+
+    transition: 
+      transform .3s cubic-bezier(0.25, 0.8, 0.25, 1),
+      flex .3s cubic-bezier(0.25, 0.8, 0.25, 1),
+      top .3s cubic-bezier(0.25, 0.8, 0.25, 1),
+      border-color .3s,
+      box-shadow .3s,
+      background .3s,
+      opacity .3s;
+
     opacity: 0;
     animation: fadeInUp 0.6s ease forwards;
   }
@@ -185,8 +202,8 @@
   .card:nth-child(5) { animation-delay: 0.5s; }
 
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(0.97); }
   }
 
   .card::before {
@@ -201,33 +218,55 @@
   }
   .card:hover::before { opacity: 1; }
 
-  /* Светлая тема: мощная тень + свечение */
+  /* --- ПРИ НАВЕДЕНИИ: поднимается вверх + расширяется --- */
   .card:hover {
-    transform: translateY(-5px) rotate(0.5deg);
+    flex: 0 1 360px;
+    top: -12px; /* физический сдвиг вверх */
+    transform: scale(1.02) rotate(0.5deg);
     border-color: var(--accent);
     box-shadow: 0 15px 35px rgba(0,0,0,.3), 0 0 20px rgba(127, 168, 212, 0.5);
     background: rgba(255, 255, 255, 0.75);
+    z-index: 10;
   }
-
-  /* Темная тема: ЯРКОЕ свечение (исправлено) */
   [data-theme="dark"] .card:hover {
-    background: rgba(42, 42, 42, 0.65); /* Карточка становится темнее/плотнее */
+    background: rgba(42, 42, 42, 0.65);
     border-color: var(--accent);
     box-shadow: 
-      0 0 25px rgba(163, 196, 232, 0.4),   /* Внутреннее голубое свечение */
-      0 15px 35px rgba(0, 0, 0, 0.8),      /* Глубокая тень */
-      0 0 50px rgba(163, 196, 232, 0.2);   /* Внешний ореол */
+      0 0 25px rgba(163, 196, 232, 0.4),
+      0 15px 35px rgba(0, 0, 0, 0.8),
+      0 0 50px rgba(163, 196, 232, 0.2);
   }
 
+  /* --- ПРИ КЛИКЕ: сжимается --- */
   .card:active {
     transform: scale(0.94);
+    top: 0;
     background: rgba(127, 168, 212, 0.35);
     border-color: var(--accent2);
-    transition: transform 0.05s;
+    transition: transform 0.05s, box-shadow 0.05s, background 0.05s, top 0.05s;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.3);
   }
   [data-theme="dark"] .card:active { 
     background: rgba(163, 196, 232, 0.3);
     box-shadow: 0 0 20px rgba(163, 196, 232, 0.6);
+  }
+
+  /* --- ПРИ ФОКУСЕ: чуть уменьшена --- */
+  .card:focus {
+    flex: 0 1 340px;
+    transform: scale(0.98);
+    top: 0;
+    border-color: var(--accent);
+    box-shadow: 0 8px 20px rgba(0,0,0,.15), 0 0 10px rgba(127, 168, 212, 0.3);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  [data-theme="dark"] .card:focus {
+    background: rgba(42, 42, 42, 0.6);
+    border-color: var(--accent);
+    box-shadow: 
+      0 0 15px rgba(163, 196, 232, 0.25),
+      0 8px 20px rgba(0, 0, 0, 0.6),
+      0 0 25px rgba(163, 196, 232, 0.1);
   }
 
   .card .icon { font-size: 2em; margin-bottom: 10px; display: inline-block; transition: transform 0.3s; }
@@ -272,6 +311,8 @@
     main { padding: 16px; }
     .section-title { font-size: 1.3em; }
     body { background-size: auto, auto, 22% auto; background-position: center top, center top, right 10px top 160px; }
+    .card { flex: 0 1 100%; max-width: 100%; min-height: auto; }
+    .card:hover { flex: 0 1 100%; top: -6px; transform: scale(1.01); }
   }
 </style>
 </head>
