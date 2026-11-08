@@ -8,7 +8,8 @@
   :root {
     --bg: #dcdcdc;
     --bg-grad-top: rgba(0, 0, 0, 0.22);
-    --card: rgba(255, 255, 255, 0.9);
+    --card: rgba(255, 255, 255, 0.7); /* Прозрачнее по умолчанию */
+    --card-hover: rgba(255, 255, 255, 0.95); /* Плотнее при наведении */
     --border: rgba(208, 215, 222, 0.4);
     --accent: #7fa8d4;
     --accent2: #e8a0a8;
@@ -22,7 +23,8 @@
     --bg: #1f2023;
     --bg-grad-top: rgba(0, 0, 0, 0.45);
     --fg: #c9d1d9;
-    --card: rgba(42, 42, 42, 0.5);
+    --card: rgba(42, 42, 42, 0.35); /* Прозрачнее по умолчанию */
+    --card-hover: rgba(42, 42, 42, 0.85); /* Плотнее при наведении */
     --border: rgba(58, 58, 58, 0.4);
     --accent: #a3c4e8;
     --accent2: #f0b8c0;
@@ -160,7 +162,7 @@
     display: block;
     text-decoration: none;
     color: inherit;
-    background: var(--card);
+    background: var(--card); /* Прозрачнее по умолчанию */
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     border: 1px solid var(--border);
@@ -177,7 +179,6 @@
     min-height: 300px;
     box-sizing: border-box;
 
-    /* Базовое состояние */
     transform: scale(0.97);
     transform-origin: center;
     top: 0;
@@ -218,18 +219,18 @@
   }
   .card:hover::before { opacity: 1; }
 
-  /* --- ПРИ НАВЕДЕНИИ: поднимается вверх + расширяется --- */
+  /* --- ПРИ НАВЕДЕНИИ: плотнее и поднимается --- */
   .card:hover {
     flex: 0 1 360px;
-    top: -12px; /* физический сдвиг вверх */
+    top: -12px;
     transform: scale(1.02) rotate(0.5deg);
     border-color: var(--accent);
     box-shadow: 0 15px 35px rgba(0,0,0,.3), 0 0 20px rgba(127, 168, 212, 0.5);
-    background: rgba(255, 255, 255, 0.75);
+    background: var(--card-hover); /* Плотнее при наведении */
     z-index: 10;
   }
   [data-theme="dark"] .card:hover {
-    background: rgba(42, 42, 42, 0.65);
+    background: var(--card-hover);
     border-color: var(--accent);
     box-shadow: 
       0 0 25px rgba(163, 196, 232, 0.4),
@@ -251,17 +252,17 @@
     box-shadow: 0 0 20px rgba(163, 196, 232, 0.6);
   }
 
-  /* --- ПРИ ФОКУСЕ: чуть уменьшена --- */
+  /* --- ПРИ ФОКУСЕ: чуть уменьшена и полупрозрачна --- */
   .card:focus {
     flex: 0 1 340px;
     transform: scale(0.98);
     top: 0;
     border-color: var(--accent);
     box-shadow: 0 8px 20px rgba(0,0,0,.15), 0 0 10px rgba(127, 168, 212, 0.3);
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--card); /* Как в базовом состоянии */
   }
   [data-theme="dark"] .card:focus {
-    background: rgba(42, 42, 42, 0.6);
+    background: var(--card);
     border-color: var(--accent);
     box-shadow: 
       0 0 15px rgba(163, 196, 232, 0.25),
