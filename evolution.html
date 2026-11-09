@@ -6,42 +6,47 @@
     <title>Эволюция конфигураций: Base → Advanced</title>
     <style>
 :root {
-    --bg: #f4f4f6; --fg: #1a1a2e;--card: rgba(255, 255, 255, 0.25); --border: #d0d7de;
-    --accent: #7fa8d4; --accent-green: #2e7d32; --accent-red: #c62828;
+    --bg: #f4f4f6; --fg: #1a1a2e; --card: rgba(255, 255, 255, 0.25); --border: #d0d7de;
+    --accent: #7fa8d4; --accent-green: #2e7d32; --accent-red: #c62828; --accent-blue: #2980b9;
     --term-bg: #1e1e1e; --term-fg: #d4d4d4;
-    --bg-overlay: rgba(244, 244, 246, 0.80); /* Затемнение для дневной темы */
+    --bg-overlay: rgba(244, 244, 246, 0.80);
 }
 [data-theme="dark"] {
-    --bg: #1a1a1a; --fg: #c9d1d9;--card: rgba(42, 42, 42, 0.45); --border: #444;
-    --accent: #a3c4e8; --accent-green: #81c784; --accent-red: #ef9a9a;
+    --bg: #1a1a1a; --fg: #c9d1d9; --card: rgba(42, 42, 42, 0.45); --border: #444;
+    --accent: #a3c4e8; --accent-green: #81c784; --accent-red: #ef9a9a; --accent-blue: #64b5f6;
     --term-bg: #111; --term-fg: #e0e0e0;
-    --bg-overlay: rgba(26, 26, 26, 0.75); /* Затемнение для тёмной темы */
+    --bg-overlay: rgba(26, 26, 26, 0.75);
 }
     body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg); color: var(--fg); line-height: 1.6;
     margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
-    
-    /* ФОН С КАРТИНКОЙ (как на главной) */
     background-color: var(--bg);
     background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-vas2.jpg');
-    background-size: 85% auto; /* Картинка будет занимать 80% ширины экрана, высота подстроится */
+    background-size: 85% auto;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
 }
         .container { width: 100%; max-width: 1600px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
-        h1 { 
-            color: #4a4a4a; /* Тёмно-серый */
-            border-bottom: 2px solid #4a4a4a; 
-            padding-bottom: 10px; 
-           }
-[data-theme="dark"] h1 {
-    color: #cccccc; /* Светло-серый для тёмной темы, чтобы читалось */
-    border-bottom: 2px solid #cccccc;
-}
+        h1 { color: #4a4a4a; border-bottom: 2px solid #4a4a4a; padding-bottom: 10px; }
+[data-theme="dark"] h1 { color: #cccccc; border-bottom: 2px solid #cccccc; }
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
         .back-link:hover { text-decoration: underline; }
+
+        /* Навигация */
+        .top-nav {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+            padding: 10px 14px; background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; font-size: 13px; align-items: center;
+        }
+        .top-nav a {
+            color: var(--accent); text-decoration: none; font-weight: 600;
+            padding: 4px 10px; border-radius: 6px; transition: background 0.2s;
+        }
+        .top-nav a:hover { background: rgba(127,168,212,0.15); }
+        .top-nav a.active { background: var(--accent); color: #fff; }
+        .top-nav .sep { color: var(--accent); opacity: 0.5; }
 
         .theme-btn {
             position: fixed; top: 20px; right: 20px; padding: 10px 15px;
@@ -56,8 +61,26 @@
             background: var(--card); border: 1px solid var(--border);
             border-radius: 12px; padding: 25px; margin-bottom: 30px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            scroll-margin-top: 20px;
         }
         .compare-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+        /* Ссылки в карточке */
+        .card-links {
+            display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 15px; font-size: 13px;
+        }
+        .card-links a {
+            text-decoration: none; font-weight: 600; padding: 3px 10px;
+            border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+            transition: all 0.2s;
+        }
+        .card-links a:hover { color: #fff; }
+        .card-links a.ref { color: var(--accent-blue); }
+        .card-links a.ref:hover { background: var(--accent-blue); }
+        .card-links a.glo { color: var(--accent-green); }
+        .card-links a.glo:hover { background: var(--accent-green); }
+        .card-links a.prac { color: #e67e22; }
+        .card-links a.prac:hover { background: #e67e22; }
 
         .layer {
             display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;
@@ -76,26 +99,13 @@
             background: var(--term-bg); color: var(--term-fg); padding: 15px;
             border-radius: 6px; overflow-x: auto; font-family: Consolas, monospace;
             font-size: 13px; margin: 0;
-            max-height: 300px; /* Максимальная высота окна */
-            overflow-y: auto;  /* Вертикальная прокрутка */
+            max-height: 300px;
+            overflow-y: auto;
         }
-        /* ↓↓↓ ВСТАВИТЬ СЮДА ↓↓↓ */
-.code-wrap pre::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-.code-wrap pre::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
-}
-.code-wrap pre::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.2);
-    border-radius: 4px;
-}
-.code-wrap pre::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.4);
-}
-/* ↑↑↑ КОНЕЦ ВСТАВКИ ↑↑↑ */
+.code-wrap pre::-webkit-scrollbar { width: 8px; height: 8px; }
+.code-wrap pre::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+.code-wrap pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+.code-wrap pre::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
         .copy-btn {
             position: absolute; top: 8px; right: 8px;
             background: #238636; color: #fff; border: none; padding: 5px 12px;
@@ -137,9 +147,8 @@
 .reveal-btn:hover { background: var(--accent-green); }
 .reveal-btn:active { transform: scale(0.96); }
 
-/* Чекбоксы для самопроверки */
 .self-check {
-    display: none; /* По умолчанию скрыты */
+    display: none;
     margin-left: 15px;
     vertical-align: middle;
     width: 20px;
@@ -149,19 +158,14 @@
     transform: scale(1.2);
 }
 
-/* Показываем чекбоксы только в режиме обучения */
-body.learning-mode .self-check {
-    display: inline-block;
-}
+body.learning-mode .self-check { display: inline-block; }
 
-/* Стиль для заголовка, когда галочка стоит */
 h2.checked {
     opacity: 0.6;
     text-decoration: line-through;
     transition: all 0.3s ease;
 }
 
-/* Блок счётчика */
 .progress-summary {
     background: var(--card);
     border: 2px solid var(--accent);
@@ -171,28 +175,20 @@ h2.checked {
     text-align: center;
     max-width: 600px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    display: none; /* Скрыт по умолчанию */
+    display: none;
 }
 
-body.learning-mode .progress-summary {
-    display: block;
-}
+body.learning-mode .progress-summary { display: block; }
+.progress-summary h3 { margin-top: 0; color: var(--accent); font-size: 1.4em; }
+.progress-summary .counter { font-size: 2em; font-weight: bold; color: var(--accent-green); }
+.progress-summary .total { font-size: 1.2em; color: var(--accent); }
 
-.progress-summary h3 {
-    margin-top: 0;
-    color: var(--accent);
-    font-size: 1.4em;
-}
-
-.progress-summary .counter {
-    font-size: 2em;
-    font-weight: bold;
-    color: var(--accent-green);
-}
-
-.progress-summary .total {
-    font-size: 1.2em;
-    color: var(--muted);
+/* Бейдж "Лаба 3" */
+.badge-lab3 {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    background: rgba(230,126,34,0.15); color: #e67e22;
+    padding: 2px 8px; border-radius: 10px; margin-left: 8px;
+    vertical-align: middle;
 }
     </style>
 </head>
@@ -204,10 +200,25 @@ body.learning-mode .progress-summary {
     <a href="index.html" class="back-link">← На главную</a>
     <h1>📈 Эволюция конфигураций: Base Legacy → Advanced Enterprise</h1>
     <p>Сравнительный анализ настройки сетевых технологий на примере двух лабораторных работ. Показано, как усложняется конфигурация и какие новые возможности появляются на каждом этапе. Для каждого пункта указана «ответная часть» (где применимо).</p>
+
+    <nav class="top-nav">
+        <a href="glossary.html">📖 Словарь</a><span class="sep">·</span>
+        <a href="cisco-reference.html">📘 Справочник</a><span class="sep">·</span>
+        <a href="evolution.html" class="active">📈 Эволюция</a><span class="sep">·</span>
+        <a href="practice.html">🎯 Практикум</a><span class="sep">·</span>
+        <a href="osi-model.html">🧱 OSI</a>
+    </nav>
+
     <button id="toggle-learn-btn" class="reveal-btn">🎓 Включить режим обучения (скрыть ответы)</button>
+
     <!-- 1. VLAN и Trunk -->
-    <div class="compare-card">
+    <div class="compare-card" id="vlan">
         <h2>1. VLAN и Trunk</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#vlan">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#vlan">📖 В словаре</a>
+            <a class="prac" href="practice.html#task1">🎯 Задача 1</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -237,14 +248,13 @@ interface f0/10
                 </div>
             </div>
         </div>
-                <div style="margin-top: 15px; padding: 12px 16px; background: rgba(127, 168, 212, 0.1); border-left: 4px solid var(--accent-blue); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(127, 168, 212, 0.1); border-left: 4px solid var(--accent-blue); border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> VLAN (Virtual LAN) — это технология логической сегментации сети на канальном уровне (L2). Она позволяет разделить один физический коммутатор на несколько изолированных «виртуальных» сетей. Trunk (802.1Q) — это магистральный канал, который передаёт трафик нескольких VLAN по одному физическому линку с помощью тегов. <strong>Где используется:</strong> в корпоративных сетях для разделения отделов (бухгалтерия, IT, гости) и повышения безопасности. <strong>Уровень OSI:</strong> L2 (канальный).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простой сегментации к защите канального уровня.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -267,9 +277,14 @@ interface f0/10
         </div>
     </div>
 
-    <!-- 2. EtherChannel LACP (с ответной частью) -->
-    <div class="compare-card">
+    <!-- 2. EtherChannel LACP -->
+    <div class="compare-card" id="etherchannel">
         <h2>2. EtherChannel LACP (с ответной частью)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#etherchannel">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#etherchannel">📖 В словаре</a>
+            <a class="prac" href="practice.html#task2">🎯 Задачи 2, 3</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy (SW1 ↔ SW11)</h3>
@@ -344,14 +359,13 @@ interface port-channel 3
                 </div>
             </div>
         </div>
-                <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green); border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> EtherChannel (агрегация каналов) — это объединение нескольких физических линков в один логический канал. LACP (IEEE 802.3ad) — открытый протокол согласования, который проверяет, что все порты настроены одинаково. PAgP — проприетарный протокол Cisco. <strong>Где используется:</strong> между коммутаторами и серверами для увеличения пропускной способности и отказоустойчивости (если один кабель порвётся, канал продолжит работать). <strong>Уровень OSI:</strong> L2 (канальный).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простой агрегации к отказоустойчивости и балансировке. Показана ответная часть.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -376,9 +390,14 @@ interface port-channel 3
         </div>
     </div>
 
-    <!-- 3. EtherChannel PAgP (с ответной частью) -->
-    <div class="compare-card">
+    <!-- 3. EtherChannel PAgP -->
+    <div class="compare-card" id="etherchannel-pagp">
         <h2>3. EtherChannel PAgP (с ответной частью)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#etherchannel">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#etherchannel">📖 В словаре</a>
+            <a class="prac" href="practice.html#task3">🎯 Задача 3</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy (SW0 ↔ SW00)</h3>
@@ -433,14 +452,13 @@ interface f0/10
                 </div>
             </div>
         </div>
-                <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 125, 50, 0.1); border-left: 4px solid var(--accent-green); border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> PAgP (Port Aggregation Protocol) — это проприетарный протокол Cisco для агрегации каналов. В отличие от LACP, он не является открытым стандартом, но выполняет ту же задачу: объединяет несколько физических портов в один логический канал. Режимы: <code>desirable</code> (активная сторона) и <code>auto</code> (пассивная). <strong>Где используется:</strong> в сетях, где всё оборудование Cisco, для увеличения пропускной способности между коммутаторами. <strong>Уровень OSI:</strong> L2 (канальный).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простой агрегации к интеграции с SVI и DHCP.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -464,9 +482,14 @@ interface f0/10
         </div>
     </div>
 
-    <!-- 4. STP (Защита от петель) -->
-    <div class="compare-card">
+    <!-- 4. STP -->
+    <div class="compare-card" id="stp">
         <h2>4. STP (Защита от петель)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#stp">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#stp">📖 В словаре</a>
+            <a class="prac" href="practice.html#task4">🎯 Задача 4</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -492,14 +515,13 @@ spanning-tree vlan 1,105,106,107,108 root primary</pre>
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--l3); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(241, 196, 15, 0.1); border-left: 4px solid #f1c40f; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> STP (Spanning Tree Protocol) — это протокол, который предотвращает петли в сети на канальном уровне. Если между коммутаторами есть несколько путей, STP выбирает один основной (Root Port) и блокирует остальные (Alternate Port), чтобы кадры не ходили по кругу. Rapid-PVST+ — ускоренная версия, которая быстрее реагирует на изменения. <strong>Где используется:</strong> в любой сети с избыточными линками между коммутаторами (кольца, резервные каналы). <strong>Уровень OSI:</strong> L2 (канальный).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простой защиты к оптимизации трафика.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -521,9 +543,14 @@ spanning-tree vlan 1,105,106,107,108 root primary</pre>
         </div>
     </div>
 
-    <!-- 5. OSPF (Маршрутизация) -->
-    <div class="compare-card">
+    <!-- 5. OSPF -->
+    <div class="compare-card" id="ospf">
         <h2>5. OSPF (Маршрутизация)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#ospf">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#ospf">📖 В словаре</a>
+            <a class="prac" href="practice.html#task5">🎯 Задача 5</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy (одна зона)</h3>
@@ -565,7 +592,6 @@ router eigrp 100
             📌 Эволюция: от плоской сети к иерархической маршрутизации с ответной частью.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -589,9 +615,14 @@ router eigrp 100
         </div>
     </div>
 
-    <!-- 6. HSRP (Резервирование шлюза) -->
-    <div class="compare-card">
+    <!-- 6. HSRP -->
+    <div class="compare-card" id="hsrp">
         <h2>6. HSRP (Резервирование шлюза)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#hsrp">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#hsrp">📖 В словаре</a>
+            <a class="prac" href="practice.html#task6">🎯 Задача 6</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy (R1 ↔ R2)</h3>
@@ -630,14 +661,13 @@ interface f0/0
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border-left: 4px solid var(--l1); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border-left: 4px solid #c62828; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> HSRP (Hot Standby Router Protocol) — это проприетарный протокол Cisco для резервирования шлюза. Два роутера делят один виртуальный IP-адрес, который клиенты используют как шлюз. Один роутер активен (Active), другой — в режиме ожидания (Standby). Если Active падает, Standby мгновенно перехватывает IP, и клиенты не замечают обрыва. <strong>Где используется:</strong> на граничных роутерах в корпоративных сетях, где важна непрерывность доступа в интернет. <strong>Уровень OSI:</strong> L3 (сетевой) — виртуальный IP-шлюз; служебные сообщения HSRP работают поверх UDP (порт 1985).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простого резервирования к обходу ограничений симулятора.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -660,9 +690,14 @@ interface f0/0
         </div>
     </div>
 
-    <!-- 7. BGP (Стык с провайдером) -->
-    <div class="compare-card">
+    <!-- 7. BGP -->
+    <div class="compare-card" id="bgp">
         <h2>7. BGP (Стык с провайдером)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#bgp">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#bgp">📖 В словаре</a>
+            <a class="prac" href="practice.html#task7">🎯 Задача 7</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -693,14 +728,13 @@ router bgp 65001
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(155, 89, 182, 0.1); border-left: 4px solid var(--l6); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(155, 89, 182, 0.1); border-left: 4px solid #9b59b6; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> BGP (Border Gateway Protocol) — это протокол маршрутизации между автономными системами (AS). Он используется для обмена маршрутной информацией между провайдерами и корпоративными сетями. В отличие от OSPF (внутренний протокол), BGP работает поверх TCP (порт 179) и обеспечивает стабильность маршрутов в глобальном интернете. eBGP (внешний BGP) используется для связи с провайдером, iBGP — внутри корпоративной сети. <strong>Где используется:</strong> при подключении корпоративной сети к интернет-провайдеру, когда нужно анонсировать свои сети и получать маршруты провайдера. <strong>Уровень OSI:</strong> L3 (сетевой) с сессией на L4 (TCP 179). Логически — управление маршрутами (L3).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простого NAT к реальному стыку с провайдером.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -718,9 +752,14 @@ router bgp 65001
         </div>
     </div>
 
-    <!-- 8. IPv6 и OSPFv3 -->
-    <div class="compare-card">
-        <h2>8. IPv6 и OSPFv3</h2>
+    <!-- 8. IPv6 -->
+    <div class="compare-card" id="ipv6">
+        <h2>8. IPv6 и OSPFv3 <span class="badge-lab3">Лаба 3 (в планах)</span></h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#ipv6">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#ipv6">📖 В словаре</a>
+            <a class="prac" href="practice.html#task8">🎯 Задача 8</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -740,14 +779,13 @@ router ospfv3 1
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid var(--l5); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid #3498db; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> IPv6 — это современный протокол сетевого уровня (128 бит вместо 32 в IPv4). OSPFv3 — это версия OSPF для IPv6, которая работает на сетевом уровне и обеспечивает динамическую маршрутизацию. В отличие от OSPFv2, OSPFv3 использует link-local адреса для соседства и не требует network-команд на интерфейсах (всё настраивается на самом интерфейсе). <strong>Где используется:</strong> в современных корпоративных сетях и у провайдеров, которые переходят на IPv6. Двухстековая маршрутизация (IPv4 + IPv6) позволяет поддерживать старые и новые устройства одновременно. <strong>Уровень OSI:</strong> L3 (сетевой).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от IPv4-only к современному двухстековому решению.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -766,9 +804,14 @@ router ospfv3 1
         </div>
     </div>
 
-    <!-- 9. Безопасность L2 (Port Security + DHCP Snooping) -->
-    <div class="compare-card">
+    <!-- 9. Безопасность L2 -->
+    <div class="compare-card" id="security">
         <h2>9. Безопасность L2 (Port Security + DHCP Snooping)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#port-security">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#port-security">📖 В словаре</a>
+            <a class="prac" href="practice.html#task9">🎯 Задача 9</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -790,14 +833,13 @@ interface f0/10
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border-left: 4px solid var(--l1); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border-left: 4px solid #c62828; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> Port Security — это механизм защиты на коммутаторе, который ограничивает количество MAC-адресов на порту и блокирует порт при подключении несанкционированного устройства. DHCP Snooping — это защита от «левых» DHCP-серверов: коммутатор проверяет, с какого порта пришёл DHCP-ответ, и пропускает только доверенные (trust) порты. <strong>Где используется:</strong> в офисных сетях, где к портам могут подключить чужой ноутбук или поднять свой DHCP-сервер. <strong>Уровень OSI:</strong> L2 (канальный) — фильтрация MAC-адресов и DHCP-пакетов на уровне коммутатора.
         </div>
         <div class="evolution-note">
             📌 Эволюция: от открытого доступа к защите от атак на канальном уровне.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -817,9 +859,14 @@ interface f0/10
         </div>
     </div>
 
-    <!-- 10. DHCP (Автоматизация) -->
-    <div class="compare-card">
+    <!-- 10. DHCP -->
+    <div class="compare-card" id="dhcp">
         <h2>10. DHCP (Автоматизация)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#dhcp">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#dhcp">📖 В словаре</a>
+            <a class="prac" href="practice.html#task10">🎯 Задача 10</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -860,14 +907,13 @@ ip dhcp pool vlan108
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(230, 126, 34, 0.1); border-left: 4px solid var(--l2); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(230, 126, 34, 0.1); border-left: 4px solid #e67e22; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> DHCP (Dynamic Host Configuration Protocol) — это протокол прикладного уровня, который автоматически выдаёт клиентам IP-адрес, маску, шлюз и DNS. Работает по схеме DORA (Discover → Offer → Request → Ack) поверх UDP (порты 67 и 68). <strong>Где используется:</strong> в любой сети, где есть клиентские устройства (ПК, телефоны, принтеры), чтобы не настраивать IP вручную. В Лабе 2 добавлен DHCP Snooping для защиты от подмены сервера. <strong>Уровень OSI:</strong> L7 (прикладной) — логика DHCP; L4 (UDP) — транспорт; L3 (IP) — для адресации.
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простой выдачи адресов к защите DHCP-сервиса.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -891,9 +937,14 @@ ip dhcp pool vlan108
         </div>
     </div>
 
-    <!-- 11. NAT/PAT (Выход в интернет) -->
-    <div class="compare-card">
+    <!-- 11. NAT/PAT -->
+    <div class="compare-card" id="nat">
         <h2>11. NAT/PAT (Выход в интернет)</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#nat">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#nat">📖 В словаре</a>
+            <a class="prac" href="practice.html#task11">🎯 Задача 11</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -930,14 +981,13 @@ ip nat inside source list NAT interface FastEthernet0/1 overload</pre>
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(155, 89, 182, 0.1); border-left: 4px solid var(--l6); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(155, 89, 182, 0.1); border-left: 4px solid #9b59b6; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> NAT (Network Address Translation) — это механизм трансляции IP-адресов, который позволяет устройствам с приватными адресами (192.168.x.x) выходить в интернет через один публичный IP. PAT (Port Address Translation) — это разновидность NAT (Overload), которая использует порты для различения сессий разных клиентов. <strong>Где используется:</strong> на граничных роутерах любой корпоративной или домашней сети для экономии публичных IPv4-адресов и сокрытия внутренней структуры сети. <strong>Уровень OSI:</strong> L3 (сетевой) — меняет IP-адреса; L4 (транспортный) — для PAT использует порты.
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простого NAT к интеграции с BGP.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -961,8 +1011,13 @@ ip nat inside source list NAT interface FastEthernet0/1 overload</pre>
     </div>
 
     <!-- 12. EIGRP + Redistribution -->
-    <div class="compare-card">
+    <div class="compare-card" id="eigrp">
         <h2>12. EIGRP + Redistribution</h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#eigrp">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#eigrp">📖 В словаре</a>
+            <a class="prac" href="practice.html#task12">🎯 Задача 12</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -987,14 +1042,13 @@ router eigrp 100
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--l3); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(241, 196, 15, 0.1); border-left: 4px solid #f1c40f; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> EIGRP (Enhanced Interior Gateway Routing Protocol) — это гибридный протокол динамической маршрутизации (проприетарный Cisco, но открыт по RFC 7868). Он использует алгоритм DUAL для быстрой сходимости и поддерживает резервные маршруты (Feasible Successor). Redistribution (перераспределение) — это процесс «перелива» маршрутов из одного протокола в другой (например, OSPF ↔ EIGRP). <strong>Где используется:</strong> EIGRP — в сетях Cisco; Redistribution — при слиянии сетей с разными протоколами (например, после покупки компании с другой инфраструктурой). <strong>Уровень OSI:</strong> L3 (сетевой).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от одной протокольной среды к мультипротокольной.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -1017,9 +1071,14 @@ router eigrp 100
         </div>
     </div>
 
-    <!-- 13. MSTP -->
-    <div class="compare-card">
-        <h2>13. MSTP</h2>
+    <!-- 13. MSTP (Лаба 3) -->
+    <div class="compare-card" id="mstp">
+        <h2>13. MSTP <span class="badge-lab3">Лаба 3 (в планах)</span></h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#mstp">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#mstp">📖 В словаре</a>
+            <a class="prac" href="practice.html#task13">🎯 Задача 13</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -1041,14 +1100,13 @@ spanning-tree mst 2 root secondary</pre>
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--l4); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(46, 204, 113, 0.1); border-left: 4px solid #2ecc71; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> MSTP (Multiple Spanning Tree Protocol) — это эволюция STP, которая позволяет объединять несколько VLAN в один «инстанс» (экземпляр) дерева. В отличие от Rapid-PVST+ (где каждый VLAN — отдельное дерево), MSTP создаёт 2–3 дерева для групп VLAN. Это снижает нагрузку на CPU и ускоряет сходимость. <strong>Где используется:</strong> в крупных корпоративных сетях с десятками VLAN, где Rapid-PVST+ уже не справляется. <strong>Уровень OSI:</strong> L2 (канальный).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от простого PVST+ к MSTP для больших сетей.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -1066,9 +1124,14 @@ spanning-tree mst 2 root secondary</pre>
         </div>
     </div>
 
-    <!-- 14. NTP (Синхронизация времени) -->
-    <div class="compare-card">
-        <h2>14. NTP (Синхронизация времени)</h2>
+    <!-- 14. NTP (Лаба 3) -->
+    <div class="compare-card" id="ntp">
+        <h2>14. NTP (Синхронизация времени) <span class="badge-lab3">Лаба 3 (в планах)</span></h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#ntp">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#ntp">📖 В словаре</a>
+            <a class="prac" href="practice.html#task14">🎯 Задача 14</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -1089,14 +1152,13 @@ ntp server 192.168.1.5</pre>
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid var(--l5); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid #3498db; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> NTP (Network Time Protocol) — это протокол синхронизации времени. Он позволяет всем устройствам в сети иметь одинаковое время (с точностью до миллисекунд). Это критически важно для логов (чтобы сопоставить события), сертификатов (чтобы не было ошибок проверки) и расписаний (cron). Работает поверх UDP (порт 123). <strong>Где используется:</strong> на всех сетевых устройствах и серверах, особенно в доменах Active Directory и системах мониторинга. <strong>Уровень OSI:</strong> L7 (прикладной) — логика синхронизации; L4 (UDP) — транспорт.
         </div>
         <div class="evolution-note">
             📌 Эволюция: от отсутствия синхронизации к точным логам.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -1113,9 +1175,14 @@ ntp server 192.168.1.5</pre>
         </div>
     </div>
 
-    <!-- 15. WLC/AP (Беспроводной сегмент) -->
-    <div class="compare-card">
-        <h2>15. WLC/AP (Беспроводной сегмент)</h2>
+    <!-- 15. WLC/AP (Лаба 3) -->
+    <div class="compare-card" id="wlc">
+        <h2>15. WLC/AP (Беспроводной сегмент) <span class="badge-lab3">Лаба 3 (в планах)</span></h2>
+        <div class="card-links">
+            <a class="ref" href="cisco-reference.html#wlc">📘 В справочнике</a>
+            <a class="glo" href="glossary.html#wlc">📖 В словаре</a>
+            <a class="prac" href="practice.html#task15">🎯 Задача 15</a>
+        </div>
         <div class="layer">
             <div class="side side-base">
                 <h3>🔹 Base Legacy</h3>
@@ -1144,14 +1211,13 @@ wlan interface Corp-WiFi 104
                 </div>
             </div>
         </div>
-        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid var(--l5); border-radius: 6px; font-size: 14px;">
+        <div style="margin-top: 15px; padding: 12px 16px; background: rgba(52, 152, 219, 0.1); border-left: 4px solid #3498db; border-radius: 6px; font-size: 14px;">
             <strong>📖 Что это такое:</strong> WLC (Wireless LAN Controller) — это устройство, которое централизованно управляет точками доступа (AP). AP (Access Point) — это беспроводная точка, которая обеспечивает связь клиентов (ноутбуков, телефонов) с проводной сетью. Протокол CAPWAP используется для связи AP с WLC (настройка SSID, шифрование WPA2/WPA3, VLAN). <strong>Где используется:</strong> в офисах, складах, университетах для обеспечения Wi-Fi. WLC упрощает управление десятками точек доступа. <strong>Уровень OSI:</strong> L1 (физический) — радиоволны; L2 (канальный) — MAC-адресация и шифрование (WPA2); L3 (сетевой) — туннелирование CAPWAP (поверх UDP).
         </div>
         <div class="evolution-note">
             📌 Эволюция: от проводной сети к беспроводному сегменту.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
             
@@ -1169,8 +1235,9 @@ wlan interface Corp-WiFi 104
             </ol>
         </div>
     </div>
-    <!-- 16. Итог: что изменилось -->
-    <div class="compare-card">
+
+    <!-- 16. Итог -->
+    <div class="compare-card" id="summary">
         <h2>16. Итог: что изменилось</h2>
         <div class="layer">
             <div class="side side-base">
@@ -1186,7 +1253,6 @@ wlan interface Corp-WiFi 104
             📌 Итог: от базовой сети к корпоративной архитектуре с провайдером и безопасностью.
         </div>
         
-        <!-- УЧЕБНЫЙ МАТЕРИАЛ -->
         <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Что именно изменилось и почему это важно</h3>
             
@@ -1207,7 +1273,15 @@ wlan interface Corp-WiFi 104
             <p><strong>8. От статического резервирования к обходу багов PT.</strong> В Base Legacy HSRP работал «как есть». В Advanced Enterprise мы столкнулись с багом PT 6.2 (транзитный SW1 не мог отправить пакет на виртуальный MAC HSRP) и обошли его прямым статическим маршрутом. Это показывает умение решать нестандартные задачи.</p>
             
             <p><strong>Что это даёт для портфолио:</strong> Вы показали не просто «я умею настраивать OSPF». Вы показали <strong>инженерную зрелость</strong>: понимание, как масштабируется сеть, как добавляются новые протоколы, как решаются проблемы совместимости.</p>
+            
             <p><strong>9. Связь с моделью OSI.</strong> Все технологии в этой эволюции чётко ложатся на уровни модели OSI: от физического (speed/duplex) до прикладного (DHCP, NTP). Понимание этой связи позволяет быстро диагностировать проблемы (на каком уровне искать). Подробная интерактивная схема уровней OSI с примерами из этих лабораторных доступна в разделе <a href="osi-model.html" style="color: var(--accent); font-weight: bold;">«Модель OSI»</a>.</p>
+            
+            <p style="margin-top: 20px;"><strong>🔗 См. также:</strong>
+                <a href="lab1-report.html" style="color: var(--accent); font-weight: 600;">Лаба 1 (Base Legacy)</a> ·
+                <a href="lab2-report.html" style="color: var(--accent); font-weight: 600;">Лаба 2 (Advanced Enterprise)</a> ·
+                <a href="cisco-reference.html" style="color: var(--accent); font-weight: 600;">Справочник</a> ·
+                <a href="glossary.html" style="color: var(--accent); font-weight: 600;">Словарь</a>
+            </p>
         </div>
     </div>
 
@@ -1306,7 +1380,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.textContent = '👁️ Показать все ответы';
             btn.style.background = '#e67e22';
             
-            // Сразу показываем те, что уже отмечены
             document.querySelectorAll('.self-check:checked').forEach(cb => {
                 const parent = cb.closest('.compare-card');
                 if (parent) {

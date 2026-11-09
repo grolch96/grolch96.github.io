@@ -7,10 +7,11 @@
 <style>
   :root {
     --bg: #f4f4f6; --fg: #1a1a2e; 
-    --card: rgba(255, 255, 255, 0.85); /* Полупрозрачные карточки */
+    --card: rgba(255, 255, 255, 0.85);
     --border: #d0d7de;
     --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; --tag: #eaf0f8;
-    --bg-overlay: rgba(244, 244, 246, 0.8); /* Затемнение для фона */
+    --bg-overlay: rgba(244, 244, 246, 0.8);
+    --term-bg: #f9f9fb; --term-fg: #1a1a2e;
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
@@ -18,18 +19,19 @@
     --border: #3a3a3a;
     --accent: #a3c4e8; --accent2: #f0b8c0; --muted: #8b949e; --tag: #2a3a4a;
     --bg-overlay: rgba(26, 26, 26, 0.9);
+    --term-bg: #111; --term-fg: #e0e0e0;
   }
   
   body {
-    /* ... существующие стили (шрифт, цвет, margin) ... */
-    
-    /* ФОН С КАРТИНКОЙ */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--fg); line-height: 1.6; margin: 0; padding: 0;
     background-color: var(--bg);
-    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-tad.jpg'); /* или другая картинка из img/ */
+    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg-tad.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
+    min-height: 100vh;
   }
   header {
     position: sticky; top: 0; z-index: 100; background: var(--card);
@@ -49,6 +51,21 @@
   }
   header button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
   header button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  
+  /* Навигация */
+  .top-nav {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 20px 0;
+    padding: 10px 14px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; font-size: 13px; align-items: center;
+  }
+  .top-nav a {
+    color: var(--accent); text-decoration: none; font-weight: 600;
+    padding: 4px 10px; border-radius: 6px; transition: background 0.2s;
+  }
+  .top-nav a:hover { background: var(--tag); }
+  .top-nav a.active { background: var(--accent); color: #fff; }
+  .top-nav .sep { color: var(--muted); }
+  
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .chip {
     padding: 4px 10px; border-radius: 12px; background: var(--tag);
@@ -57,24 +74,39 @@
   }
   .chip:hover { border-color: var(--accent); }
   .chip.active { background: var(--accent); color: #fff; }
+  
   main {
-    width: 95%;
-    max-width: 1200px; /* Не более 1200px на больших мониторах */
-    margin: 0 auto;
+    width: 95%; max-width: 1200px; margin: 0 auto; padding: 20px 0;
   }
   .stats { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  
   .card {
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     margin-bottom: 18px; padding: 20px; transition: border-color .15s, box-shadow .15s;
+    scroll-margin-top: 100px;
   }
   .card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
   .card h2 { margin: 0 0 6px; font-size: 1.15em; color: var(--accent); }
-  .card .tags { margin: 4px 0 12px; }
+  .card .tags { margin: 4px 0 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .card .tag {
-    display: inline-block; padding: 2px 8px; margin: 2px 4px 2px 0;
+    display: inline-block; padding: 2px 8px;
     border-radius: 12px; background: var(--tag); color: var(--accent);
     font-size: 12px; font-weight: 600;
   }
+  .card .tag.warn { background: rgba(230,126,34,0.15); color: #e67e22; }
+  .card .tag.extra { background: rgba(155,89,182,0.15); color: #9b59b6; }
+  .card .tag-link {
+    font-size: 12px; text-decoration: none; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--accent-green, #2e7d32);
+    transition: all 0.2s;
+  }
+  .card .tag-link:hover { background: var(--accent-green, #2e7d32); color: #fff; }
+  .card .tag-link.ref { color: #2980b9; }
+  .card .tag-link.ref:hover { background: #2980b9; color: #fff; }
+  .card .tag-link.evo { color: #8e44ad; }
+  .card .tag-link.evo:hover { background: #8e44ad; color: #fff; }
+  
   .card .desc { font-size: 14.5px; margin: 0 0 12px; line-height: 1.7; }
   .card .desc strong { color: var(--accent); }
   .card .desc code {
@@ -202,42 +234,27 @@
     <span class="chip" data-q="qos">QoS</span>
   </div>
 </header>
-    <!-- Дополнительные материалы (сворачиваемые) -->
-    <details style="margin-bottom: 25px; background: var(--card); opacity: 0.8; border: 1px solid var(--border); border-radius: 12px; padding: 15px 20px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
-        <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.2em;">🔗</span> Дополнительные материалы (теория, практика, скрипты)
-        </summary>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
-            <a href="osi-model.html" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
-                <div style="font-size: 1.5em;">🧱</div>
-                <strong style="color: var(--accent);">Модель OSI</strong>
-                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Интерактивная схема уровней с примерами из лабораторных.</p>
-            </a>
-            <a href="glossary.html" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
-                <div style="font-size: 1.5em;">📖</div>
-                <strong style="color: var(--accent);">Словарь терминов</strong>
-                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Ключевые термины и определения по сетевым технологиям.</p>
-            </a>
-            <a href="practice.html" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
-                <div style="font-size: 1.5em;">🎯</div>
-                <strong style="color: var(--accent);">Практикум</strong>
-                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Решение задач по технологиям из Лабораторных 1 и 2.</p>
-            </a>
-            <a href="sysadmin-scripts.html" style="display: block; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--fg);">
-                <div style="font-size: 1.5em;">💻</div>
-                <strong style="color: var(--accent);">Скрипты администрирования</strong>
-                <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">Linux + Windows: автоматизация, мониторинг, безопасность.</p>
-            </a>
-        </div>
-    </details>
+
+<nav class="top-nav">
+  <a href="glossary.html">📖 Словарь</a><span class="sep">·</span>
+  <a href="cisco-reference.html" class="active">📘 Справочник</a><span class="sep">·</span>
+  <a href="evolution.html">📈 Эволюция</a><span class="sep">·</span>
+  <a href="practice.html">🎯 Практикум</a><span class="sep">·</span>
+  <a href="osi-model.html">🧱 OSI</a>
+</nav>
+
 <main>
   <div class="stats" id="stats">Загрузка...</div>
   <div id="cards">
 
     <!-- 1. VLAN -->
-    <div class="card" data-tags="vlan layer2 l2 segmentation broadcast access">
+    <div class="card" id="vlan" data-tags="vlan layer2 l2 segmentation broadcast access">
       <h2>VLAN</h2>
-      <div class="tags"><span class="tag">L2</span><span class="tag">VLAN</span><span class="tag">Сегментация</span></div>
+      <div class="tags">
+        <span class="tag">L2</span><span class="tag">VLAN</span><span class="tag">Сегментация</span>
+        <a class="tag-link" href="glossary.html#vlan">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#vlan">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Логически делит один физический свитч на несколько независимых broadcast-доменов. Клиенты разных VLAN не видят трафик друг друга (без L3-маршрутизации), что повышает безопасность и снижает нагрузку от broadcast-штормов.</span>
         <span class="block"><strong>Как работает:</strong> Каждый кадр внутри свитча помечается VLAN-ID (12 бит, до 4094 VLAN). Порт доступа (access) принадлежит одному VLAN; trunk передаёт несколько VLAN с тегами 802.1Q.</span>
@@ -266,9 +283,13 @@ show vlan brief</pre><button class="copy-btn">Копировать</button></div
     </div>
 
     <!-- 2. Trunk -->
-    <div class="card" data-tags="trunk 802.1q native vlan l2 encapsulation">
+    <div class="card" id="trunk" data-tags="trunk 802.1q native vlan l2 encapsulation">
       <h2>Trunk (802.1Q)</h2>
-      <div class="tags"><span class="tag">L2</span><span class="tag">Trunk</span><span class="tag">802.1Q</span></div>
+      <div class="tags">
+        <span class="tag">L2</span><span class="tag">Trunk</span><span class="tag">802.1Q</span>
+        <a class="tag-link" href="glossary.html#trunk">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#vlan">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Передаёт трафик нескольких VLAN между двумя свитчами (или свитч ↔ роутер) по одному кабелю. Без trunk пришлось бы тянуть отдельный кабель на каждый VLAN — это дорого и неудобно.</span>
         <span class="block"><strong>Как работает:</strong> Каждый кадр тегируется VLAN-ID (4 байта 802.1Q). Исключение — Native VLAN: её трафик идёт без тега (по умолчанию VLAN 1).</span>
@@ -288,9 +309,13 @@ show interfaces trunk</pre><button class="copy-btn">Копировать</button
     </div>
 
     <!-- 3. EtherChannel -->
-    <div class="card" data-tags="etherchannel lacp pagp aggregation channel-group bundle">
+    <div class="card" id="etherchannel" data-tags="etherchannel lacp pagp aggregation channel-group bundle">
       <h2>EtherChannel (LACP / PAgP)</h2>
-      <div class="tags"><span class="tag">L2</span><span class="tag">Агрегация</span><span class="tag">LACP</span><span class="tag">PAgP</span></div>
+      <div class="tags">
+        <span class="tag">L2</span><span class="tag">Агрегация</span><span class="tag">LACP</span><span class="tag">PAgP</span>
+        <a class="tag-link" href="glossary.html#etherchannel">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#etherchannel">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Объединяет несколько физических линков между двумя устройствами в один логический (Port-Channel). Даёт суммарную пропускную способность и отказоустойчивость: если один кабель порвётся, канал продолжит работать (трафик пойдёт через остальные).</span>
         <span class="block"><strong>Протоколы:</strong> LACP (IEEE 802.3ad) — режимы <code>active</code>/<code>passive</code>. PAgP (Cisco) — <code>desirable</code>/<code>auto</code>. Режим <code>on</code> — без протокола (не рекомендуется, нет проверки ошибок).</span>
@@ -317,9 +342,13 @@ show etherchannel summary</pre><button class="copy-btn">Копировать</bu
     </div>
 
     <!-- 4. STP -->
-    <div class="card" data-tags="stp spanning-tree rapid-pvst root bridge portfast bpduguard loop">
+    <div class="card" id="stp" data-tags="stp spanning-tree rapid-pvst root bridge portfast bpduguard loop">
       <h2>STP / Rapid-PVST+</h2>
-      <div class="tags"><span class="tag">L2</span><span class="tag">STP</span><span class="tag">Loop protection</span></div>
+      <div class="tags">
+        <span class="tag">L2</span><span class="tag">STP</span><span class="tag">Loop protection</span>
+        <a class="tag-link" href="glossary.html#stp">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#stp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Защищает от петель на L2. Если между свитчами несколько линков, STP выбирает один Root Bridge и блокирует избыточные порты (Altn BLK), чтобы кадры не ходили по кругу бесконечно.</span>
         <span class="block"><strong>Как работает:</strong> Выбирается Root Bridge (наименьший Bridge ID = priority + MAC). Затем каждый свитч выбирает Root Port (ближайший к корню) и блокирует остальные.</span>
@@ -341,9 +370,14 @@ show spanning-tree vlan 1</pre><button class="copy-btn">Копировать</bu
     </div>
 
     <!-- 5. MSTP -->
-    <div class="card" data-tags="mstp mst instance spanning-tree region root load balancing">
+    <div class="card" id="mstp" data-tags="mstp mst instance spanning-tree region root load balancing">
       <h2>MSTP</h2>
-      <div class="tags"><span class="tag">L2</span><span class="tag">STP</span><span class="tag">MSTP</span></div>
+      <div class="tags">
+        <span class="tag">L2</span><span class="tag">STP</span><span class="tag">MSTP</span>
+        <span class="tag warn">Лаба 3 (в планах)</span>
+        <a class="tag-link" href="glossary.html#mstp">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#mstp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Группирует VLAN в инстансы (instance). Позволяет балансировать нагрузку: один свитч — root для instance 1, другой — для instance 2. В Rapid-PVST+ так нельзя (каждый VLAN = отдельный инстанс).</span>
         <span class="block"><strong>Как работает:</strong> Все свитчи должны иметь одинаковое имя региона (region name), ревизию и маппинг VLAN → instance. Иначе они не «увидят» друг друга.</span>
@@ -364,9 +398,12 @@ show spanning-tree mst 1</pre><button class="copy-btn">Копировать</but
     </div>
 
     <!-- 6. SVI -->
-    <div class="card" data-tags="svi interface vlan switch virtual interface gateway l3 routing">
+    <div class="card" id="svi" data-tags="svi interface vlan switch virtual interface gateway l3 routing">
       <h2>SVI (шлюз для VLAN)</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">SVI</span><span class="tag">Шлюз</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">SVI</span><span class="tag">Шлюз</span>
+        <a class="tag-link" href="glossary.html#svi">📖 Словарь</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Виртуальный интерфейс на L3-свитче, который служит шлюзом для VLAN. Позволяет маршрутизировать трафик между VLAN внутри одного свитча (без внешнего роутера).</span>
         <span class="block"><strong>Как работает:</strong> <code>interface VlanX</code> + <code>ip address</code>. Требует <code>ip routing</code> глобально на свитче.</span>
@@ -389,9 +426,12 @@ show ip interface brief</pre><button class="copy-btn">Копировать</butt
     </div>
 
     <!-- 7. Static Route -->
-    <div class="card" data-tags="static route default route ip route next-hop ad">
+    <div class="card" id="static-route" data-tags="static route default route ip route next-hop ad">
       <h2>Статическая маршрутизация</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">Route</span><span class="tag">Static</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">Route</span><span class="tag">Static</span>
+        <a class="tag-link" href="glossary.html#static-route">📖 Словарь</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Вручную задать маршрут до сети через next-hop (IP соседа) или выходной интерфейс. Default route (<code>0.0.0.0/0</code>) — маршрут «по умолчанию», используется, когда нет более конкретного.</span>
         <span class="block"><strong>AD (Administrative Distance):</strong> приоритет источника маршрута. Static = 1, EIGRP = 90, OSPF = 110. Чем меньше AD, тем приоритетнее.</span>
@@ -407,10 +447,14 @@ ip route 0.0.0.0 0.0.0.0 10.0.0.2 200
 show ip route</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 8. OSPF (расширенное) -->
-    <div class="card" data-tags="ospf ospfv2 area link-state dr bdr abr cost">
+    <!-- 8. OSPF -->
+    <div class="card" id="ospf" data-tags="ospf ospfv2 area link-state dr bdr abr cost">
       <h2>OSPFv2</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">OSPF</span><span class="tag">Link-State</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">OSPF</span><span class="tag">Link-State</span>
+        <a class="tag-link" href="glossary.html#ospf">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#ospf">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Link-State протокол. Каждый роутер строит полную карту сети (LSDB) и вычисляет кратчайшие пути по алгоритму Дейкстры. Быстро сходится, не рассылает всю таблицу маршрутизации (только изменения).</span>
         <span class="block"><strong>Иерархия (Areas):</strong> Area 0 (Backbone) — ядро. Остальные зоны (Area 1, 2...) подключаются к Area 0 через ABR (Area Border Router). Это снижает нагрузку на CPU и стабилизирует сеть (изменения в Area 1 не «трясут» Area 2).</span>
@@ -441,10 +485,14 @@ show ip ospf neighbor
 show ip route ospf</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 9. EIGRP (расширенное) -->
-    <div class="card" data-tags="eigrp dual as autonomous system hybrid">
+    <!-- 9. EIGRP -->
+    <div class="card" id="eigrp" data-tags="eigrp dual as autonomous system hybrid">
       <h2>EIGRP</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">EIGRP</span><span class="tag">Hybrid</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">EIGRP</span><span class="tag">Hybrid</span>
+        <a class="tag-link" href="glossary.html#eigrp">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#eigrp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Гибридный протокол (Distance Vector + Link State). Использует алгоритм DUAL для быстрой сходимости. Считается «проприетарным Cisco» (хотя с 2013 открыт по RFC 7868).</span>
         <span class="block"><strong>Как работает:</strong> Номер AS (Autonomous System) должен совпадать у соседей. <code>no auto-summary</code> отключает автоматическое суммирование сетей на границе класса.</span>
@@ -465,10 +513,14 @@ show ip eigrp neighbors
 show ip route eigrp</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 10. BGP (расширенное) -->
-    <div class="card" data-tags="bgp ebpg ibgp as autonomous system neighbor">
+    <!-- 10. BGP -->
+    <div class="card" id="bgp" data-tags="bgp ebpg ibgp as autonomous system neighbor">
       <h2>BGP (eBGP)</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">BGP</span><span class="tag">WAN</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">BGP</span><span class="tag">WAN</span>
+        <a class="tag-link" href="glossary.html#bgp">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#bgp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Протокол маршрутизации между автономными системами (AS). Используется для стыка с провайдером (eBGP) или внутри крупной сети (iBGP). Работает поверх TCP (порт 179).</span>
         <span class="block"><strong>eBGP vs iBGP:</strong> eBGP — между разными AS (ISP ↔ клиент). iBGP — внутри одной AS (между граничными роутерами). iBGP требует full-mesh или route reflector.</span>
@@ -490,10 +542,14 @@ show ip bgp summary
 show ip bgp</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 11. Redistribution (расширенное) -->
-    <div class="card" data-tags="redistribution redistribute metric subnets ospf eigrp asbr">
+    <!-- 11. Redistribution -->
+    <div class="card" id="redistribution" data-tags="redistribution redistribute metric subnets ospf eigrp asbr">
       <h2>Redistribution</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">Redistribution</span><span class="tag">OSPF ↔ EIGRP</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">Redistribution</span><span class="tag">OSPF ↔ EIGRP</span>
+        <a class="tag-link" href="glossary.html#redistribution">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#eigrp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Перелив маршрутов между разными протоколами (OSPF → EIGRP, EIGRP → OSPF, Static → OSPF, BGP → OSPF). Нужен, когда сеть состоит из двух доменов маршрутизации.</span>
         <span class="block"><strong>Как работает:</strong> На граничном роутере (ASBR) указывается <code>redistribute &lt;протокол&gt;</code>. Для OSPF обязательно <code>subnets</code> (иначе передадутся только классовые сети). Для EIGRP — <code>metric</code> (5 параметров: bandwidth, delay, reliability, load, MTU).</span>
@@ -514,10 +570,14 @@ router eigrp 100
 show ip route</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 12. HSRP (расширенное) -->
-    <div class="card" data-tags="hsrp fhrp redundancy gateway virtual ip preempt priority">
+    <!-- 12. HSRP -->
+    <div class="card" id="hsrp" data-tags="hsrp fhrp redundancy gateway virtual ip preempt priority">
       <h2>HSRP</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">Резервирование</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">Резервирование</span>
+        <a class="tag-link" href="glossary.html#hsrp">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#hsrp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Два роутера делят один виртуальный IP (шлюз для клиентов). Клиенты настраивают этот IP как шлюз и не знают, какой роутер активен.</span>
         <span class="block"><strong>Active / Standby:</strong> больший приоритет → Active. Если Active падает, Standby мгновенно перехватывает виртуальный IP. <code>preempt</code> позволяет вернуть роль Active после восстановления (иначе бывший Active останется Standby).</span>
@@ -542,9 +602,12 @@ show standby brief</pre><button class="copy-btn">Копировать</button></
     </div>
 
     <!-- 13. VRRP -->
-    <div class="card" data-tags="vrrp fhrp redundancy virtual router ieee master backup">
+    <div class="card" id="vrrp" data-tags="vrrp fhrp redundancy virtual router ieee master backup">
       <h2>VRRP</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">IEEE</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">IEEE</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Открытый стандарт (IEEE 3768), аналог HSRP. Master/Backup, виртуальный IP + виртуальный MAC. Используется в мультивендорных сетях (не только Cisco).</span>
         <span class="block"><strong>Отличие от HSRP:</strong> в VRRP Master — это реальный роутер с виртуальным IP; в HSRP Active — тоже реальный, но виртуальный MAC другой.</span>
@@ -563,9 +626,12 @@ show vrrp</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
     <!-- 14. GLBP -->
-    <div class="card" data-tags="glbp fhrp load balancing cisco avg avf">
+    <div class="card" id="glbp" data-tags="glbp fhrp load balancing cisco avg avf">
       <h2>GLBP</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">Cisco</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">Cisco</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Проприетарный протокол Cisco. В отличие от HSRP/VRRP, не просто резервирует шлюз, а <strong>балансирует нагрузку</strong> между несколькими роутерами.</span>
         <span class="block"><strong>AVG / AVF:</strong> AVG (Active Virtual Gateway) — главный, раздаёт виртуальные MAC. AVF (Active Virtual Forwarder) — реальные роутеры, каждый обслуживает часть трафика.</span>
@@ -584,10 +650,14 @@ show vrrp</pre><button class="copy-btn">Копировать</button></div>
 show glbp</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 15. NAT/PAT (расширенное) -->
-    <div class="card" data-tags="nat pat nat/pat overload static dynamic translation inside outside">
+    <!-- 15. NAT/PAT -->
+    <div class="card" id="nat" data-tags="nat pat nat/pat overload static dynamic translation inside outside">
       <h2>NAT / PAT</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">NAT</span><span class="tag">PAT</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">NAT</span><span class="tag">PAT</span>
+        <a class="tag-link" href="glossary.html#nat">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#nat">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Позволяет устройствам с приватными IP (192.168.x.x) выходить в интернет через один публичный IP. Экономит IPv4-адреса и скрывает внутреннюю структуру сети.</span>
         <span class="block"><strong>Типы:</strong> Static NAT (1 к 1) — для серверов. Dynamic NAT (пул) — редко. PAT / Overload (много внутренних → 1 внешний, разные порты) — самый частый вариант.</span>
@@ -613,9 +683,12 @@ show ip nat translations</pre><button class="copy-btn">Копировать</but
     </div>
 
     <!-- 16. Static NAT -->
-    <div class="card" data-tags="static nat 1 to 1 server port forwarding">
+    <div class="card" id="static-nat" data-tags="static nat 1 to 1 server port forwarding">
       <h2>Static NAT</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">NAT</span><span class="tag">Static</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">NAT</span><span class="tag">Static</span>
+        <a class="tag-link" href="glossary.html#static-nat">📖 Словарь</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Постоянная трансляция «один-к-одному»: внутренний IP всегда соответствует внешнему. Нужна для серверов, к которым обращаются извне (веб, почта, FTP).</span>
         <span class="block"><strong>Как работает:</strong> <code>ip nat inside source static &lt;внутренний&gt; &lt;внешний&gt;</code>. Внешний IP может быть адресом интерфейса.</span>
@@ -631,9 +704,12 @@ show ip nat translations</pre><button class="copy-btn">Копировать</but
     </div>
 
     <!-- 17. ACL Standard -->
-    <div class="card" data-tags="acl standard access-list source ip vty access-class">
+    <div class="card" id="acl-standard" data-tags="acl standard access-list source ip vty access-class">
       <h2>ACL Standard</h2>
-      <div class="tags"><span class="tag">Security</span><span class="tag">ACL</span><span class="tag">Standard</span></div>
+      <div class="tags">
+        <span class="tag">Security</span><span class="tag">ACL</span><span class="tag">Standard</span>
+        <a class="tag-link" href="glossary.html#acl">📖 Словарь</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Фильтрует трафик только по Source IP (номера 1–99). Просто, но грубо: нельзя указать destination или порт.</span>
         <span class="block"><strong>Где применять:</strong> Ближе к получателю (чтобы не блокировать трафик раньше времени).</span>
@@ -657,9 +733,12 @@ show ip access-lists</pre><button class="copy-btn">Копировать</button>
     </div>
 
     <!-- 18. ACL Extended -->
-    <div class="card" data-tags="acl extended access-list source destination protocol port access-group">
+    <div class="card" id="acl-extended" data-tags="acl extended access-list source destination protocol port access-group">
       <h2>ACL Extended</h2>
-      <div class="tags"><span class="tag">Security</span><span class="tag">ACL</span><span class="tag">Extended</span></div>
+      <div class="tags">
+        <span class="tag">Security</span><span class="tag">ACL</span><span class="tag">Extended</span>
+        <a class="tag-link" href="glossary.html#acl">📖 Словарь</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Фильтрует по Source + Destination + Protocol + Port (номера 100–199). Гибко, но сложнее.</span>
         <span class="block"><strong>Где применять:</strong> Ближе к источнику (чтобы не гонять блокируемый трафик через сеть).</span>
@@ -683,9 +762,13 @@ show ip access-lists</pre><button class="copy-btn">Копировать</button>
     </div>
 
     <!-- 19. DHCP -->
-    <div class="card" data-tags="dhcp pool default-router excluded binding server">
+    <div class="card" id="dhcp" data-tags="dhcp pool default-router excluded binding server">
       <h2>DHCP-сервер</h2>
-      <div class="tags"><span class="tag">Services</span><span class="tag">DHCP</span></div>
+      <div class="tags">
+        <span class="tag">Services</span><span class="tag">DHCP</span>
+        <a class="tag-link" href="glossary.html#dhcp">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#dhcp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> Автоматически выдаёт клиентам IP-адрес, маску, шлюз, DNS. Работает по DORA (Discover → Offer → Request → Ack).</span>
         <span class="block"><strong>Как работает:</strong> <code>ip dhcp pool</code> создаёт пул, <code>network</code> — подсеть, <code>default-router</code> — шлюз. <code>ip dhcp excluded-address</code> — исключить адреса (шлюз, принтеры, серверы).</span>
@@ -706,9 +789,13 @@ show ip dhcp conflict</pre><button class="copy-btn">Копировать</button
     </div>
 
     <!-- 20. DHCP Snooping -->
-    <div class="card" data-tags="dhcp snooping trust untrust rogue server l2 security">
+    <div class="card" id="dhcp-snooping" data-tags="dhcp snooping trust untrust rogue server l2 security">
       <h2>DHCP Snooping</h2>
-      <div class="tags"><span class="tag">Security</span><span class="tag">L2</span><span class="tag">DHCP</span></div>
+      <div class="tags">
+        <span class="tag">Security</span><span class="tag">L2</span><span class="tag">DHCP</span>
+        <a class="tag-link" href="glossary.html#dhcp-snooping">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#security">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Защита от «левого» DHCP-сервера (rogue DHCP). Злоумышленник может поднять свой DHCP и выдать клиентам неправильный шлюз — трафик пойдёт через него.</span>
         <span class="block"><strong>Как работает:</strong> Свитч делит порты на trusted (trunk к реальному DHCP-серверу) и untrusted (порты к ПК). DHCP-ответы с untrusted-портов дропаются.</span>
@@ -728,9 +815,13 @@ show ip dhcp snooping binding</pre><button class="copy-btn">Копировать
     </div>
 
     <!-- 21. Port-Security -->
-    <div class="card" data-tags="port-security sticky mac violation shutdown restrict protect">
+    <div class="card" id="port-security" data-tags="port-security sticky mac violation shutdown restrict protect">
       <h2>Port-Security</h2>
-      <div class="tags"><span class="tag">Security</span><span class="tag">L2</span><span class="tag">MAC</span></div>
+      <div class="tags">
+        <span class="tag">Security</span><span class="tag">L2</span><span class="tag">MAC</span>
+        <a class="tag-link" href="glossary.html#port-security">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#security">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Ограничивает количество MAC-адресов на порту. Защита от подключения несанкционированных устройств (хабов, левых ПК).</span>
         <span class="block"><strong>Режимы:</strong> <code>protect</code> — дропает лишние MAC (без лога), <code>restrict</code> — дропает + лог, <code>shutdown</code> — выключает порт (err-disable).</span>
@@ -752,9 +843,12 @@ show port-security interface f0/10</pre><button class="copy-btn">Копиров�
     </div>
 
     <!-- 22. SSH -->
-    <div class="card" data-tags="ssh secure shell rsa crypto key transport input vty">
+    <div class="card" id="ssh" data-tags="ssh secure shell rsa crypto key transport input vty">
       <h2>SSH</h2>
-      <div class="tags"><span class="tag">Security</span><span class="tag">SSH</span><span class="tag">Remote access</span></div>
+      <div class="tags">
+        <span class="tag">Security</span><span class="tag">SSH</span><span class="tag">Remote access</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Безопасная замена Telnet. Шифрует трафик (пароли, команды). Telnet передаёт всё в открытом виде.</span>
         <span class="block"><strong>Как работает:</strong> Нужны доменное имя (<code>ip domain-name</code>) и RSA-ключи (<code>crypto key generate rsa</code>). Затем на VTY: <code>transport input ssh</code> (отключает Telnet).</span>
@@ -775,9 +869,14 @@ show ip ssh</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
     <!-- 23. NTP -->
-    <div class="card" data-tags="ntp time sync clock timezone master server">
+    <div class="card" id="ntp" data-tags="ntp time sync clock timezone master server">
       <h2>NTP</h2>
-      <div class="tags"><span class="tag">Services</span><span class="tag">NTP</span><span class="tag">Time</span></div>
+      <div class="tags">
+        <span class="tag">Services</span><span class="tag">NTP</span><span class="tag">Time</span>
+        <span class="tag warn">Лаба 3 (в планах)</span>
+        <a class="tag-link" href="glossary.html#ntp">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#ntp">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Синхронизация времени между устройствами. Без точного времени не работают сертификаты, логи (нельзя сопоставить события), Kron (расписание).</span>
         <span class="block"><strong>Как работает:</strong> <code>ntp master</code> — устройство становится источником времени. <code>ntp server X</code> — клиент синхронизируется с сервером X.</span>
@@ -796,9 +895,12 @@ show clock</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
     <!-- 24. Syslog -->
-    <div class="card" data-tags="syslog logging buffered console monitor host severity">
+    <div class="card" id="syslog" data-tags="syslog logging buffered console monitor host severity">
       <h2>Syslog</h2>
-      <div class="tags"><span class="tag">Services</span><span class="tag">Syslog</span><span class="tag">Logging</span></div>
+      <div class="tags">
+        <span class="tag">Services</span><span class="tag">Syslog</span><span class="tag">Logging</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Сбор логов с устройств (события, ошибки, изменения). Без логов невозможно отладить проблему постфактум.</span>
         <span class="block"><strong>Уровни:</strong> 0 (emergencies) — 7 (debugging). <code>logging buffered informational</code> — писать в RAM всё от informational и выше.</span>
@@ -818,9 +920,12 @@ show logging</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
     <!-- 25. SNMP -->
-    <div class="card" data-tags="snmp v2c v3 community trap inform mib oid">
+    <div class="card" id="snmp" data-tags="snmp v2c v3 community trap inform mib oid">
       <h2>SNMP</h2>
-      <div class="tags"><span class="tag">Services</span><span class="tag">SNMP</span><span class="tag">Monitoring</span></div>
+      <div class="tags">
+        <span class="tag">Services</span><span class="tag">SNMP</span><span class="tag">Monitoring</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Мониторинг устройств (CPU, память, интерфейсы, температура). Используется системами управления (Zabbix, SolarWinds, PRTG).</span>
         <span class="block"><strong>v2c:</strong> community string (как пароль, открытый текст). Просто, но небезопасно.</span>
@@ -841,9 +946,12 @@ show snmp</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
     <!-- 26. NetFlow -->
-    <div class="card" data-tags="netflow flow ingress egress top talkers cache">
+    <div class="card" id="netflow" data-tags="netflow flow ingress egress top talkers cache">
       <h2>NetFlow</h2>
-      <div class="tags"><span class="tag">Services</span><span class="tag">NetFlow</span><span class="tag">Traffic analysis</span></div>
+      <div class="tags">
+        <span class="tag">Services</span><span class="tag">NetFlow</span><span class="tag">Traffic analysis</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Анализ трафика: кто, куда и сколько качает. Показывает Top Talkers (самых активных), распределение по протоколам (TCP/UDP/ICMP), размеры пакетов.</span>
         <span class="block"><strong>Как работает:</strong> <code>ip flow ingress</code> / <code>ip flow egress</code> на интерфейсе — включает сбор flow-записей.</span>
@@ -866,9 +974,12 @@ show ip flow top-talkers</pre><button class="copy-btn">Копировать</but
     </div>
 
     <!-- 27. Kron -->
-    <div class="card" data-tags="kron schedule recurring policy-list cli redirect">
+    <div class="card" id="kron" data-tags="kron schedule recurring policy-list cli redirect">
       <h2>Kron (планировщик)</h2>
-      <div class="tags"><span class="tag">Automation</span><span class="tag">Kron</span><span class="tag">Schedule</span></div>
+      <div class="tags">
+        <span class="tag">Automation</span><span class="tag">Kron</span><span class="tag">Schedule</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Планировщик задач в IOS (аналог cron в Linux). Позволяет автоматически выполнять команды по расписанию: снимать статистику, делать бэкапы, отправлять логи.</span>
         <span class="block"><strong>Как работает:</strong> <code>kron policy-list</code> — список команд. <code>kron occurrence</code> — расписание (время + recurring).</span>
@@ -893,9 +1004,12 @@ show kron schedule</pre><button class="copy-btn">Копировать</button></
     </div>
 
     <!-- 28. Archive -->
-    <div class="card" data-tags="archive config backup tftp write-memory path">
+    <div class="card" id="archive" data-tags="archive config backup tftp write-memory path">
       <h2>Archive (авто-бэкап)</h2>
-      <div class="tags"><span class="tag">Automation</span><span class="tag">Archive</span><span class="tag">Backup</span></div>
+      <div class="tags">
+        <span class="tag">Automation</span><span class="tag">Archive</span><span class="tag">Backup</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Автоматический бэкап конфигурации при каждом <code>write memory</code> или <code>copy run start</code>. Позволяет откатиться к предыдущей версии.</span>
         <span class="block"><strong>Как работает:</strong> <code>archive</code> → <code>path tftp://...</code> → <code>write-memory</code>. Можно использовать переменные <code>$H</code> (hostname) и <code>$T</code> (time).</span>
@@ -918,9 +1032,14 @@ show archive</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
     <!-- 29. IPv6 -->
-    <div class="card" data-tags="ipv6 addressing global unicast link-local slaac eui-64">
+    <div class="card" id="ipv6" data-tags="ipv6 addressing global unicast link-local slaac eui-64">
       <h2>IPv6</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">IPv6</span><span class="tag">Addressing</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">IPv6</span><span class="tag">Addressing</span>
+        <span class="tag warn">Лаба 3 (в планах)</span>
+        <a class="tag-link" href="glossary.html">📖 Словарь</a>
+        <a class="tag-link evo" href="evolution.html#ipv6">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> 128 бит (вместо 32 в IPv4). Запись — 8 групп по 4 hex-цифры, сокращение <code>::</code> (один раз).</span>
         <span class="block"><strong>Типы:</strong> <code>2000::/3</code> — Global Unicast (аналог публичного IPv4). <code>fe80::/10</code> — Link-Local (автоматически на каждом интерфейсе). <code>fc00::/7</code> — Unique Local. <code>ff00::/8</code> — Multicast.</span>
@@ -942,9 +1061,13 @@ show ipv6 interface brief</pre><button class="copy-btn">Копировать</bu
     </div>
 
     <!-- 30. OSPFv3 -->
-    <div class="card" data-tags="ospfv3 ipv6 routing area interface">
+    <div class="card" id="ospfv3" data-tags="ospfv3 ipv6 routing area interface">
       <h2>OSPFv3</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">OSPFv3</span><span class="tag">IPv6</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">OSPFv3</span><span class="tag">IPv6</span>
+        <span class="tag warn">Лаба 3 (в планах)</span>
+        <a class="tag-link evo" href="evolution.html#ipv6">📈 Эволюция</a>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> OSPF для IPv6. Отдельный процесс (<code>router ospfv3 1</code>), но логика та же: Area 0, LSDB, Дейкстра, DR/BDR.</span>
         <span class="block"><strong>Отличие от OSPFv2:</strong> в OSPFv3 network-команды не используются — интерфейсы включаются через <code>ipv6 ospf 1 area 0</code> на самом интерфейсе.</span>
@@ -967,9 +1090,12 @@ show ipv6 route ospf</pre><button class="copy-btn">Копировать</button>
     </div>
 
     <!-- 31. HSRPv6 -->
-    <div class="card" data-tags="hsrpv6 fhrp ipv6 virtual gateway standby">
+    <div class="card" id="hsrpv6" data-tags="hsrpv6 fhrp ipv6 virtual gateway standby">
       <h2>HSRPv6</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">IPv6</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">FHRP</span><span class="tag">IPv6</span>
+        <span class="tag warn">Лаба 3 (в планах)</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Принцип:</strong> HSRP для IPv6. Требует <code>standby version 2</code> (version 1 не поддерживает IPv6).</span>
         <span class="block"><strong>Как работает:</strong> Виртуальный IPv6-адрес, который клиенты используют как шлюз. Active/Standby — как в IPv4.</span>
@@ -988,10 +1114,13 @@ show ipv6 route ospf</pre><button class="copy-btn">Копировать</button>
 show standby brief</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 32. IPsec (расширенное) -->
-    <div class="card" data-tags="ipsec vpn site-to-site ike esp ah crypto map transform-set">
+    <!-- 32. IPsec -->
+    <div class="card" id="ipsec" data-tags="ipsec vpn site-to-site ike esp ah crypto map transform-set">
       <h2>IPsec (Site-to-Site)</h2>
-      <div class="tags"><span class="tag">Security</span><span class="tag">VPN</span><span class="tag">IPsec</span></div>
+      <div class="tags">
+        <span class="tag">Security</span><span class="tag">VPN</span><span class="tag">IPsec</span>
+        <span class="tag warn">Лаба 3 (в планах)</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Шифрование трафика между двумя офисами через интернет. Защищает от прослушивания и подмены.</span>
         <span class="block"><strong>Компоненты:</strong> IKE (фаза 1 — согласование ключей), IPsec (фаза 2 — шифрование трафика). <strong>ESP</strong> — шифрование + аутентификация, <strong>AH</strong> — только аутентификация (без шифрования, редко используется).</span>
@@ -1026,9 +1155,12 @@ show crypto ipsec sa</pre><button class="copy-btn">Копировать</button>
     </div>
 
     <!-- 33. GRE -->
-    <div class="card" data-tags="gre tunnel generic routing encapsulation l3 over l3">
+    <div class="card" id="gre" data-tags="gre tunnel generic routing encapsulation l3 over l3">
       <h2>GRE-туннель</h2>
-      <div class="tags"><span class="tag">L3</span><span class="tag">GRE</span><span class="tag">Tunnel</span></div>
+      <div class="tags">
+        <span class="tag">L3</span><span class="tag">GRE</span><span class="tag">Tunnel</span>
+        <span class="tag warn">Лаба 3 (в планах)</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Туннель «L3 поверх L3» — позволяет передавать пакеты одного протокола через сеть другого (например, IPv6 через IPv4, или multicast через интернет).</span>
         <span class="block"><strong>Как работает:</strong> <code>interface Tunnel0</code>, <code>tunnel source</code>, <code>tunnel destination</code>, <code>tunnel mode gre ip</code>. Туннель получает свой IP-адрес.</span>
@@ -1049,9 +1181,12 @@ ping 192.168.100.2</pre><button class="copy-btn">Копировать</button></
     </div>
 
     <!-- 34. AAA -->
-    <div class="card" data-tags="aaa tacacs radius authentication authorization accounting new-model">
+    <div class="card" id="aaa" data-tags="aaa tacacs radius authentication authorization accounting new-model">
       <h2>AAA (TACACS+ / RADIUS)</h2>
-      <div class="tags"><span class="tag">Security</span><span class="tag">AAA</span><span class="tag">TACACS+</span><span class="tag">RADIUS</span></div>
+      <div class="tags">
+        <span class="tag">Security</span><span class="tag">AAA</span><span class="tag">TACACS+</span><span class="tag">RADIUS</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Централизованная аутентификация, авторизация и учёт (AAA). Вместо локальных <code>username</code> на каждом устройстве — единый сервер.</span>
         <span class="block"><strong>TACACS+</strong> (Cisco, TCP 49) — шифрует всё тело пакета, разделяет AAA. <strong>RADIUS</strong> (стандарт, UDP 1812/1813) — шифрует только пароль.</span>
@@ -1078,10 +1213,13 @@ line vty 0 15
 show aaa servers</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
-    <!-- 35. QoS (расширенное) -->
-    <div class="card" data-tags="qos quality of service dscp llq cbwfq policing shaping priority">
+    <!-- 35. QoS -->
+    <div class="card" id="qos" data-tags="qos quality of service dscp llq cbwfq policing shaping priority">
       <h2>QoS</h2>
-      <div class="tags"><span class="tag">QoS</span><span class="tag">Traffic</span><span class="tag">Voice/Video</span></div>
+      <div class="tags">
+        <span class="tag">QoS</span><span class="tag">Traffic</span><span class="tag">Voice/Video</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Приоритизация трафика. Голос и видео важнее файлов — при перегрузке канала QoS даёт им приоритет. Без QoS голос «квакает», видео «сыпется».</span>
         <span class="block"><strong>Классификация:</strong> DSCP-метки (0–63). Голос — EF (46), видео — AF41 (34), данные — 0. CoS (L2) — 0–7, используется в 802.1Q-тегах.</span>
@@ -1114,9 +1252,12 @@ show policy-map interface f0/1</pre><button class="copy-btn">Копироват�
     </div>
 
     <!-- 36. RSPAN -->
-    <div class="card" data-tags="rspan span monitor session remote vlan reflector port mirroring">
+    <div class="card" id="rspan" data-tags="rspan span monitor session remote vlan reflector port mirroring">
       <h2>RSPAN (удалённое зеркалирование)</h2>
-      <div class="tags"><span class="tag">L2</span><span class="tag">Monitoring</span><span class="tag">RSPAN</span></div>
+      <div class="tags">
+        <span class="tag">L2</span><span class="tag">Monitoring</span><span class="tag">RSPAN</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Зеркалирование трафика с одного свитча на анализатор, подключённый к другому свитчу (через сеть).</span>
         <span class="block"><strong>SPAN vs RSPAN:</strong> SPAN — локально (анализатор на том же свитче). RSPAN — удалённо (через VLAN).</span>
@@ -1135,9 +1276,12 @@ show monitor</pre><button class="copy-btn">Копировать</button></div>
     </div>
 
     <!-- 37. CDP/LLDP -->
-    <div class="card" data-tags="cdp lldp discovery neighbor protocol">
+    <div class="card" id="cdp-lldp" data-tags="cdp lldp discovery neighbor protocol">
       <h2>CDP / LLDP</h2>
-      <div class="tags"><span class="tag">L2</span><span class="tag">Discovery</span><span class="tag">CDP</span><span class="tag">LLDP</span></div>
+      <div class="tags">
+        <span class="tag">L2</span><span class="tag">Discovery</span><span class="tag">CDP</span><span class="tag">LLDP</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Обнаружение соседних устройств. Позволяет узнать, кто подключён к порту (имя, модель, IP, порт).</span>
         <span class="block"><strong>CDP:</strong> проприетарный Cisco (включён по умолчанию). <strong>LLDP:</strong> открытый стандарт (IEEE 802.1AB), нужен для мультивендорных сетей.</span>
@@ -1156,9 +1300,12 @@ show lldp neighbors detail</pre><button class="copy-btn">Копировать</b
     </div>
 
     <!-- 38. Сброс пароля -->
-    <div class="card" data-tags="password recovery reset rommon config.text switch ignore">
+    <div class="card" id="password-recovery" data-tags="password recovery reset rommon config.text switch ignore">
       <h2>Сброс пароля</h2>
-      <div class="tags"><span class="tag">Maintenance</span><span class="tag">Password recovery</span></div>
+      <div class="tags">
+        <span class="tag">Maintenance</span><span class="tag">Password recovery</span>
+        <span class="tag extra">Вне лаб</span>
+      </div>
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Восстановить доступ к устройству, если пароль утерян. Процедура отличается для роутеров и свитчей.</span>
         <span class="block"><strong>Свитчи (2950/2960/3560):</strong> зажать MODE при загрузке → в ROMMON переименовать <code>config.text</code> → загрузиться → вернуть конфиг → сменить пароль.</span>
@@ -1218,7 +1365,7 @@ reload</pre><button class="copy-btn">Копировать</button></div>
   const empty = document.getElementById('empty');
   const chips = document.querySelectorAll('.chip');
 
-  // === Фильтрация: ТОЧНОЕ совпадение по заголовку + тегам ===
+  // === Фильтрация ===
   function filterCards(query) {
     const q = query.trim().toLowerCase();
     let visible = 0;
@@ -1232,11 +1379,10 @@ reload</pre><button class="copy-btn">Копировать</button></div>
         (card.getAttribute('data-tags') || '') + ' ' +
         card.querySelector('h2').textContent
       ).toLowerCase();
-      // Убираем пробелы вокруг слешей и дефисов (NAT / PAT -> NAT/PAT)
       const normalizedQ = q.replace(/\s*\/\s*/g, '/').replace(/\s*-\s*/g, '-');
       const words = normalizedQ.split(/\s+/).filter(Boolean);
       const matches = words.every(word => {
-      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const re = new RegExp('\\b' + escaped, 'i');
         return re.test(haystack);
       });
@@ -1253,52 +1399,33 @@ reload</pre><button class="copy-btn">Копировать</button></div>
     empty.classList.toggle('hidden', visible !== 0 || !q);
   }
 
-  // === Снять активность со всех чипов ===
-  function deactivateAllChips() {
-    chips.forEach(c => c.classList.remove('active'));
-  }
-
-  // === Активировать чип ===
+  function deactivateAllChips() { chips.forEach(c => c.classList.remove('active')); }
   function activateChip(chip) {
     deactivateAllChips();
     if (chip) chip.classList.add('active');
   }
 
-  // === Кнопка «Найти» ===
   findBtn.addEventListener('click', () => {
     const q = searchInput.value;
     filterCards(q);
     let matched = null;
-    chips.forEach(c => {
-      if (c.dataset.q === q.trim().toLowerCase()) matched = c;
-    });
+    chips.forEach(c => { if (c.dataset.q === q.trim().toLowerCase()) matched = c; });
     activateChip(matched);
   });
 
-  // === Ввод в поиск ===
   searchInput.addEventListener('input', () => {
     const q = searchInput.value;
     filterCards(q);
-    if (!q.trim()) {
-      deactivateAllChips();
-      return;
-    }
+    if (!q.trim()) { deactivateAllChips(); return; }
     let matched = null;
-    chips.forEach(c => {
-      if (c.dataset.q === q.trim().toLowerCase()) matched = c;
-    });
+    chips.forEach(c => { if (c.dataset.q === q.trim().toLowerCase()) matched = c; });
     activateChip(matched);
   });
 
-  // === Enter в поиске ===
   searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      findBtn.click();
-    }
+    if (e.key === 'Enter') { e.preventDefault(); findBtn.click(); }
   });
 
-  // === Клик по чипу (явный вызов фильтрации) ===
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
       const q = chip.dataset.q;
@@ -1308,7 +1435,6 @@ reload</pre><button class="copy-btn">Копировать</button></div>
     });
   });
 
-  // === Сброс ===
   clearBtn.addEventListener('click', () => {
     searchInput.value = '';
     filterCards('');
@@ -1316,7 +1442,7 @@ reload</pre><button class="copy-btn">Копировать</button></div>
     searchInput.focus();
   });
 
-  // === Копировать (чистка от ! и пустых строк) ===
+  // === Копировать ===
   document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const pre = btn.parentElement.querySelector('pre');
@@ -1345,7 +1471,6 @@ reload</pre><button class="copy-btn">Копировать</button></div>
     });
   });
 
-  // === Инициализация ===
   filterCards('');
 </script>
 

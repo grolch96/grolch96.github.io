@@ -35,11 +35,13 @@
             --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
             --accent: #7fa8d4; --accent-green: #2e7d32; --accent-blue: #2980b9;
             --term-bg: #f9f9fb; --tag-bg: rgba(127, 168, 212, 0.15);
+            --muted: #888;
         }
         [data-theme="dark"] {
             --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
             --accent: #a3c4e8; --accent-green: #81c784; --accent-blue: #64b5f6;
             --term-bg: #222; --tag-bg: rgba(163, 196, 232, 0.15);
+            --muted: #8b949e;
         }
         * { box-sizing: border-box; }
         body {
@@ -51,6 +53,20 @@
         h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
         .back-link:hover { text-decoration: underline; }
+
+        /* Навигация */
+        .top-nav {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+            padding: 10px 14px; background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; font-size: 13px;
+        }
+        .top-nav a {
+            color: var(--accent); text-decoration: none; font-weight: 600;
+            padding: 4px 10px; border-radius: 6px; transition: background 0.2s;
+        }
+        .top-nav a:hover { background: var(--tag-bg); }
+        .top-nav a.active { background: var(--accent); color: #fff; }
+        .top-nav .sep { color: var(--muted); }
 
         .theme-btn {
             position: fixed; top: 20px; right: 20px; padding: 10px 15px;
@@ -80,6 +96,7 @@
             border-radius: 10px; padding: 18px; margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             transition: transform 0.15s, box-shadow 0.15s;
+            scroll-margin-top: 20px;
         }
         .term-card:hover {
             transform: translateY(-2px);
@@ -94,25 +111,29 @@
             font-size: 14.5px; margin-bottom: 10px;
         }
         .term-card .term-meta {
-            font-size: 13px; color: var(--muted, #888);
-            display: flex; flex-wrap: wrap; gap: 15px;
+            font-size: 13px; color: var(--muted);
+            display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
         }
         .term-card .term-tag {
             background: var(--tag-bg); color: var(--accent);
             padding: 2px 10px; border-radius: 12px;
             font-size: 12px; font-weight: 600;
         }
+        .term-card .term-tag.warn { background: rgba(230,126,34,0.15); color: #e67e22; }
         .term-card .term-link {
             color: var(--accent-green); text-decoration: none; font-weight: 600;
+            font-size: 12px;
         }
         .term-card .term-link:hover { text-decoration: underline; }
+        .term-card .term-link.ref { color: var(--accent-blue); }
+        .term-card .term-link.evo { color: #8e44ad; }
 
         .no-results {
-            text-align: center; padding: 40px; color: var(--muted, #888);
+            text-align: center; padding: 40px; color: var(--muted);
             font-size: 16px;
         }
 
-        footer { max-width: 1000px; margin: 40px auto 0; text-align: center; color: var(--muted, #888); font-size: 13px; }
+        footer { max-width: 1000px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 13px; }
         
         /* Чекбоксы для самопроверки */
 .self-check {
@@ -160,8 +181,17 @@ body.learning-mode .progress-summary { display: block; }
 <div class="container">
     <a href="index.html" class="back-link">← На главную</a>
     <h1>📖 Словарь терминов Cisco</h1>
+
+    <nav class="top-nav">
+        <a href="glossary.html" class="active">📖 Словарь</a><span class="sep">·</span>
+        <a href="cisco-reference.html">📘 Справочник</a><span class="sep">·</span>
+        <a href="evolution.html">📈 Эволюция</a><span class="sep">·</span>
+        <a href="practice.html">🎯 Практикум</a><span class="sep">·</span>
+        <a href="osi-model.html">🧱 OSI</a>
+    </nav>
     
     <p>Ключевые термины и определения по сетевым технологиям. Все термины сгруппированы по категориям и связаны с задачами из практикума.</p>
+    <p><em>📌 Для углублённого изучения — переходите в <a href="cisco-reference.html">Справочник</a>, для сравнения Base vs Advanced — в <a href="evolution.html">Эволюцию</a>.</em></p>
 
     <input type="text" class="search-box" id="search" placeholder="🔍 Поиск термина (например, OSPF, VLAN, HSRP)...">
     <button id="toggle-learn-btn" class="reveal-btn" style="margin-top: -10px;">🎓 Включить режим обучения (скрыть ответы)</button>
@@ -170,285 +200,414 @@ body.learning-mode .progress-summary { display: block; }
         <!-- Категория 1: Базовая терминология -->
         <h2 class="category-title">🧱 Базовая терминология и модели</h2>
 
-        <div class="term-card" data-search="osi open systems interconnection модель уровни">
+        <div class="term-card" id="osi" data-search="osi open systems interconnection модель уровни">
             <div class="term-name">OSI (Open Systems Interconnection)</div>
             <div class="term-def">7-уровневая модель сетевого взаимодействия: физический, канальный, сетевой, транспортный, сеансовый, представления, прикладной. Помогает понять, на каком уровне работает технология (VLAN — L2, OSPF — L3, DHCP — L7).</div>
-            <div class="term-meta"><span class="term-tag">Теория</span> <span>Уровень: все</span></div>
+            <div class="term-meta">
+                <span class="term-tag">Теория</span>
+                <span>Уровень: все</span>
+                <a class="term-link ref" href="cisco-reference.html">→ Справочник</a>
+                <a class="term-link" href="osi-model.html">→ Модель OSI</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="tcp ip стек протоколов модель">
+        <div class="term-card" id="tcpip" data-search="tcp ip стек протоколов модель">
             <div class="term-name">TCP/IP</div>
             <div class="term-def">Практическая модель, на которой работает интернет. Состоит из 4 уровней: сетевой доступ, интернет, транспорт, прикладной. В отличие от OSI, это не теоретическая, а реальная архитектура.</div>
             <div class="term-meta"><span class="term-tag">Теория</span> <span>Уровень: все</span></div>
         </div>
 
-        <div class="term-card" data-search="инкапсуляция заголовки данные">
+        <div class="term-card" id="encapsulation" data-search="инкапсуляция заголовки данные">
             <div class="term-name">Инкапсуляция</div>
             <div class="term-def">Процесс добавления заголовков при передаче данных вниз по стеку OSI. На каждом уровне добавляется своя служебная информация (например, MAC-адрес на L2, IP-адрес на L3).</div>
             <div class="term-meta"><span class="term-tag">Теория</span> <span>Уровень: все</span></div>
         </div>
 
-        <div class="term-card" data-search="pdu protocol data unit кадр пакет сегмент">
+        <div class="term-card" id="pdu" data-search="pdu protocol data unit кадр пакет сегмент">
             <div class="term-name">PDU (Protocol Data Unit)</div>
             <div class="term-def">Единица данных на каждом уровне OSI. На L2 это кадр (frame), на L3 — пакет (packet), на L4 — сегмент (segment). Термин помогает точно описывать, что именно передаётся.</div>
             <div class="term-meta"><span class="term-tag">Теория</span> <span>Уровень: все</span></div>
         </div>
+        
         <!-- Категория 2: Коммутация (L2) -->
         <h2 class="category-title">🔀 Коммутация (L2)</h2>
 
-        <div class="term-card" data-search="vlan virtual lan виртуальная локальная сеть сегментация">
+        <div class="term-card" id="vlan" data-search="vlan virtual lan виртуальная локальная сеть сегментация">
             <div class="term-name">VLAN (Virtual LAN)</div>
             <div class="term-def">Технология логической сегментации сети на канальном уровне (L2). Позволяет разделить один физический коммутатор на несколько изолированных «виртуальных» сетей. Клиенты разных VLAN не видят трафик друг друга (без маршрутизации).</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 1</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#vlan">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#vlan">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task1">→ Задача 1</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="trunk 802.1q магистральный канал тегирование">
+        <div class="term-card" id="trunk" data-search="trunk 802.1q магистральный канал тегирование">
             <div class="term-name">Trunk (802.1Q)</div>
             <div class="term-def">Магистральный канал, который передаёт трафик нескольких VLAN по одному физическому линку. Каждый кадр помечается тегом 802.1Q (VLAN ID). Используется между коммутаторами и для связи с роутерами.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 1</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#trunk">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#vlan">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task1">→ Задача 1</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="access port порт доступа один vlan">
+        <div class="term-card" id="access-port" data-search="access port порт доступа один vlan">
             <div class="term-name">Access Port (порт доступа)</div>
             <div class="term-def">Порт коммутатора, который принадлежит только одному VLAN и используется для подключения конечных устройств (ПК, принтеры). Кадры на таком порту передаются без тегов.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 1</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#vlan">→ Справочник</a>
+                <a class="term-link" href="practice.html#task1">→ Задача 1</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="etherchannel агрегация каналов lacp pagp port-channel">
+        <div class="term-card" id="etherchannel" data-search="etherchannel агрегация каналов lacp pagp port-channel">
             <div class="term-name">EtherChannel (LACP/PAgP)</div>
             <div class="term-def">Объединение нескольких физических линков в один логический канал (Port-Channel). Увеличивает пропускную способность и обеспечивает отказоустойчивость (если один кабель порвётся, канал продолжит работать). LACP — открытый стандарт, PAgP — проприетарный Cisco.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 2, 3</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#etherchannel">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#etherchannel">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task2">→ Задачи 2, 3</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="stp spanning tree protocol защита от петель root bridge">
+        <div class="term-card" id="stp" data-search="stp spanning tree protocol защита от петель root bridge">
             <div class="term-name">STP (Spanning Tree Protocol)</div>
             <div class="term-def">Протокол, предотвращающий петли на канальном уровне. Если между коммутаторами есть несколько путей, STP выбирает один основной (Root Port) и блокирует остальные (Alternate Port), чтобы кадры не ходили по кругу.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 4</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#stp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#stp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task4">→ Задача 4</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="root bridge корневой мост приоритет stp">
+        <div class="term-card" id="root-bridge" data-search="root bridge корневой мост приоритет stp">
             <div class="term-name">Root Bridge (корневой мост)</div>
             <div class="term-def">Коммутатор, который является «центром» дерева STP. Выбирается по наименьшему приоритету (по умолчанию 32768). Все остальные коммутаторы строят пути к нему. Настройка: <code>spanning-tree vlan 1 priority 24576</code>.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 4</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#stp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#stp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task4">→ Задача 4</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="bpdu bridge protocol data unit служебные кадры stp">
+        <div class="term-card" id="bpdu" data-search="bpdu bridge protocol data unit служебные кадры stp">
             <div class="term-name">BPDU (Bridge Protocol Data Unit)</div>
             <div class="term-def">Служебные кадры, которыми обмениваются коммутаторы для построения дерева STP. Содержат информацию о приоритете, MAC-адресе и стоимости пути. Если на порт с PortFast приходит BPDU (например, подключили свитч), срабатывает BPDU Guard и порт блокируется.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#stp">→ Справочник</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="port security защита порта mac адрес sticky">
-            <div class="term-name">Port Security</div>
-            <div class="term-def">Механизм защиты на коммутаторе, который ограничивает количество MAC-адресов на порту и блокирует порт при подключении несанкционированного устройства. Режимы: <code>protect</code> (дропает), <code>restrict</code> (дропает + лог), <code>shutdown</code> (err-disable).</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 9</a></div>
-        </div>
-
-        <div class="term-card" data-search="dhcp snooping защита левый dhcp сервер trust">
-            <div class="term-name">DHCP Snooping</div>
-            <div class="term-def">Защита от «левых» DHCP-серверов. Коммутатор проверяет, с какого порта пришёл DHCP-ответ, и пропускает только доверенные (trust) порты. Обычно trust назначается на транк-порту к реальному DHCP-серверу.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 9</a></div>
-        </div>
-
-        <div class="term-card" data-search="mstp multiple spanning tree protocol инстансы">
+        <div class="term-card" id="mstp" data-search="mstp multiple spanning tree protocol инстансы">
             <div class="term-name">MSTP (Multiple Spanning Tree Protocol)</div>
             <div class="term-def">Эволюция STP, которая объединяет несколько VLAN в один «инстанс» (экземпляр) дерева. В отличие от Rapid-PVST+ (где каждый VLAN — отдельное дерево), MSTP создаёт 2–3 дерева для групп VLAN. Снижает нагрузку на CPU и ускоряет сходимость.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 13</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <span class="term-tag warn">Лаба 3 (в планах)</span>
+                <a class="term-link ref" href="cisco-reference.html#mstp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#mstp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task13">→ Задача 13</a>
+            </div>
         </div>
-    </div>
+
+        <div class="term-card" id="port-security" data-search="port security защита порта mac адрес sticky">
+            <div class="term-name">Port Security</div>
+            <div class="term-def">Механизм защиты на коммутаторе, который ограничивает количество MAC-адресов на порту и блокирует порт при подключении несанкционированного устройства. Режимы: <code>protect</code> (дропает), <code>restrict</code> (дропает + лог), <code>shutdown</code> (err-disable).</div>
+            <div class="term-meta">
+                <span class="term-tag">Безопасность</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#port-security">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#security">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task9">→ Задача 9</a>
+            </div>
+        </div>
+
+        <div class="term-card" id="dhcp-snooping" data-search="dhcp snooping защита левый dhcp сервер trust">
+            <div class="term-name">DHCP Snooping</div>
+            <div class="term-def">Защита от «левых» DHCP-серверов. Коммутатор проверяет, с какого порта пришёл DHCP-ответ, и пропускает только доверенные (trust) порты. Обычно trust назначается на транк-порту к реальному DHCP-серверу.</div>
+            <div class="term-meta">
+                <span class="term-tag">Безопасность</span> <span>Уровень OSI: L2</span>
+                <a class="term-link ref" href="cisco-reference.html#dhcp-snooping">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#security">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task9">→ Задача 9</a>
+            </div>
+        </div>
+
         <!-- Категория 3: Маршрутизация (L3) -->
         <h2 class="category-title">🗺️ Маршрутизация (L3)</h2>
 
-        <div class="term-card" data-search="маршрутизация routing выбор пути пакет">
+        <div class="term-card" id="routing" data-search="маршрутизация routing выбор пути пакет">
             <div class="term-name">Маршрутизация (Routing)</div>
             <div class="term-def">Процесс выбора пути для передачи пакета от источника к получателю через одну или несколько сетей. Осуществляется на сетевом уровне (L3) с помощью таблицы маршрутизации.</div>
             <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span></div>
         </div>
 
-        <div class="term-card" data-search="статический маршрут static route">
+        <div class="term-card" id="static-route" data-search="статический маршрут static route">
             <div class="term-name">Статический маршрут (Static Route)</div>
             <div class="term-def">Маршрут, заданный вручную администратором. Имеет административную дистанцию (AD) по умолчанию 1 (самый приоритетный). Пример: <code>ip route 192.168.2.0 255.255.255.0 10.0.0.2</code>.</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#static-route">→ Справочник</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="динамическая маршрутизация протоколы ospf eigrp bgp">
+        <div class="term-card" id="dynamic-routing" data-search="динамическая маршрутизация протоколы ospf eigrp bgp">
             <div class="term-name">Динамическая маршрутизация</div>
             <div class="term-def">Автоматический обмен маршрутной информацией между роутерами с помощью протоколов (OSPF, EIGRP, BGP). Роутеры сами строят таблицу маршрутизации и перестраивают её при изменении топологии.</div>
             <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span></div>
         </div>
 
-        <div class="term-card" data-search="ad administrative distance административная дистанция">
+        <div class="term-card" id="ad" data-search="ad administrative distance административная дистанция">
             <div class="term-name">AD (Administrative Distance)</div>
             <div class="term-def">«Вес» источника маршрута. Чем меньше значение, тем приоритетнее маршрут. Значения: Connected = 0, Static = 1, EIGRP = 90, OSPF = 110, RIP = 120. Позволяет выбирать между разными протоколами.</div>
             <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span></div>
         </div>
 
-        <div class="term-card" data-search="metric метрика стоимость cost bandwidth delay">
+        <div class="term-card" id="metric" data-search="metric метрика стоимость cost bandwidth delay">
             <div class="term-name">Metric (Метрика)</div>
             <div class="term-def">Стоимость пути внутри одного протокола маршрутизации. Например, в OSPF — cost (зависит от пропускной способности), в EIGRP — bandwidth + delay. Чем меньше метрика, тем лучше путь.</div>
             <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span></div>
         </div>
 
-        <div class="term-card" data-search="ospf open shortest path first link state дейкстра">
+        <div class="term-card" id="ospf" data-search="ospf open shortest path first link state дейкстра">
             <div class="term-name">OSPF (Open Shortest Path First)</div>
             <div class="term-def">Протокол динамической маршрутизации типа Link-State. Строит полную карту сети (LSDB) и вычисляет кратчайшие пути по алгоритму Дейкстры. Работает поверх IP (протокол 89). Поддерживает Multi-Area (разбиение на зоны).</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span> <a class="term-link" href="practice.html">→ Задача 5</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#ospf">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#ospf">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task5">→ Задача 5</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="area зона ospf area 0 backbone">
+        <div class="term-card" id="area" data-search="area зона ospf area 0 backbone">
             <div class="term-name">Area (Зона OSPF)</div>
             <div class="term-def">Логическая группа роутеров в OSPF. Area 0 — магистральная (Backbone), остальные зоны подключаются к ней через ABR. Разбиение на зоны снижает нагрузку на CPU и стабилизирует сеть.</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span> <a class="term-link" href="practice.html">→ Задача 5</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#ospf">→ Справочник</a>
+                <a class="term-link" href="practice.html#task5">→ Задача 5</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="abr area border router граница зон">
+        <div class="term-card" id="abr" data-search="abr area border router граница зон">
             <div class="term-name">ABR (Area Border Router)</div>
             <div class="term-def">Роутер, который находится на границе двух зон OSPF (например, Area 0 и Area 1). Он передаёт маршруты между зонами (LSA Type 3).</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#ospf">→ Справочник</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="bgp border gateway protocol автономная система as">
+        <div class="term-card" id="bgp" data-search="bgp border gateway protocol автономная система as">
             <div class="term-name">BGP (Border Gateway Protocol)</div>
             <div class="term-def">Протокол маршрутизации между автономными системами (AS). Используется для обмена маршрутами между провайдерами и корпоративными сетями. Работает поверх TCP (порт 179). Обеспечивает стабильность маршрутов в интернете.</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3 (сессия L4)</span> <a class="term-link" href="practice.html">→ Задача 7</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3 (сессия L4)</span>
+                <a class="term-link ref" href="cisco-reference.html#bgp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#bgp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task7">→ Задача 7</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="as autonomous system автономная система">
+        <div class="term-card" id="as" data-search="as autonomous system автономная система">
             <div class="term-name">AS (Autonomous System)</div>
             <div class="term-def">Группа сетей и роутеров под единым управлением (например, провайдер или крупная корпорация). Каждая AS имеет уникальный номер (ASN). BGP используется для связи между AS.</div>
             <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span></div>
         </div>
 
-        <div class="term-card" data-search="eigrp enhanced interior gateway routing protocol dual гибридный">
+        <div class="term-card" id="eigrp" data-search="eigrp enhanced interior gateway routing protocol dual гибридный">
             <div class="term-name">EIGRP (Enhanced Interior Gateway Routing Protocol)</div>
             <div class="term-def">Гибридный протокол динамической маршрутизации (проприетарный Cisco, но открыт по RFC 7868). Использует алгоритм DUAL для быстрой сходимости. Поддерживает резервные маршруты (Feasible Successor).</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span> <a class="term-link" href="practice.html">→ Задача 12</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#eigrp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#eigrp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task12">→ Задача 12</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="redistribution перераспределение маршрутов">
+        <div class="term-card" id="redistribution" data-search="redistribution перераспределение маршрутов">
             <div class="term-name">Redistribution (Перераспределение)</div>
             <div class="term-def">Процесс «перелива» маршрутов из одного протокола в другой (например, OSPF ↔ EIGRP). Используется при слиянии сетей с разными протоколами. Требует указания метрики (для EIGRP) и флага <code>subnets</code> (для OSPF).</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span> <a class="term-link" href="practice.html">→ Задача 12</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#redistribution">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#eigrp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task12">→ Задача 12</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="hsrp hot standby router protocol резервирование шлюза">
+        <div class="term-card" id="hsrp" data-search="hsrp hot standby router protocol резервирование шлюза">
             <div class="term-name">HSRP (Hot Standby Router Protocol)</div>
             <div class="term-def">Протокол резервирования шлюза (проприетарный Cisco). Два роутера делят один виртуальный IP, который клиенты используют как шлюз. Один активен (Active), другой в режиме ожидания (Standby). При падении Active, Standby мгновенно перехватывает IP.</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span> <a class="term-link" href="practice.html">→ Задача 6</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#hsrp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#hsrp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task6">→ Задача 6</a>
+            </div>
         </div>
-    <div class="no-results" id="no-results" style="display: none;">Ничего не найдено. Попробуйте другой запрос.</div>
+
         <!-- Категория 4: Сервисы и NAT -->
         <h2 class="category-title">🌐 Сервисы и NAT</h2>
 
-        <div class="term-card" data-search="dhcp dynamic host configuration protocol автоматическая выдача ip">
+        <div class="term-card" id="dhcp" data-search="dhcp dynamic host configuration protocol автоматическая выдача ip">
             <div class="term-name">DHCP (Dynamic Host Configuration Protocol)</div>
             <div class="term-def">Протокол прикладного уровня, который автоматически выдаёт клиентам IP-адрес, маску, шлюз и DNS. Работает по схеме DORA (Discover → Offer → Request → Ack) поверх UDP (порты 67 и 68). Избавляет от ручной настройки каждого ПК.</div>
-            <div class="term-meta"><span class="term-tag">L7</span> <span>Уровень OSI: L7 (UDP 67/68)</span> <a class="term-link" href="practice.html">→ Задача 10</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L7</span> <span>Уровень OSI: L7 (UDP 67/68)</span>
+                <a class="term-link ref" href="cisco-reference.html#dhcp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#dhcp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task10">→ Задача 10</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="dhcp pool пул excluded address исключение">
+        <div class="term-card" id="dhcp-pool" data-search="dhcp pool пул excluded address исключение">
             <div class="term-name">DHCP Pool (Пул адресов)</div>
             <div class="term-def">Диапазон IP-адресов, которые DHCP-сервер может выдать клиентам. Настраивается командой <code>ip dhcp pool ИМЯ</code>, внутри указывается сеть (<code>network</code>), шлюз (<code>default-router</code>) и DNS (<code>dns-server</code>). Исключения задаются через <code>ip dhcp excluded-address</code>.</div>
-            <div class="term-meta"><span class="term-tag">L7</span> <span>Уровень OSI: L7</span> <a class="term-link" href="practice.html">→ Задача 10</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L7</span> <span>Уровень OSI: L7</span>
+                <a class="term-link ref" href="cisco-reference.html#dhcp">→ Справочник</a>
+                <a class="term-link" href="practice.html#task10">→ Задача 10</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="nat network address translation трансляция адресов">
+        <div class="term-card" id="nat" data-search="nat network address translation трансляция адресов">
             <div class="term-name">NAT (Network Address Translation)</div>
             <div class="term-def">Механизм трансляции IP-адресов, который позволяет устройствам с приватными адресами (192.168.x.x) выходить в интернет через один публичный IP. Экономит IPv4-адреса и скрывает внутреннюю структуру сети.</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span> <a class="term-link" href="practice.html">→ Задача 11</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#nat">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#nat">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task11">→ Задача 11</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="pat port address translation overload перегрузка порты">
+        <div class="term-card" id="pat" data-search="pat port address translation overload перегрузка порты">
             <div class="term-name">PAT (Port Address Translation)</div>
             <div class="term-def">Разновидность NAT (Overload), которая использует порты для различения сессий разных клиентов. Позволяет множеству внутренних устройств выходить в интернет под одним внешним IP. Настраивается командой <code>ip nat inside source list NAT interface f0/1 overload</code>.</div>
-            <div class="term-meta"><span class="term-tag">L3/L4</span> <span>Уровень OSI: L3 (порты L4)</span> <a class="term-link" href="practice.html">→ Задача 11</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3/L4</span> <span>Уровень OSI: L3 (порты L4)</span>
+                <a class="term-link ref" href="cisco-reference.html#nat">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#nat">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task11">→ Задача 11</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="static nat статическая трансляция проброс порта">
+        <div class="term-card" id="static-nat" data-search="static nat статическая трансляция проброс порта">
             <div class="term-name">Static NAT</div>
             <div class="term-def">Постоянная трансляция «один-к-одному»: внутренний IP всегда соответствует внешнему. Нужна для серверов, к которым обращаются извне (веб, почта). Частный случай — проброс порта (Port Forwarding): <code>ip nat inside source static tcp 192.168.10.10 80 interface f0/1 80</code>.</div>
-            <div class="term-meta"><span class="term-tag">L3</span> <span>Уровень OSI: L3</span> <a class="term-link" href="practice.html">→ Задача 11</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L3</span> <span>Уровень OSI: L3</span>
+                <a class="term-link ref" href="cisco-reference.html#static-nat">→ Справочник</a>
+                <a class="term-link" href="practice.html#task11">→ Задача 11</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="acl access control list список контроля доступа фильтрация">
+        <div class="term-card" id="acl" data-search="acl access control list список контроля доступа фильтрация">
             <div class="term-name">ACL (Access Control List)</div>
             <div class="term-def">Список правил, которые разрешают или запрещают трафик на основе IP-адресов, портов и протоколов. Standard ACL фильтрует только по источнику, Extended — по источнику, назначению, протоколу и порту. В конце ACL всегда неявный <code>deny any</code>.</div>
-            <div class="term-meta"><span class="term-tag">L3/L4</span> <span>Уровень OSI: L3/L4</span></div>
+            <div class="term-meta">
+                <span class="term-tag">Безопасность</span> <span>Уровень OSI: L3/L4</span>
+                <a class="term-link ref" href="cisco-reference.html#acl-standard">→ Справочник</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="ntp network time protocol синхронизация времени">
+        <div class="term-card" id="ntp" data-search="ntp network time protocol синхронизация времени">
             <div class="term-name">NTP (Network Time Protocol)</div>
             <div class="term-def">Протокол синхронизации времени. Позволяет всем устройствам в сети иметь одинаковое время (с точностью до миллисекунд). Критически важно для логов (чтобы сопоставить события), сертификатов и расписаний (cron). Работает поверх UDP (порт 123).</div>
-            <div class="term-meta"><span class="term-tag">L7</span> <span>Уровень OSI: L7 (UDP 123)</span> <a class="term-link" href="practice.html">→ Задача 14</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L7</span> <span>Уровень OSI: L7 (UDP 123)</span>
+                <span class="term-tag warn">Лаба 3 (в планах)</span>
+                <a class="term-link ref" href="cisco-reference.html#ntp">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#ntp">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task14">→ Задача 14</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="wlc wireless lan controller беспроводной контроллер">
+        <div class="term-card" id="wlc" data-search="wlc wireless lan controller беспроводной контроллер">
             <div class="term-name">WLC (Wireless LAN Controller)</div>
             <div class="term-def">Устройство, которое централизованно управляет точками доступа (AP). Позволяет настраивать SSID, шифрование (WPA2/WPA3) и VLAN для всех AP одновременно. Связь с AP осуществляется по протоколу CAPWAP.</div>
-            <div class="term-meta"><span class="term-tag">L1/L2</span> <span>Уровень OSI: L1/L2</span> <a class="term-link" href="practice.html">→ Задача 15</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L1/L2</span> <span>Уровень OSI: L1/L2</span>
+                <span class="term-tag warn">Лаба 3 (в планах)</span>
+                <a class="term-link ref" href="cisco-reference.html">→ Справочник</a>
+                <a class="term-link evo" href="evolution.html#wlc">→ Эволюция</a>
+                <a class="term-link" href="practice.html#task15">→ Задача 15</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="ap access point точка доступа wifi">
+        <div class="term-card" id="ap" data-search="ap access point точка доступа wifi">
             <div class="term-name">AP (Access Point)</div>
             <div class="term-def">Беспроводная точка доступа, которая обеспечивает связь клиентов (ноутбуков, телефонов) с проводной сетью. В корпоративных сетях AP управляется через WLC (CAPWAP), в домашних — работает автономно.</div>
-            <div class="term-meta"><span class="term-tag">L1/L2</span> <span>Уровень OSI: L1/L2</span> <a class="term-link" href="practice.html">→ Задача 15</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L1/L2</span> <span>Уровень OSI: L1/L2</span>
+                <span class="term-tag warn">Лаба 3 (в планах)</span>
+                <a class="term-link" href="practice.html#task15">→ Задача 15</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="ssid service set identifier имя сети wifi">
+        <div class="term-card" id="ssid" data-search="ssid service set identifier имя сети wifi">
             <div class="term-name">SSID (Service Set Identifier)</div>
             <div class="term-def">Имя беспроводной сети, которое видят клиенты при поиске Wi-Fi. Например, <code>Corp-WiFi</code>. Настраивается на WLC или AP. Может быть скрытым (не транслируется в эфир), но это не даёт реальной защиты.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 15</a></div>
+            <div class="term-meta">
+                <span class="term-tag">L2</span> <span>Уровень OSI: L2</span>
+                <span class="term-tag warn">Лаба 3 (в планах)</span>
+                <a class="term-link" href="practice.html#task15">→ Задача 15</a>
+            </div>
+        </div>
             
-                    <!-- Категория 5: Безопасность -->
+        <!-- Категория 5: Безопасность -->
         <h2 class="category-title">🛡️ Безопасность</h2>
 
-        <div class="term-card" data-search="port security защита порта mac адрес">
-            <div class="term-name">Port Security</div>
-            <div class="term-def">Защита порта коммутатора от подключения несанкционированных устройств. Ограничивает количество MAC-адресов на порту. При нарушении порт блокируется (err-disable) или дропает трафик (protect/restrict).</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 9</a></div>
-        </div>
-
-        <div class="term-card" data-search="dhcp snooping защита левый dhcp сервер">
-            <div class="term-name">DHCP Snooping</div>
-            <div class="term-def">Защита от «левых» DHCP-серверов. Коммутатор проверяет, с какого порта пришёл DHCP-ответ, и пропускает только доверенные (trust) порты. Обычно trust назначается на транк-порту к реальному DHCP-серверу.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span> <a class="term-link" href="practice.html">→ Задача 9</a></div>
-        </div>
-
-        <div class="term-card" data-search="dai dynamic arp inspection arp спуфинг">
+        <div class="term-card" id="dai" data-search="dai dynamic arp inspection arp спуфинг">
             <div class="term-name">DAI (Dynamic ARP Inspection)</div>
             <div class="term-def">Защита от ARP-спуфинга (подмены MAC-адреса). Коммутатор проверяет ARP-пакеты на соответствие легитимной таблице (DHCP Snooping binding). Если MAC не совпадает — пакет дропается.</div>
-            <div class="term-meta"><span class="term-tag">L2</span> <span>Уровень OSI: L2</span></div>
+            <div class="term-meta">
+                <span class="term-tag">Безопасность</span> <span>Уровень OSI: L2</span>
+                <span class="term-tag warn">Вне лаб</span>
+            </div>
         </div>
 
-        <div class="term-card" data-search="aaa authentication authorization accounting tacacs radius">
+        <div class="term-card" id="aaa" data-search="aaa authentication authorization accounting tacacs radius">
             <div class="term-name">AAA (Authentication, Authorization, Accounting)</div>
             <div class="term-def">Три функции управления доступом: аутентификация (кто ты), авторизация (что тебе можно), учёт (что ты делал). Реализуется через TACACS+ (Cisco, TCP 49) или RADIUS (стандарт, UDP 1812/1813).</div>
-            <div class="term-meta"><span class="term-tag">L7</span> <span>Уровень OSI: L7</span></div>
+            <div class="term-meta">
+                <span class="term-tag">Безопасность</span> <span>Уровень OSI: L7</span>
+                <span class="term-tag warn">Вне лаб</span>
+                <a class="term-link ref" href="cisco-reference.html#aaa">→ Справочник</a>
+            </div>
         </div>
 
-        <div class="term-card" data-search="tacacs radius протоколы аутентификации">
+        <div class="term-card" id="tacacs-radius" data-search="tacacs radius протоколы аутентификации">
             <div class="term-name">TACACS+ / RADIUS</div>
             <div class="term-def">Протоколы для централизованной аутентификации. TACACS+ (Cisco) шифрует всё тело пакета и разделяет AAA. RADIUS (стандарт) шифрует только пароль. Для Cisco-сетей чаще используется TACACS+.</div>
-            <div class="term-meta"><span class="term-tag">L7</span> <span>Уровень OSI: L7</span></div>
-        </div>
-
-        <div class="term-card" data-search="acl access control list extended standard">
-            <div class="term-name">ACL (Access Control List)</div>
-            <div class="term-def">Список правил для фильтрации трафика. Standard ACL (1–99) фильтрует только по источнику. Extended ACL (100–199) — по источнику, назначению, протоколу и порту. В конце ACL всегда неявный <code>deny any</code>.</div>
-            <div class="term-meta"><span class="term-tag">L3/L4</span> <span>Уровень OSI: L3/L4</span></div>
+            <div class="term-meta">
+                <span class="term-tag">Безопасность</span> <span>Уровень OSI: L7</span>
+                <span class="term-tag warn">Вне лаб</span>
+                <a class="term-link ref" href="cisco-reference.html#aaa">→ Справочник</a>
+            </div>
         </div>
 
         <!-- Итоговый блок -->
-        <div class="script-card" style="margin-top: 40px;">
-            <h2>📊 Как пользоваться словарём</h2>
+        <div class="script-card" style="margin-top: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px;">
+            <h2 style="margin-top: 0; color: var(--accent);">📊 Как пользоваться словарём</h2>
             <div style="margin-top: 15px; padding: 15px; background: var(--term-bg); border-radius: 8px; border: 1px solid var(--border);">
                 <p><strong>1. Поиск:</strong> Введите термин в строку поиска (например, «OSPF» или «VLAN»). Словарь отфильтрует карточки и скроет пустые категории.</p>
-                <p><strong>2. Связь с практикой:</strong> У многих терминов есть ссылка <a href="practice.html" style="color: var(--accent-green); font-weight: bold;">→ Задача N</a>. Она ведёт на страницу практикума, где этот термин применяется в конкретном сценарии.</p>
+                <p><strong>2. Три уровня погружения:</strong> Словарь — «что это?», Справочник — «как настроить?», Эволюция — «как меняется?». В каждой карточке есть ссылки на соответствующие разделы.</p>
                 <p><strong>3. Уровень OSI:</strong> В каждой карточке указан уровень модели OSI, на котором работает технология. Это помогает быстро понять, «где искать» при диагностике.</p>
             </div>
         </div>
             
-        </div>
+    </div>
 </div>
 
 <script>
@@ -487,12 +646,10 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
                     card.classList.add('checked');
-                    // Снимаем размытие с определения в этой карточке
                     const def = card.querySelector('.term-def');
                     if (def) def.classList.remove('hidden-blur');
                 } else {
                     card.classList.remove('checked');
-                    // Если режим обучения включён, возвращаем размытие
                     if (document.body.classList.contains('learning-mode')) {
                         const def = card.querySelector('.term-def');
                         if (def) def.classList.add('hidden-blur');
@@ -532,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.textContent = '👁️ Показать все ответы';
             btn.style.background = '#e67e22';
             
-            // Сразу показываем те определения, которые уже отмечены галочкой
             document.querySelectorAll('.self-check:checked').forEach(cb => {
                 const parent = cb.closest('.term-card');
                 if (parent) {
@@ -545,6 +701,60 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.style.background = 'var(--accent)';
         }
     });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // === Логика поиска по словарю ===
+    const searchInput = document.getElementById('search');
+    const termCards = document.querySelectorAll('.term-card');
+    const categoryTitles = document.querySelectorAll('.category-title');
+    const noResults = document.getElementById('no-results'); // если он есть
+
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+
+            // 1. Фильтрация карточек
+            termCards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                // Ищем по тексту карточки или по data-search
+                const searchData = (card.getAttribute('data-search') || '').toLowerCase();
+                if (text.includes(query) || searchData.includes(query)) {
+                    card.style.display = ''; // Показать
+                } else {
+                    card.style.display = 'none'; // Скрыть
+                }
+            });
+
+            // 2. Скрытие пустых категорий
+            categoryTitles.forEach(title => {
+                let nextEl = title.nextElementSibling;
+                let hasVisible = false;
+                
+                // Проверяем все карточки до следующего заголовка
+                while (nextEl && nextEl.classList.contains('term-card')) {
+                    if (nextEl.style.display !== 'none') {
+                        hasVisible = true;
+                        break;
+                    }
+                    nextEl = nextEl.nextElementSibling;
+                }
+                
+                if (hasVisible || query === '') {
+                    title.style.display = ''; // Показать заголовок
+                } else {
+                    title.style.display = 'none'; // Скрыть заголовок
+                }
+            });
+
+            // 3. Показать "Ничего не найдено" (опционально)
+            if (noResults) {
+                const anyVisible = Array.from(termCards).some(card => card.style.display !== 'none');
+                noResults.style.display = (query !== '' && !anyVisible) ? 'block' : 'none';
+            }
+        });
+    }
 });
 </script>
 </body>
