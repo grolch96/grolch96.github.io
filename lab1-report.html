@@ -76,7 +76,54 @@
 
     <!-- НОВЫЙ ПУТЬ К КАРТИНКЕ -->
     <img src="img/topology-lab1.jpg" alt="Схема сети Base Legacy">
+    <h2>🌳 1.1. STP: Кто корневой мост</h2>
+    <p>В базовой лабораторной корневой мост (Root Bridge) назначен <strong>вручную</strong> через приоритет. Это делает топологию предсказуемой: весь трафик между VLAN идёт через один центральный свитч.</p>
 
+    <table>
+        <thead>
+            <tr>
+                <th>Устройство</th>
+                <th>Приоритет STP</th>
+                <th>Роль</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>SW1</strong></td>
+                <td>24576</td>
+                <td><strong>Корневой мост (Root Bridge)</strong> для всех VLAN</td>
+            </tr>
+            <tr>
+                <td>SW11</td>
+                <td>28672</td>
+                <td>Второй после SW1 (резерв)</td>
+            </tr>
+            <tr>
+                <td>SW2</td>
+                <td>36864</td>
+                <td>Резервный</td>
+            </tr>
+            <tr>
+                <td>SW22</td>
+                <td>45056</td>
+                <td>Резервный</td>
+            </tr>
+            <tr>
+                <td>SW0, SW00</td>
+                <td>32768 (по умолчанию)</td>
+                <td>Не корень</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Команда настройки (на SW1):</strong></p>
+    <pre><code>spanning-tree vlan 1,100,102-107 priority 24576</code></pre>
+
+    <p><strong>Проверка:</strong></p>
+    <pre><code>SW1# show spanning-tree vlan 1
+  This bridge is the root</code></pre>
+
+    <p><em>Если на другом свитче выполнить <code>show spanning-tree vlan 1</code>, в строке <code>Root ID → Address</code> будет MAC-адрес SW1 — это подтверждает, что корень именно он.</em></p>
     <h2>⚙️ 2. РЕАЛИЗОВАННЫЕ ТЕХНОЛОГИИ</h2>
     
     <h3>2.1. VLAN и Trunk (Сегментация L2)</h3>

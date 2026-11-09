@@ -101,7 +101,58 @@
     <!-- НОВЫЙ ПУТЬ К КАРТИНКЕ -->
     <img src="img/topology-lab2.jpg" alt="Схема сети Advanced Enterprise">
     <p><em>Схема сети Advanced Enterprise.</em></p>
+    <h2>🌳 1.1. STP: Кто корневой мост</h2>
+    <p>В продвинутой лабораторной используется <strong>балансировка нагрузки</strong> между двумя корневыми мостами. Разные VLAN «привязаны» к разным корням, чтобы трафик распределялся равномерно, а не шёл весь через один свитч.</p>
 
+    <table>
+        <thead>
+            <tr>
+                <th>Устройство</th>
+                <th>VLAN</th>
+                <th>Роль</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>SW1</strong></td>
+                <td>1, 100, 102, 104</td>
+                <td><strong>Корневой мост (Root Primary)</strong></td>
+            </tr>
+            <tr>
+                <td><strong>SW2</strong></td>
+                <td>1, 105, 106, 107, 108</td>
+                <td><strong>Корневой мост (Root Primary)</strong></td>
+            </tr>
+            <tr>
+                <td>SW1</td>
+                <td>105, 106, 107, 108</td>
+                <td>Резервный корень (Root Secondary)</td>
+            </tr>
+            <tr>
+                <td>SW2</td>
+                <td>100, 102, 104</td>
+                <td>Резервный корень (Root Secondary)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Команды настройки:</strong></p>
+    <pre><code>! На SW1
+spanning-tree vlan 1,100,102,104 root primary
+spanning-tree vlan 1,105,106,107,108 root secondary
+
+! На SW2
+spanning-tree vlan 1,105,106,107,108 root primary
+spanning-tree vlan 1,100,102,104 root secondary</code></pre>
+
+    <p><strong>Проверка:</strong></p>
+    <pre><code>SW1# show spanning-tree vlan 100
+  This bridge is the root
+
+SW2# show spanning-tree vlan 105
+  This bridge is the root</code></pre>
+
+    <p><em>Для VLAN 100 корень — SW1, для VLAN 105 — SW2. Это и есть балансировка: трафик разных VLAN идёт через разные корневые свитчи.</em></p>
     <h2>💻 2. ИТОГОВЫЕ КОНФИГИ С КОММЕНТАРИЯМИ</h2>
     
     <h3>🌐 Router ISP (Эмуляция провайдера)</h3>
