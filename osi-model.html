@@ -11,6 +11,7 @@
             --term-bg: #1e1e1e; --term-fg: #d4d4d4;
             --l1: #e74c3c; --l2: #e67e22; --l3: #f1c40f; --l4: #2ecc71;
             --l5: #3498db; --l6: #9b59b6; --l7: #e84393;
+            --bg-overlay: rgba(244, 244, 246, 0.85);
         }
         [data-theme="dark"] {
             --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
@@ -18,12 +19,22 @@
             --term-bg: #111; --term-fg: #e0e0e0;
             --l1: #ef5350; --l2: #ffb74d; --l3: #fff176; --l4: #81c784;
             --l5: #64b5f6; --l6: #ba68c8; --l7: #f06292;
+            --bg-overlay: rgba(26, 26, 26, 0.85);
         }
         * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg); color: var(--fg); line-height: 1.6;
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+                url('img/bg-cisco3.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: var(--fg); line-height: 1.6;
             margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
         }
         .container { max-width: 1000px; margin: 0 auto; }
         h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
@@ -48,6 +59,8 @@
             border-radius: 12px; padding: 20px;
             border-left: 6px solid var(--border);
             transition: transform 0.2s, box-shadow 0.2s;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
         .osi-layer:hover {
             transform: translateX(5px);
