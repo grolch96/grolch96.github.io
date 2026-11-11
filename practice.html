@@ -1570,6 +1570,12 @@ ntp server 192.168.1.5</pre>
         <div style="padding: 0 25px 25px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
 
             <div class="task-block">
+                <h3>❌ «Я не знаю OSPF» <span class="level-badge level-junior">Junior</span></h3>
+                <details>
+                    <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">✅ Как лучше</summary>
+                    <p style="margin-top:8px;">«Я работал с OSPF в лабораторных условиях: настраивал Area 0, Multi-Area, аутентификацию, разбирал DR/BDR и соседство. На продакшене пока не было, но база есть — готов углубиться».<br><br><em>Почему:</em> вы честны, но показываете, что у вас есть фундамент, а не «слышал звон».</p>
+                </details>
+            </div>
 
             <div class="task-block">
                 <h3>❌ «Я всё знаю» / «Я всё умею» <span class="level-badge level-junior">Junior</span></h3>
@@ -1619,8 +1625,6 @@ ntp server 192.168.1.5</pre>
                 </details>
             </div>
 
-
-
             <div class="task-block">
                 <h3>❌ «Я не хочу развиваться, мне и так нормально» <span class="level-badge level-senior">Senior</span></h3>
                 <details>
@@ -1661,14 +1665,6 @@ ntp server 192.168.1.5</pre>
                 </details>
             </div>
 
-           <div class="task-block">
-                <h3>❌ «Я не знаю OSPF» <span class="level-badge level-junior">Junior</span></h3>
-                <details>
-                    <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">✅ Как лучше</summary>
-                    <p style="margin-top:8px;">«Я работал с OSPF в лабораторных условиях: настраивал Area 0, Multi-Area, аутентификацию, разбирал DR/BDR и соседство. На продакшене пока не было, но база есть — готов углубиться».<br><br><em>Почему:</em> вы честны, но показываете, что у вас есть фундамент, а не «слышал звон».</p>
-                </details>
-            </div>
-
             <div class="task-block">
                 <h3>❌ «Я готов на всё, лишь бы взяли» <span class="level-badge level-senior">Senior</span></h3>
                 <details>
@@ -1701,28 +1697,10 @@ ntp server 192.168.1.5</pre>
                 .filter(line => !line.trim().startsWith('!') && !line.trim().startsWith('#'))
                 .map(line => line.replace(/\s+$/g, ''))
                 .join('\n')
-                .replace(/^\s*\n+/, '')    <!-- ================= КРАСНЫЕ ФЛАГИ ================= -->
-    <div class="script-card">
-        <h2>🚩 Красные флаги на собеседовании (и как переформулировать)</h2>
-        <p>Это не про «правильные ответы», а про то, как звучат ваши формулировки. Одни и те же знания можно подать так, что интервьюер насторожится — или так, что он увидит зрелого инженера.</p>
-
-        <div class="task-block">
-            <h3>❌ «Я не знаю OSPF» <span class="level-badge level-junior">Junior</span></h3>
-            <details>
-                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">✅ Как лучше</summary>
-                <p style="margin-top:8px;">«Я работал с OSPF в лабораторных условиях: настраивал Area 0, Multi-Area, аутентификацию, разбирал DR/BDR и соседство. На продакшене пока не было, но база есть — готов углубиться».<br><br><em>Почему:</em> вы честны, но показываете, что у вас есть фундамент, а не «слышал звон».</p>
-            </details>
-        </div>
-
-        <div class="task-block">
-            <h3>❌ «Я всё знаю» / «Я всё умею» <span class="level-badge level-junior">Junior</span></h3>
-            <details>
-                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">✅ Как лучше</summary>
-                <p style="margin-top:8px;">«Вот что я делал руками: лабы, конфиги, траблшутинг. Вот что знаю теоретически: BGP, QoS. Вот где у меня пробел: SD-WAN, EVPN. Готов закрывать».<br><br><em>Почему:</em> интервьюер ценит честность и понимание своих границ. «Всё знаю» — красный флаг: либо врёте, либо не понимаете глубины.</p>
-            <
+                .replace(/^\s*\n+/, '')
                 .replace(/\n+\s*$/, '');
             if (!text.trim()) text = pre.innerText;
-            
+
             try {
                 await navigator.clipboard.writeText(text);
                 btn.textContent = '✅ Скопировано';
@@ -1746,7 +1724,7 @@ ntp server 192.168.1.5</pre>
         const btn = document.getElementById('toggle-learn-btn');
         const allTaskBlocks = document.querySelectorAll('.task-block');
         const solutionBlocks = [];
-        
+
         allTaskBlocks.forEach(block => {
             if (block.innerText.includes('🛠️ Решение') || block.innerText.includes('Решение')) {
                 solutionBlocks.push(block);
@@ -1808,33 +1786,34 @@ ntp server 192.168.1.5</pre>
         }
 
         // 3. Кнопка режима обучения
-        btn.addEventListener('click', () => {
-            isLearningMode = !isLearningMode;
-            document.body.classList.toggle('learning-mode', isLearningMode);
-            
-            solutionBlocks.forEach(block => {
-                if (isLearningMode) block.classList.add('hidden-blur');
-                else block.classList.remove('hidden-blur');
-            });
+        if (btn) {
+            btn.addEventListener('click', () => {
+                isLearningMode = !isLearningMode;
+                document.body.classList.toggle('learning-mode', isLearningMode);
 
-            if (isLearningMode) {
-                btn.textContent = '👁️ Показать все решения';
-                btn.style.background = '#e67e22';
-                
-                // Показываем те, что уже отмечены
-                document.querySelectorAll('.self-check:checked').forEach(cb => {
-                    const parent = cb.closest('.script-card');
-                    if (parent) {
-                        parent.querySelectorAll('.task-block').forEach(block => {
-                            if (block.innerText.includes('Решение')) block.classList.remove('hidden-blur');
-                        });
-                    }
+                solutionBlocks.forEach(block => {
+                    if (isLearningMode) block.classList.add('hidden-blur');
+                    else block.classList.remove('hidden-blur');
                 });
-            } else {
-                btn.textContent = '🎓 Включить режим обучения (скрыть решения)';
-                btn.style.background = 'var(--accent)';
-            }
-        });
+
+                if (isLearningMode) {
+                    btn.textContent = '👁️ Показать все решения';
+                    btn.style.background = '#e67e22';
+
+                    document.querySelectorAll('.self-check:checked').forEach(cb => {
+                        const parent = cb.closest('.script-card');
+                        if (parent) {
+                            parent.querySelectorAll('.task-block').forEach(block => {
+                                if (block.innerText.includes('Решение')) block.classList.remove('hidden-blur');
+                            });
+                        }
+                    });
+                } else {
+                    btn.textContent = '🎓 Включить режим обучения (скрыть решения)';
+                    btn.style.background = 'var(--accent)';
+                }
+            });
+        }
     });
 </script>
 </body>
