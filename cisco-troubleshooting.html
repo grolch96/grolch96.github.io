@@ -7,14 +7,14 @@
 <style>
   :root {
     --bg: #f4f4f6; --fg: #1a1a2e; 
-    --card: rgba(255, 255, 255, 0.25); /* Прозрачная карточка */
+    --card: rgba(255, 255, 255, 0.25);
     --border: #d0d7de;
     --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; 
-    --tag: rgba(234, 240, 248, 0.3);   /* Прозрачный заголовок */
+    --tag: rgba(234, 240, 248, 0.3);
     --note-bg: #f7f7f7; --note-border: #c8c8c8;
     --schema-bg: #e8f5e9; --schema-border: #7cbf82;
     --warn-bg: #fce4e4; --warn-border: #e8a0a8;
-    --bg-overlay: rgba(244, 244, 246, 0.8); /* Слой для картинки */
+    --bg-overlay: rgba(244, 244, 246, 0.8); /* уже есть */
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
@@ -33,11 +33,15 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     color: var(--fg); margin: 0; padding: 0;
     line-height: 1.6; transition: color .2s;
-    background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/bg.jpg');
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+      url('img/bg-vma1.jpg'); /* та же картинка, что в Справочнике */
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
+    min-height: 100vh;
   }
   
   header {
