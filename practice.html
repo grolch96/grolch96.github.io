@@ -244,6 +244,9 @@ interface f0/2
                 <li><code>ping</code> с ПК1 (VLAN 10) до ПК2 (VLAN 20) — <strong>не проходит</strong> (разные VLAN, нет маршрутизации).</li>
             </ul>
         </div> <!-- Закрываем script-card -->
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> VLAN — это как разные квартиры в одном доме (свитче). Trunk — это общий лифт, который возит жильцов всех квартир, но у каждого пассажира есть «этикетка» (тег 802.1Q), чтобы лифт знал, на каком этаже его высадить.
+</p>
     </div>
 
     <!-- Задача 2: EtherChannel LACP -->
@@ -298,6 +301,9 @@ interface port-channel 1
                 <li>Вернуть порт: <code>no shutdown</code> на f0/1.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> EtherChannel — это как несколько полос на шоссе, которые вместе образуют одну широкую дорогу. LACP — это «диспетчер», который проверяет, что все полосы одинаковой ширины и ведут в одну сторону. Если одна полоса закрыта — машины едут по остальным, пробки нет.
+</p>
     </div>
 
     <!-- Задача 3: EtherChannel PAgP -->
@@ -352,6 +358,9 @@ interface port-channel 2
                 <li><strong>Тест на отказ:</strong> на SW3 выполнить <code>shutdown</code> на f0/2. Канал остаётся <code>SU</code>.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> PAgP — это тот же «диспетчер», что и LACP, но работает только в «своём» городе (сети Cisco). Одна сторона кричит «я хочу канал!» (`desirable`), другая отвечает «я слышу, давай!» (`auto`). Если оба молчат — канала нет.
+</p>
     </div>
     <!-- Задача 4: STP -->
     <div class="script-card">
@@ -388,6 +397,9 @@ interface port-channel 2
                 <li>На SW3: <code>show spanning-tree vlan 1</code> — порты, ведущие к SW2, должны быть в <code>Altn BLK</code>.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> STP — это как схема объезда на дороге с кольцом. Один мост назначается «главным» (Root Bridge), остальные строят к нему кратчайшие пути. Лишние дороги, которые могли бы замкнуть кольцо, перекрываются (Blocking), чтобы машины не ездили по кругу. Если главный мост сломается — резервный сразу откроется.
+</p>
     </div>
 
     <!-- Задача 5: OSPF -->
@@ -443,6 +455,9 @@ interface f0/1
                 <li><code>ping 192.168.2.1</code> (с R1) — успешно.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> OSPF — это как навигатор, который строит карту города. Каждый роутер рассказывает соседям, что он видит (LSDB), и все вместе вычисляют кратчайшие пути по алгоритму Дейкстры. Если одна улица закрыта — навигатор сам перестроит маршрут.
+</p>
     </div>
         <!-- Задача 6: HSRP -->
     <div class="script-card">
@@ -488,6 +503,9 @@ interface f0/1
                 <li>Вернуть R1: <code>no shutdown</code> на f0/0 (R1 вернёт роль Active из-за <code>preempt</code>).</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> HSRP — это как два охранника на входе в офис, но у них общее удостоверение (виртуальный IP). Один работает (`Active`), второй на подстраховке (`Standby`). Если первый упадёт (караул устал) — второй сразу берёт его удостоверение, и посетители не замечают подмены.
+</p>
     </div>
 
     <!-- Задача 7: BGP -->
@@ -533,6 +551,9 @@ interface f0/1
                 <li><code>ping 8.8.8.8</code> с ПК за R1 — успешно (при наличии NAT).</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> BGP — это как дипломатические переговоры между странами (автономными системами). Каждая страна рассказывает соседям, какие дороги у неё есть, и договаривается, как пропускать чужие фуры. Внутренние дороги (OSPF) — это местные улицы, а BGP — международные трассы.
+</p>
     </div>
         <!-- Задача 8: IPv6 и OSPFv3 -->
     <div class="script-card">
@@ -586,6 +607,9 @@ router ospfv3 1
                 <li><code>ping ipv6 2001:DB8:2::1</code> (с R1) — успешно.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> IPv6 — это как новый стандарт почтовых индексов: вместо 4 цифр (IPv4) — длинный буквенно-цифровой код (128 бит). OSPFv3 — это тот же навигатор, что и OSPF, но для новых индексов. Соседство он строит по «временным» адресам (link-local), которые есть на каждом интерфейсе.
+</p>
     </div>
 
     <!-- Задача 9: Безопасность L2 (Port Security + DHCP Snooping) -->
@@ -640,6 +664,9 @@ no ip dhcp snooping information option</pre>
                 <li><strong>Тест DHCP Snooping:</strong> если поднять «левый» DHCP-сервер на f0/10, его ответы не пройдут (порт untrusted).</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> Port Security — это как вахтёр, который пускает в здание только тех, кого знает в лицо (MAC). DHCP Snooping — это как проверка паспорта у «почтальона» (DHCP-сервера): письма с непроверенным адресом не принимаются.
+</p>
     </div>
         <!-- Задача 10: DHCP -->
     <div class="script-card">
@@ -694,6 +721,9 @@ ip dhcp pool VLAN20
                 <li><code>ping 192.168.20.254</code> с ПК VLAN 10 — успешно (маршрутизация между VLAN).</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> DHCP — это как администратор гостиницы, который выдаёт гостям (ПК) ключи от номеров (IP). Гость говорит «хочу номер» (Discover), администратор предлагает варианты (Offer), гость выбирает (Request), администратор подтверждает (Ack).
+</p>
     </div>
 
     <!-- Задача 11: NAT/PAT -->
@@ -744,6 +774,9 @@ ip nat inside source list NAT interface f0/1 overload</pre>
                 <li>С внешнего хоста: <code>telnet 10.0.0.2 80</code> — должен попасть на сервер 192.168.10.10.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> PAT — это как вахтёр на проходной завода: все сотрудники выходят через одну дверь (внешний IP), но у каждого свой номерок (source port), чтобы вернуться обратно. Static NAT — это отдельный вход для гостей: если курьер приходит с улицы, его ведут в конкретный кабинет (сервер).
+</p>
     </div>
         <!-- Задача 12: EIGRP + Redistribution -->
     <div class="script-card">
@@ -796,6 +829,9 @@ router eigrp 100
                 <li>На R3: <code>show ip route 10.0.0.0</code> — маршрут с меткой <code>D EX</code> (перераспределён из OSPF).</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> Redistribution — это как перевод валюты: OSPF «считает» маршруты в одной валюте (cost), EIGRP — в другой (bandwidth + delay). Команда `redistribute` с `metric` говорит: «когда переводишь, вот тебе курс» (5 параметров метрики). Без курса EIGRP не примет маршрут — не знает, сколько он «стоит».
+</p>
     </div>
 
     <!-- Задача 13: MSTP -->
@@ -848,6 +884,9 @@ spanning-tree mst 2 root primary</pre>
                 <li><code>show spanning-tree mst configuration</code> — проверить, что имена региона и инстансы совпадают.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> MSTP — это как несколько параллельных дорог для разных видов транспорта (инстансов). Грузовики (Instance 1) едут через один мост, легковые (Instance 2) — через другой. `root primary` на SW1 для Instance 1 = «грузовики едут через SW1». `root secondary` = «если мост SW1 закрыт, грузовики едут через резервный (SW2)». Так трафик распределяется, а не идёт весь через один свитч.
+</p>
     </div>
         <!-- Задача 14: NTP -->
     <div class="script-card">
@@ -887,6 +926,9 @@ ntp server 192.168.1.5</pre>
                 <li><code>show ntp associations</code> — сервер в статусе <code>*</code> (выбран).</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> NTP — это как служба точного времени: все часы в офисе синхронизируются с одними «главными» часами (NTP-сервер). Без этого логи разных устройств невозможно сопоставить (одни пишут 12:00, другие 12:05), а сертификаты могут «не работать» из-за расхождения времени.
+</p>
     </div>
 
     <!-- Задача 15: WLC/AP -->
@@ -942,6 +984,9 @@ ntp server 192.168.1.5</pre>
                 <li><code>ping 192.168.1.5</code> (R1) — успешно.</li>
             </ul>
         </div>
+        <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
+    <strong>💡 Аналогия:</strong> WLC — это как диспетчер такси, который управляет всеми машинами (AP): раздаёт заказы, следит за тарифами (SSID, WPA2), маршрутизирует поездки (VLAN). AP — это машины на улицах, а CAPWAP — это рация, по которой диспетчер говорит с водителями.
+</p>
     </div>
 
     <!-- Итог практикума -->
@@ -1363,7 +1408,7 @@ ntp server 192.168.1.5</pre>
         </div>
     </div>
 
-<div style="display: none;">
+
     <!-- ================= КРАСНЫЕ ФЛАГИ ================= -->
     <div class="script-card">
         <h2>🚩 Красные флаги на собеседовании (и как переформулировать)</h2>
@@ -1473,7 +1518,6 @@ ntp server 192.168.1.5</pre>
             </details>
         </div>
     </div>
-</div>
 
 </div>
 
