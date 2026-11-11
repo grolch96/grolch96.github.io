@@ -1290,6 +1290,148 @@ ntp server 192.168.1.5</pre>
         </div>
     </div>
 
+    <!-- ================= ВОПРОСЫ С СОБЕСЕДОВАНИЙ ================= -->
+    <div class="script-card">
+        <h2>🎤 Вопросы с собеседований (разбор)</h2>
+        <p>Реальные вопросы, которые задают на интервью по темам Лаб 1–2. Сначала ответьте сами, потом раскройте.</p>
+
+        <div class="task-block">
+            <h3>STP: SW1 и SW2 — корни для разных VLAN. Каким способом это достигнуто? <span class="level-badge level-middle">Middle</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">Через <code>spanning-tree vlan ... root primary</code> на одном свитче и <code>root secondary</code> на другом для разных групп VLAN. Если бы оба были <code>root primary</code> для всех VLAN, корень выбирался бы по <strong>Bridge ID (priority + MAC)</strong>: один свитч стал бы корнем для всех VLAN, балансировки бы не было. Заблокированный порт уходит в <strong>Alternate (Altn BLK)</strong> — не передаёт данные, но слушает BPDU и готов стать Root при падении основного пути.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>OSPF Multi-Area: какой LSA генерирует ABR, чтобы рассказать Area 0 про 192.168.5.0/24? <span class="level-badge level-middle">Middle</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;"><strong>LSA Type 3 (Summary LSA)</strong>. В таблице маршрутизации на SW2 этот маршрут выглядит как <strong><code>O IA</code></strong> (OSPF Inter-Area).</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>Redistribution: почему нет петли, хотя переливаем в обе стороны? Что значит метрика 10000 100 255 1 1500? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;"><strong>Петли нет</strong> благодаря <strong>иерархии типов маршрутов внутри протокола</strong>: O > O IA > O E1/E2, а в EIGRP internal (D) > external (D EX). Внешние маршруты, вернувшиеся из другого протокола, не перебивают внутренние, потому что у них худший тип. Плюс внешние EIGRP имеют AD 170. <strong>Метрика</strong> — это 5 параметров EIGRP: bandwidth (10000 Кбит/с = 10 Мбит/с), delay (100 × 10 мкс = 1 мс), reliability (255 = 100%), load (1 = минимальная), MTU (1500 байт). В лабе это учебная метрика-заполнитель; в продакшене считают по реальному линку через <code>default-metric</code> или <code>route-map</code>.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>BGP: что будет, если сеть 192.168.2.0/24 пропадёт из таблицы маршрутизации R1? <span class="level-badge level-middle">Middle</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">R1 <strong>перестанет анонсировать</strong> эту сеть соседям ISP. BGP анонсирует только те сети, которые есть в таблице маршрутизации (или явно указаны в <code>network</code> и присутствуют в RIB). ISP получит <strong>BGP UPDATE с withdrawn route</strong> и удалит маршрут из своей таблицы. Если у ISP был только один путь через R1 — сеть станет недоступной из интернета.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>HSRP: почему без <code>preempt</code> у R2 не хватило бы? Что будет, если <code>preempt</code> у обоих? <span class="level-badge level-middle">Middle</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;"><code>preempt</code> — это разрешение <strong>отбирать</strong> роль Active у текущего Active, если твой приоритет выше. Если у R1 нет <code>preempt</code>, то после возврата R1 (приоритет 150) он <strong>не сможет</strong> отобрать роль у R2 (приоритет 100) — R1 останется Standby, хотя приоритет выше. Если <code>preempt</code> у обоих — R1 после возврата отберёт роль Active (150 > 100). <strong>Два MAC</strong> у виртуального IP (IPv4): виртуальный MAC HSRP <code>0000.0c07.acXX</code> (XX — номер группы в hex) и реальный MAC физического интерфейса активного роутера.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>NAT: что будет с узлом 192.168.9.5 при ACL <code>permit ip 192.168.0.0 0.0.255.255 any</code>? Почему видны записи <code>icmp</code>, если NAT — это PAT? <span class="level-badge level-middle">Middle</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">192.168.9.5 <strong>попадёт</strong> под ACL: wildcard <code>0.0.255.255</code> — это /16, то есть любой 192.168.X.X. Если бы ACL был <code>permit ip 192.168.0.0 0.0.0.255 any</code> (только /24), то 192.168.9.5 не попал бы. <strong>Записи <code>icmp</code></strong> видны потому, что PAT (Overload) — это разновидность NAT, которая транслирует <strong>все протоколы</strong>, не только TCP/UDP. Для ICMP «порт» — это идентификатор ICMP-запроса, и PAT меняет его так же, как source port.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>EtherChannel: почему LACP и PAgP не смешиваются? Почему <code>active + auto</code> не соберётся? <span class="level-badge level-middle">Middle</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">LACP и PAgP — <strong>разные протоколы согласования</strong>. Они не понимают друг друга: если на одном конце LACP, а на другом PAgP, канал не соберётся (каждый ждёт «своего» партнёра). <code>active</code> (LACP) отправляет LACPDU, а <code>auto</code> (PAgP) ждёт PAgP-пакеты — они несовместимы. Для LACP нужны <code>active + active</code> или <code>active + passive</code>. Для PAgP — <code>desirable + desirable</code> или <code>desirable + auto</code>.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>L2-безопасность: почему транк Po2 объявлен доверенным, а не «все порты»? Что сломается, если Fa0/10 trusted? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">DHCP Snooping пропускает DHCP-ответы <strong>только с trusted-портов</strong>. Если сделать все порты trusted, то любой «левый» DHCP-сервер, подключённый к порту ПК, сможет выдать клиентам адреса и шлюз (MITM-атака). Доверенным должен быть <strong>только</strong> порт к реальному DHCP-серверу (Po2 к SW00). Если Fa0/10 trusted — злоумышленник, подключившись к нему, сможет поднять свой DHCP-сервер, и DHCP Snooping не защитит.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>IPv6+OSPFv3: почему <code>ipv6 ospf 1 area 0</code> на интерфейсе, а <code>router ospf</code> не главный? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">В OSPFv2 команды <code>network</code> задают, какие интерфейсы включить в процесс. В OSPFv3 <strong><code>network</code>-команд нет</strong> — интерфейсы включаются <strong>напрямую</strong> через <code>ipv6 ospf 1 area 0</code>. Это сделано потому, что OSPFv3 использует <strong>link-local адреса</strong> для соседства, и «привязка» к IP-сети (как в v2) не имеет смысла. Интерфейс сам знает, в какой зоне он находится, и сам находит соседей по link-local.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>STP и LACP вместе: что будет, если один линк в Po1 «зависнет» (дропает кадры)? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">LACP <strong>не заметит</strong> сразу: он проверяет только физическую связь и факт получения LACPDU. Если порт «висит» и дропает кадры, но LACPDU проходят — LACP будет считать канал живым. STP тоже не сразу заметит: BPDU могут проходить, а данные — дропаться. Решение: <strong>monitor session</strong> (SPAN) для диагностики, <strong>проверка счётчиков ошибок</strong> на интерфейсе (<code>show interface</code> — CRC, input errors), <strong>UDLD</strong> (UniDirectional Link Detection) — он как раз для обнаружения односторонних линков. В продакшене именно UDLD ловит такие ситуации.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>OSPF и MTU: почему соседство «висит» в EXSTART при разном MTU? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">В состоянии <strong>EXSTART</strong> роутеры договариваются, кто будет Master, и обмениваются <strong>DBD-пакетами</strong> (Database Description). Если MTU на интерфейсах не совпадает, больший DBD-пакет не проходит через линк с меньшим MTU — соседство «залипает» в EXSTART/EXCHANGE. Решение: выровнять MTU (например, <code>ip mtu 1500</code>) на обоих интерфейсах. Это классическая ошибка при OSPF over GRE/IPsec.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>HSRP и трекинг: как сделать, чтобы при падении аплинка на R1 роль Active автоматически перешла к R2? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">Через <strong>HSRP Tracking</strong>: <code>standby 1 track FastEthernet0/1 50</code> на R1. Если аплинк (f0/1) упадёт, приоритет R1 снизится на 50 (150 → 100), и R2 (100) станет Active. Без трекинга R1 останется Active, хотя у него нет выхода в интернет — клиенты будут «висеть» без связи.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>BGP и next-hop-self: почему в iBGP нужен <code>next-hop-self</code>? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">В iBGP маршрут, полученный от eBGP-соседа, сохраняет <strong>next-hop eBGP-соседа</strong>. Но другие iBGP-роутеры могут не иметь маршрута до этого next-hop (он за пределами их IGP). <code>next-hop-self</code> меняет next-hop на <strong>свой IP</strong>, чтобы остальные iBGP-соседи могли достучаться. Без него маршрут будет в таблице BGP, но не установится в RIB (next-hop unreachable).</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>Redistribution и route-map: как защититься от петли при двух точках redistribution? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">Через <strong>ручное тегирование</strong>: при переливе OSPF → EIGRP ставить <code>set tag 100</code>, при EIGRP → OSPF — <code>set tag 200</code>. На каждом <code>redistribute</code> добавлять <code>deny</code> для маршрутов с «чужим» тегом. Тогда маршрут, вернувшийся из другого протокола, будет отброшен по тегу. «Положиться на AD» не работает: при двух точках маршрут может «гулять» между протоколами, и иерархия типов уже не спасает.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>VLAN vs Subnet: в чём разница? (и почему VLAN — не про безопасность) <span class="level-badge level-junior">Junior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;"><strong>VLAN</strong> — это L2-конструкция (broadcast-домен, теги 802.1Q, trunk, access-порты). <strong>Subnet</strong> — это L3-конструкция (маршрутизация, таблица маршрутов). <strong>VLAN сам по себе не безопасность</strong>: трафик между VLAN можно маршрутизировать, если есть SVI или роутер. Изоляция появляется только когда вы <strong>не</strong> разрешаете маршрутизацию между ними (ACL).</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>Что происходит, когда свитч только загрузился? (MAC-таблица пуста) <span class="level-badge level-junior">Junior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">Свитч начинает с <strong>пустой MAC-таблицы</strong>. Первый кадр с неизвестным destination MAC он <strong>флудит</strong> во все порты (кроме входящего). Потом учится по source MAC. Флудит он <strong>только в пределах своего VLAN</strong>. В кольце такой флудинг и создаёт петлю — поэтому нужен STP.</p>
+            </details>
+        </div>
+
+        <div class="task-block">
+            <h3>BGP: почему iBGP требует full-mesh или route reflector? <span class="level-badge level-senior">Senior</span></h3>
+            <details>
+                <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
+                <p style="margin-top:10px;">По правилу <strong>split horizon</strong> iBGP-маршрут, полученный от одного iBGP-соседа, <strong>не передаётся</strong> другому iBGP-соседу. Значит, чтобы все iBGP-роутеры видели все маршруты, они должны быть соединены <strong>полносвязно (full-mesh)</strong>. Альтернатива — <strong>route reflector</strong>: специальный роутер, который «отражает» маршруты всем клиентам, снимая ограничение.</p>
+            </details>
+        </div>
+    </div>
+
     <!-- ================= ВОПРОС НА ЗРЕЛОСТЬ ================= -->
     <div class="script-card">
         <h2>🌟 Вопрос на зрелость (senior)</h2>
