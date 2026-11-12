@@ -319,7 +319,7 @@ show interfaces trunk</pre><button class="copy-btn">Копировать</button
       <p class="desc">
         <span class="block"><strong>Зачем:</strong> Объединяет несколько физических линков между двумя устройствами в один логический (Port-Channel). Даёт суммарную пропускную способность и отказоустойчивость: если один кабель порвётся, канал продолжит работать (трафик пойдёт через остальные).</span>
         <span class="block"><strong>Протоколы:</strong> LACP (IEEE 802.3ad) — режимы <code>active</code>/<code>passive</code>. PAgP (Cisco) — <code>desirable</code>/<code>auto</code>. Режим <code>on</code> — без протокола (не рекомендуется, нет проверки ошибок).</span>
-        <span class="block"><strong>Правило:</strong> Все порты в канале должны иметь одинаковые speed/duplex, режим (trunk/access) и разрешённые VLAN. Иначе канал не соберётся.</span>
+<span class="block"><strong>Правило:</strong> Все порты в канале должны иметь одинаковый режим (trunk/access), native VLAN и разрешённые VLAN. Speed/duplex <strong>настоятельно рекомендуется</strong> выравнивать — особенно в Packet Tracer 6.2, где иначе канал не собирается. В реальной жизни LACP технически допускает разные скорости, но это плохая практика: балансировка становится неравномерной, и медленный линк превращается в «узкое место».</span>
         <span class="block"><strong>Балансировка:</strong> трафик распределяется по линкам на основе хеша (по MAC, IP или портам). Настраивается глобально: <code>port-channel load-balance src-dst-mac</code>.</span>
         <span class="block"><strong>Проверка:</strong> <code>show etherchannel summary</code> — ищем статус <code>SU</code> (Switched, Up) и флаг <code>P</code> (In Port-Channel).</span>
       </p>

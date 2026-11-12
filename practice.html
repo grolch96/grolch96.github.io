@@ -291,12 +291,13 @@ interface port-channel 1
  switchport mode trunk</pre>
                 <button class="copy-btn">Копировать</button>
             </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Важно:</strong> в Packet Tracer 6.2 без <code>speed 100</code> и <code>duplex full</code> на всех портах канал не соберётся. В реальной жизни LACP технически допускает разные скорости, но выравнивать их — хорошая практика (иначе балансировка будет неравномерной).</p>
         </div>
         
         <div class="check-block">
             <h3>✅ Проверка</h3>
             <ul>
-                <li><code>show etherchannel summary</code> — Po1 в статусе <code>SU</code>, порты <code>P</code>.</li>
+                <li><code>show etherchannel summary</code> — Po1 в статусе <code>SU</code>, порты <code>P</code>. Если статус не <code>SU</code> — проверьте, что на всех портах одинаковые <code>speed</code> и <code>duplex</code>.</li>
                 <li><strong>Тест на отказ:</strong> на SW1 выполнить <code>shutdown</code> на f0/1. Канал остаётся <code>SU</code>, пинги не прерываются.</li>
                 <li>Вернуть порт: <code>no shutdown</code> на f0/1.</li>
             </ul>
@@ -348,12 +349,13 @@ interface port-channel 2
  switchport mode trunk</pre>
                 <button class="copy-btn">Копировать</button>
             </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Важно:</strong> в Packet Tracer 6.2 без <code>speed 100</code> и <code>duplex full</code> на всех портах канал не соберётся. В реальной жизни PAgP технически допускает разные скорости, но выравнивать их — хорошая практика.</p>
         </div>
         
         <div class="check-block">
             <h3>✅ Проверка</h3>
             <ul>
-                <li><code>show etherchannel summary</code> — Po2 в статусе <code>SU</code>, порты <code>P</code>.</li>
+                <li><code>show etherchannel summary</code> — Po2 в статусе <code>SU</code>, порты <code>P</code>. Если статус не <code>SU</code> — проверьте, что на всех портах одинаковые <code>speed</code> и <code>duplex</code>.</li>
                 <li><code>show interfaces trunk</code> — Po2 в режиме trunk.</li>
                 <li><strong>Тест на отказ:</strong> на SW3 выполнить <code>shutdown</code> на f0/2. Канал остаётся <code>SU</code>.</li>
             </ul>
@@ -1119,10 +1121,10 @@ ntp server 192.168.1.5</pre>
         </div>
 
         <div class="task-block">
-            <h3>12. Почему `speed 100` и `duplex full` обязательны для LACP в PT 6.2 <span class="level-badge level-junior">Junior</span></h3>
+            <h3>12. Почему <code>speed 100</code> и <code>duplex full</code> обязательны для LACP в PT 6.2 <span class="level-badge level-junior">Junior</span></h3>
             <details>
                 <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
-                <p style="margin-top:10px;">LACP требует, чтобы все порты в канале имели <strong>одинаковые параметры</strong> (speed, duplex, режим trunk/access, allowed VLAN). В Packet Tracer 6.2 автосогласование часто даёт разные значения на разных концах, и канал не собирается. Явное указание <code>speed 100</code> и <code>duplex full</code> выравнивает параметры и позволяет LACP собрать Port-Channel.</p>
+                <p style="margin-top:10px;">LACP требует, чтобы все порты в канале имели <strong>одинаковые ключевые параметры</strong> (режим trunk/access, native VLAN, allowed VLAN). В <strong>Packet Tracer 6.2</strong> автосогласование speed/duplex часто даёт разные значения на разных концах, и канал не собирается — поэтому <code>speed 100</code> и <code>duplex full</code> приходится задавать явно. В <strong>реальной жизни</strong> LACP технически допускает разные скорости, но это плохая практика: балансировка становится неравномерной, и медленный линк становится «узким местом». Поэтому speed/duplex выравнивают всегда — и в лабе, и в продакшене.</p>
             </details>
         </div>
     </div>
@@ -1566,16 +1568,8 @@ ntp server 192.168.1.5</pre>
 
     <!-- ================= КРАСНЫЕ ФЛАГИ ================= -->
     <details class="script-card" style="padding: 0; background: transparent; border: none; box-shadow: none;">
-        <summary style="cursor: pointer; padding: 10px 25px; list-style: none; user-select: none; height: 60px; box-sizing: border-box; background: transparent; border: none; outline: none;"></summary>
+        <summary style="padding: 10px 25px; list-style: none; user-select: none; height: 60px; box-sizing: border-box; background: transparent; border: none; outline: none;"></summary>
         <div style="padding: 0 25px 25px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-
-            <div class="task-block">
-                <h3>❌ «Я не знаю OSPF» <span class="level-badge level-junior">Junior</span></h3>
-                <details>
-                    <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">✅ Как лучше</summary>
-                    <p style="margin-top:8px;">«Я работал с OSPF в лабораторных условиях: настраивал Area 0, Multi-Area, аутентификацию, разбирал DR/BDR и соседство. На продакшене пока не было, но база есть — готов углубиться».<br><br><em>Почему:</em> вы честны, но показываете, что у вас есть фундамент, а не «слышал звон».</p>
-                </details>
-            </div>
 
             <div class="task-block">
                 <h3>❌ «Я всё знаю» / «Я всё умею» <span class="level-badge level-junior">Junior</span></h3>
@@ -1590,6 +1584,14 @@ ntp server 192.168.1.5</pre>
                 <details>
                     <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">✅ Как лучше</summary>
                     <p style="margin-top:8px;">«Я собрал это по инструкции, но потом разобрал, почему именно так: вот тут LACP не собирался без speed/duplex, вот тут был баг HSRP в PT 6.2 — обошёл статикой».<br><br><em>Почему:</em> «по инструкции» звучит как «не понимаю, что делаю». А «разобрал, почему» — как инженер.</p>
+                </details>
+            </div>
+
+            <div class="task-block">
+                <h3>❌ «Я не знаю OSPF» <span class="level-badge level-junior">Junior</span></h3>
+                <details>
+                    <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">✅ Как лучше</summary>
+                    <p style="margin-top:8px;">«Я работал с OSPF в лабораторных условиях: настраивал Area 0, Multi-Area, аутентификацию, разбирал DR/BDR и соседство. На продакшене пока не было, но база есть — готов углубиться».<br><br><em>Почему:</em> вы честны, но показываете, что у вас есть фундамент, а не «слышал звон».</p>
                 </details>
             </div>
 

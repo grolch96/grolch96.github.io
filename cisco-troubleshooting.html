@@ -517,9 +517,10 @@ show interfaces trunk
 ! Po1 должен пропускать 1,100,102-108.</pre><button class="copy-btn">Копировать</button></div>
     </div>
     <div class="layer layer-warn">
-      <div class="layer-title">⚠️ Грабли</div>
-      В Packet Tracer LACP капризен: обязательно <code>speed 100</code> и <code>duplex full</code> на всех портах. Если один порт в <code>access</code>, а другой в <code>trunk</code> — канал не соберётся.
-    </div>
+  <div class="layer layer-warn">
+  <div class="layer-title">⚠️ Грабли</div>
+  В <strong>Packet Tracer 6.2</strong> LACP капризен: обязательно <code>speed 100</code> и <code>duplex full</code> на всех портах. В <strong>реальной жизни</strong> LACP технически допускает разные скорости (и даже разные типы портов), но выравнивать speed/duplex всё равно нужно — иначе балансировка становится неравномерной, и медленный линк работает как «узкое место». Если один порт в <code>access</code>, а другой в <code>trunk</code> — канал не соберётся нигде.
+</div>
   </div>
 </details>
 
