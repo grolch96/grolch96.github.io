@@ -389,6 +389,7 @@ interface port-channel 2
             <div class="code-wrap">
                 <pre>spanning-tree vlan 1,100,102-107 priority 24576</pre>
                 <button class="copy-btn">Копировать</button>
+                            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Примечание:</strong> <code>priority 24576</code> — это ручной способ назначить корень. Альтернатива — <code>spanning-tree vlan 1,100,102-107 root primary</code>: макрос, который сам выставляет приоритет 24576 (или ниже текущего корня на 4096). Результат одинаковый, но <code>root primary</code> удобнее: не нужно помнить числа.</p>
             </div>
         </div>
         
@@ -493,6 +494,7 @@ interface f0/1
  standby 1 priority 100
  standby 1 preempt</pre>
                 <button class="copy-btn">Копировать</button>
+                            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Зачем <code>preempt</code>:</strong> без него R1 после перезагрузки останется Standby, даже если у него приоритет 150 (выше, чем 100 у R2). <code>preempt</code> разрешает «отбирать» роль Active, если приоритет выше. Если <code>preempt</code> только у R2 — R1 не сможет вернуть роль. Если у обоих — R1 вернёт Active (150 > 100).</p>
             </div>
         </div>
         
@@ -503,7 +505,9 @@ interface f0/1
                 <li><strong>Тест Failover:</strong> на R1 выполнить <code>shutdown</code> на f0/0. На R2 статус меняется на <code>Active</code>.</li>
                 <li>С ПК <code>ping 192.168.1.2</code> — не прерывается (R2 перехватил IP).</li>
                 <li>Вернуть R1: <code>no shutdown</code> на f0/0 (R1 вернёт роль Active из-за <code>preempt</code>).</li>
+                                <li><strong>Тест preempt:</strong> на R1 <code>no shutdown</code> на f0/0 — R1 должен вернуть роль Active (потому что <code>preempt</code> + приоритет 150 > 100). Если R1 остался Standby — проверьте, что <code>preempt</code> есть на обоих.</li>
             </ul>
+            
         </div>
         <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
     <strong>💡 Аналогия:</strong> HSRP — это как два охранника на входе в офис, но у них общее удостоверение (виртуальный IP). Один работает (`Active`), второй на подстраховке (`Standby`). Если первый упадёт (караул устал) — второй сразу берёт его удостоверение, и посетители не замечают подмены.
@@ -771,6 +775,7 @@ ip nat inside source list NAT interface f0/1 overload</pre>
             <h3>✅ Проверка</h3>
             <ul>
                 <li>С ПК: <code>ping 8.8.8.8</code> — успешно (через PAT).</li>
+                                <strong>Почему видны <code>icmp</code>:</strong> PAT (Overload) транслирует <strong>все протоколы</strong>, не только TCP/UDP. Для ICMP «порт» — это идентификатор ICMP-запроса, и PAT меняет его так же, как source port. Поэтому в <code>show ip nat translations</code> появляются записи <code>icmp</code> — это нормально.
                 <li>На R1: <code>show ip nat translations</code> — записи с внутренним IP ПК и внешним 10.0.0.2.</li>
                 <li><code>show ip nat statistics</code> — счётчик hits увеличивается.</li>
                 <li>С внешнего хоста: <code>telnet 10.0.0.2 80</code> — должен попасть на сервер 192.168.10.10.</li>
@@ -820,6 +825,7 @@ router eigrp 100
  no auto-summary
  redistribute ospf 1 metric 10000 100 255 1 1500</pre>
                 <button class="copy-btn">Копировать</button>
+                            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Почему нет петли:</strong> внешние маршруты имеют худший тип, чем внутренние (O E2 / D EX), поэтому они не перебивают «родные» маршруты протокола. Плюс внешние EIGRP имеют AD 170 — это выше, чем у внутренних EIGRP (90) и OSPF (110). При <strong>одной</strong> точке redistribution этого достаточно. При <strong>двух</strong> точках (например, R2 и R3 тоже делают mutual redistribution) иерархия типов уже не спасает — нужен <code>route-map</code> с ручным <code>set tag</code> и <code>deny</code> для чужих тегов.</p>
             </div>
         </div>
         
@@ -844,10 +850,11 @@ router eigrp 100
         <div class="task-block">
             <h3>📋 Условие</h3>
             <ul>
-                <li>SW1 и SW2 — корневые для разных инстансов.</li>
+                <li>SW1 и SW2 — корневые для разных групп VLAN.</li>
                 <li>Instance 1 — VLAN 100, 102, 104. Instance 2 — VLAN 105, 106, 107, 108.</li>
                 <li>На SW1: Instance 1 — root primary, Instance 2 — root secondary.</li>
-                <li>На SW2: наоборот.</li>
+                <li>На SW2: Instance 2 — root primary, Instance 1 — root secondary.</li>
+                <li>VLAN 1 (общий) — корень на SW1, резерв — на SW2.</li>
             </ul>
         </div>
         
@@ -883,11 +890,12 @@ spanning-tree mst 2 root primary</pre>
             <ul>
                 <li>На SW1: <code>show spanning-tree mst 1</code> — «This bridge is the root». <code>show spanning-tree mst 2</code> — не root.</li>
                 <li>На SW2: наоборот (root для instance 2).</li>
+                <li>Для VLAN 1: <code>show spanning-tree vlan 1</code> — на SW1 «This bridge is the root», на SW2 — Root ID указывает на MAC SW1.</li>
                 <li><code>show spanning-tree mst configuration</code> — проверить, что имена региона и инстансы совпадают.</li>
             </ul>
         </div>
         <p style="margin-top: 12px; padding: 10px 14px; background: rgba(127, 168, 212, 0.1); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 14px;">
-    <strong>💡 Аналогия:</strong> MSTP — это как несколько параллельных дорог для разных видов транспорта (инстансов). Грузовики (Instance 1) едут через один мост, легковые (Instance 2) — через другой. `root primary` на SW1 для Instance 1 = «грузовики едут через SW1». `root secondary` = «если мост SW1 закрыт, грузовики едут через резервный (SW2)». Так трафик распределяется, а не идёт весь через один свитч.
+    <strong>💡 Аналогия:</strong> MSTP — это как несколько параллельных дорог для разных видов транспорта (инстансов). Грузовики (Instance 1) едут через один мост, легковые (Instance 2) — через другой. <code>root primary</code> на SW1 для Instance 1 = «грузовики едут через SW1». <code>root secondary</code> = «если мост SW1 закрыт, грузовики едут через резервный (SW2)». Так трафик распределяется, а не идёт весь через один свитч. Важно: у каждого инстанса корень ровно один — если оба свитча «primary», STP выберет корень по MAC, и балансировки не будет.
 </p>
     </div>
         <!-- Задача 14: NTP -->
@@ -1324,7 +1332,8 @@ ip route 0.0.0.0 0.0.0.0 192.168.1.5
                     <h3>STP: SW1 и SW2 — корни для разных VLAN. Каким способом это достигнуто? <span class="level-badge level-middle">Middle</span></h3>
                     <details>
                         <summary style="cursor:pointer; font-weight:bold; color: var(--accent);">Показать ответ</summary>
-                        <p style="margin-top:10px;">Через <code>spanning-tree vlan ... root primary</code> на одном свитче и <code>root secondary</code> на другом для разных групп VLAN. Если бы оба были <code>root primary</code> для всех VLAN, корень выбирался бы по <strong>Bridge ID (priority + MAC)</strong>: один свитч стал бы корнем для всех VLAN, балансировки бы не было. Заблокированный порт уходит в <strong>Alternate (Altn BLK)</strong> — не передаёт данные, но слушает BPDU и готов стать Root при падении основного пути.</p>
+                        <p style="margin-top:10px;">Через <code>spanning-tree vlan ... root primary</code> на одном свитче и <code>root secondary</code> на другом для разных групп VLAN. Если бы оба были <code>root primary</code> для всех VLAN, корень выбирался бы по <strong>Bridge ID (priority + MAC)</strong>: один свитч стал бы корнем для всех VLAN, балансировки бы не было. Заблокированный порт уходит в <strong>Alternate (Altn BLK)</strong> — не передаёт данные, но слушает BPDU и готов стать Root при падении основного пути.
+                        <br> Важно: у каждого VLAN (или инстанса) корень ровно один. Если оба свитча настроены как root primary для одного VLAN, STP выберет корень по меньшему MAC, и балансировки не будет. Поэтому VLAN 1 обычно назначают на один свитч (primary), а второй оставляют secondary.</p>
                     </details>
                 </div>
 

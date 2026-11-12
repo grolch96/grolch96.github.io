@@ -103,6 +103,7 @@
     <p><em>Схема сети Advanced Enterprise.</em></p>
     <h2>🌳 1.1. STP: Кто корневой мост</h2>
     <p>В продвинутой лабораторной используется <strong>балансировка нагрузки</strong> между двумя корневыми мостами. Разные VLAN «привязаны» к разным корням, чтобы трафик распределялся равномерно, а не шёл весь через один свитч.</p>
+    <p><strong>Важно про VLAN 1:</strong> он общий для обеих групп. Чтобы не было двух корней на один VLAN, для VLAN 1 явно назначен корень на SW1 (<code>root primary</code>), а SW2 — резерв (<code>root secondary</code>). Для остальных VLAN балансировка полная: SW1 — корень для 100, 102, 104; SW2 — корень для 105–108.</p>
 
     <table>
         <thead>
@@ -115,12 +116,12 @@
         <tbody>
             <tr>
                 <td><strong>SW1</strong></td>
-                <td>1, 100, 102, 104</td>
+                <td><strong>1, 100, 102, 104</strong></td>
                 <td><strong>Корневой мост (Root Primary)</strong></td>
             </tr>
             <tr>
                 <td><strong>SW2</strong></td>
-                <td>1, 105, 106, 107, 108</td>
+                <td><strong>105, 106, 107, 108</strong></td>
                 <td><strong>Корневой мост (Root Primary)</strong></td>
             </tr>
             <tr>
@@ -130,12 +131,12 @@
             </tr>
             <tr>
                 <td>SW2</td>
-                <td>100, 102, 104</td>
+                <td>1, 100, 102, 104</td>
                 <td>Резервный корень (Root Secondary)</td>
             </tr>
         </tbody>
     </table>
-
+    <p><strong>Важно про VLAN 1:</strong> в конфиге <code>root primary</code> для VLAN 1 стоит на SW1, а на SW2 — <code>root secondary</code>. Если бы оба были <code>root primary</code>, STP выбрал бы корень по меньшему MAC, и балансировки для VLAN 1 не было бы. Явное разделение (primary ↔ secondary) убирает неоднозначность.</p>
     <p><strong>Команды настройки:</strong></p>
     <pre><code>! На SW1
 spanning-tree vlan 1,100,102,104 root primary
