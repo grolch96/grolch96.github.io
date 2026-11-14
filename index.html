@@ -46,8 +46,9 @@
       linear-gradient(var(--bg-grad-top), transparent 100%),
       linear-gradient(var(--bg-overlay), var(--bg-overlay)),
       url('img/bg.jpg');
-    background-size: auto, auto, 75% auto;
-    background-position: center top, center top, center; 
+    /* ИЗМЕНЕНИЯ ЗДЕСЬ: */
+    background-size: 100% 100%, 100% 100%, cover; /* Градиенты на весь экран, картинка cover */
+    background-position: center top, center top, center center; 
     background-repeat: no-repeat;
     background-attachment: scroll, scroll, fixed;
     min-height: 100vh;
@@ -221,7 +222,7 @@
 
   /* --- ПРИ НАВЕДЕНИИ: плотнее и поднимается --- */
   .card:hover {
-    flex: 0 1 360px;
+   /* flex: 0 1 360px;  <-- УДАЛИТЕ ИЛИ ЗАКОММЕНТИРУЙТЕ ЭТУ СТРОКУ */
     top: -12px;
     transform: scale(1.02) rotate(0.5deg);
     border-color: var(--accent);
@@ -450,7 +451,7 @@
       <h2>Эволюция конфигураций (Base → Advanced)</h2>
       <p>Сравнительный анализ: как меняются настройки сетевых технологий при переходе от базовой лабораторной к продвинутой.</p>
       <div class="tech">Сравнение · Копирование команд · 16 технологий</div>
-      <span class="badge" style="background: #8e44ad; color: #fff; border: none;">Сравнение</span>
+      <span class="badge">Сравнение</span>
     </a>
   </div>
 
