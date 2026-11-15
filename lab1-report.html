@@ -61,7 +61,7 @@
 <div class="container">
     <a href="index.html" class="back-link">← На главную</a>
     <h1>📘 ЛАБА 1: ПРОЕКТИРОВАНИЕ ОТКАЗОУСТОЙЧИВОЙ СЕТИ (Base Legacy)</h1>
-    
+
     <p><strong>Тема:</strong> Проектирование отказоустойчивой мультисервисной сети на базе L3-коммутации<br>
     <strong>Версия PT:</strong> Cisco Packet Tracer 6.2<br>
     <strong>Устройства:</strong> 2 × 2811 (роутеры), 5 × 3560 (L3-свитчи), 1 × 2960 (L2-свитч)</p>
@@ -74,8 +74,9 @@
         <li><strong>Уровень доступа:</strong> К свитчам подключены клиентские ПК и серверы, разделенные на VLAN.</li>
     </ul>
 
-    <!-- НОВЫЙ ПУТЬ К КАРТИНКЕ -->
     <img src="img/topology-lab1.jpg" alt="Схема сети Base Legacy">
+    <p><em>Схема сети Base Legacy.</em></p>
+
     <h2>🌳 1.1. STP: Кто корневой мост</h2>
     <p>В базовой лабораторной корневой мост (Root Bridge) назначен <strong>вручную</strong> через приоритет. Это делает топологию предсказуемой: весь трафик между VLAN идёт через один центральный свитч.</p>
 
@@ -124,8 +125,9 @@
   This bridge is the root</code></pre>
 
     <p><em>Если на другом свитче выполнить <code>show spanning-tree vlan 1</code>, в строке <code>Root ID → Address</code> будет MAC-адрес SW1 — это подтверждает, что корень именно он.</em></p>
+
     <h2>⚙️ 2. РЕАЛИЗОВАННЫЕ ТЕХНОЛОГИИ</h2>
-    
+
     <h3>2.1. VLAN и Trunk (Сегментация L2)</h3>
     <p>Сеть разделена на 10 логических подсетей (VLAN 1, 100, 102–108). Трафик между ними передается по магистральным каналам (Trunk 802.1Q).</p>
     <p><strong>Возможность:</strong> Изоляция broadcast-доменов и повышение безопасности. Клиенты VLAN 104 не видят трафик VLAN 105.</p>
@@ -175,7 +177,7 @@
     </ol>
 
     <h2>🧪 4. ПРОТОКОЛ ТЕСТИРОВАНИЯ</h2>
-    
+
     <h3>1. Граничные роутеры (R1, R2)</h3>
     <p><strong>Цель:</strong> Проверить HSRP, NAT, OSPF и выход в интернет.</p>
     <ul>
@@ -221,429 +223,278 @@
 
     <h2>💻 6. КОНФИГУРАЦИИ ОСНОВНЫХ УСТРОЙСТВ</h2>
 
-    <h3>router1-24_running-config</h3>
-    <pre><code>version 12.4
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
-hostname Router1
-!
-ip cef
-no ipv6 cef
-!
+    <h3>6.0. Подготовка (обязательно перед конфигами)</h3>
+    <p>В CPT 6.2 у устройств по умолчанию интерфейсы в состоянии <code>administratively down</code>, а на L3-свитчах не включена маршрутизация. Без шагов ниже конфиг «поднимется», но сеть не заработает.</p>
+
+    <pre><code>! ===== УНИВЕРСАЛЬНЫЙ ШАБЛОН ВХОДА =====
+enable
+configure terminal
+hostname <ИМЯ>
 no ip domain-lookup
-!
-spanning-tree mode pvst
-!
+! (опционально) защита:
+enable secret class
+line con 0
+ password cisco
+ login
+ logging synchronous
+ exit
+
+! ===== РОУТЕРЫ R1/R2 =====
+! На каждом интерфейсе:
 interface FastEthernet0/0
+ no shutdown
+ exit
+interface FastEthernet0/1
+ no shutdown
+ exit
+
+! ===== L3-СВИТЧИ (SW1, SW2, SW11, SW22, SW00) =====
+ip routing
+! На SVI:
+interface Vlan1
+ no shutdown
+ exit
+! На всех физических портах, участвующих в EtherChannel:
+interface range f0/1-24
+ no shutdown
+ exit
+
+! ===== L2-СВИТЧ (SW0) =====
+! ip routing НЕ включаем
+interface Vlan1
+ no shutdown
+ exit
+ip default-gateway 192.168.1.254
+
+! ===== СОХРАНЕНИЕ (на каждом устройстве) =====
+end
+write memory</code></pre>
+
+    <h3>6.1. Router1 (2811) — HSRP Active, NAT, OSPF</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД =====
+enable
+configure terminal
+hostname Router1
+no ip domain-lookup
+
+! ===== ШАГ 1: ИНТЕРФЕЙСЫ + HSRP + NAT =====
+interface FastEthernet0/0
+ description TO_SW1
  ip address 192.168.1.5 255.255.255.0
  ip ospf authentication-key grolch21
  ip ospf priority 200
  ip nat inside
- duplex auto
- speed auto
+ no shutdown
  standby version 2
  standby 1 ip 192.168.1.2
  standby 1 priority 150
  standby 1 preempt
-!
+ exit
 interface FastEthernet0/1
+ description TO_ISP
  ip address 30.30.30.31 255.0.0.0
  ip nat outside
- duplex auto
- speed auto
-!
-interface Vlan1
- no ip address
- shutdown
-!
+ no shutdown
+ exit
+
+! ===== ШАГ 2: OSPF =====
 router ospf 1555
  log-adjacency-changes
  area 0 authentication
- redistribute static subnets 
  network 192.168.1.0 0.0.0.255 area 0
  default-information originate
-!
+ exit
+
+! ===== ШАГ 3: NAT/PAT =====
+ip access-list extended NAT
+ permit ip 192.168.0.0 0.0.255.255 any
+ exit
 ip nat inside source list NAT interface FastEthernet0/1 overload
-ip classless
+
+! ===== ШАГ 4: СТАТИЧЕСКИЕ МАРШРУТЫ =====
 ip route 0.0.0.0 0.0.0.0 FastEthernet0/1 200
 ip route 0.0.0.0 0.0.0.0 192.168.1.150 200
 ip route 192.168.3.0 255.255.255.0 192.168.1.249 150
-!
-ip flow-export version 9
-!
-ip access-list extended NAT
- permit ip 192.168.0.0 0.0.0.255 any
- permit ip 192.168.1.0 0.0.0.255 any
- permit ip 192.168.2.0 0.0.0.255 any
- permit ip 192.168.3.0 0.0.0.255 any
- permit ip 192.168.4.0 0.0.0.255 any
- permit ip 192.168.5.0 0.0.0.255 any
- permit ip 192.168.6.0 0.0.0.255 any
- permit ip 192.168.7.0 0.0.0.255 any
- permit ip 192.168.8.0 0.0.0.255 any
-!
-line con 0
-!
-line aux 0
-!
-line vty 0 4
- login
-!
-end</code></pre>
 
-    <h3>router2-24_running-config</h3>
-    <pre><code>version 12.4
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
+! ===== ШАГ 5: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>6.2. Router2 (2811) — HSRP Standby, NAT, OSPF</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД =====
+enable
+configure terminal
 hostname Router2
-!
-ip cef
-no ipv6 cef
-!
-spanning-tree mode pvst
-!
+no ip domain-lookup
+
+! ===== ШАГ 1: ИНТЕРФЕЙСЫ + HSRP + NAT =====
 interface FastEthernet0/0
+ description TO_SW2
  ip address 192.168.1.150 255.255.255.0
  ip ospf authentication-key grolch21
  ip ospf priority 100
  ip nat inside
- duplex auto
- speed auto
+ no shutdown
  standby version 2
  standby 1 ip 192.168.1.2
  standby 1 preempt
-!
+ exit
 interface FastEthernet0/1
+ description TO_ISP
  ip address 30.30.30.31 255.0.0.0
  ip nat outside
- duplex auto
- speed auto
-!
-interface Vlan1
- no ip address
- shutdown
-!
+ no shutdown
+ exit
+
+! ===== ШАГ 2: OSPF =====
 router ospf 1666
  log-adjacency-changes
  area 0 authentication
- redistribute static subnets 
  network 192.168.1.0 0.0.0.255 area 0
-!
-ip classless
-ip route 0.0.0.0 0.0.0.0 FastEthernet0/1 200
-!
-ip flow-export version 9
-!
-ip access-list extended NAT
- permit ip 192.168.0.0 0.0.0.255 any
- permit ip 192.168.1.0 0.0.0.255 any
- permit ip 192.168.2.0 0.0.0.255 any
- permit ip 192.168.3.0 0.0.0.255 any
- permit ip 192.168.4.0 0.0.0.255 any
- permit ip 192.168.5.0 0.0.0.255 any
- permit ip 192.168.6.0 0.0.0.255 any
- permit ip 192.168.7.0 0.0.0.255 any
- permit ip 192.168.8.0 0.0.0.255 any
-!
-line con 0
-!
-line aux 0
-!
-line vty 0 4
- login
-!
-end</code></pre>
+ exit
 
-    <h3>Switch1 - 1.253_running-config</h3>
-    <pre><code>version 12.2
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
+! ===== ШАГ 3: NAT/PAT =====
+ip access-list extended NAT
+ permit ip 192.168.0.0 0.0.255.255 any
+ exit
+ip nat inside source list NAT interface FastEthernet0/1 overload
+
+! ===== ШАГ 4: СТАТИЧЕСКИЙ МАРШРУТ =====
+ip route 0.0.0.0 0.0.0.0 FastEthernet0/1 200
+
+! ===== ШАГ 5: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>6.3. Switch1 (3560) — Root Bridge, OSPF, DHCP VLAN104</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД + L3 =====
+enable
+configure terminal
 hostname Switch1
-!
-no logging console
-!
-ip dhcp excluded-address 192.168.5.254
-ip dhcp excluded-address 192.168.6.254
+no ip domain-lookup
+ip routing
+
+! ===== ШАГ 1: DHCP =====
 ip dhcp excluded-address 192.168.4.254
-!
 ip dhcp pool vlan104
  network 192.168.4.0 255.255.255.0
  default-router 192.168.4.254
-!
-ip routing
-!
-ip ssh version 1
-no ip domain-lookup
-ip domain-name alx.local
-!
+ exit
+
+! ===== ШАГ 2: STP =====
 spanning-tree mode rapid-pvst
 spanning-tree vlan 1,100,102-107 priority 24576
-!
+
+! ===== ШАГ 3: ETHERCHANNEL (LACP) =====
+interface range f0/2, f0/4, f0/6, f0/8-13
+ description lacp-access
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ duplex full
+ speed 100
+ no shutdown
+ exit
 interface Port-channel 1
  switchport trunk encapsulation dot1q
  switchport mode trunk
-!
-interface FastEthernet0/1
- description lacp-trunk
- switchport mode access
- duplex full
- speed 100
-!
-interface FastEthernet0/2
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/3
- switchport mode access
- duplex half
- speed 100
-!
-interface FastEthernet0/4
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/5
- switchport mode access
-!
-interface FastEthernet0/6
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/7
- description lacp-trunk
- switchport access vlan 104
- switchport mode access
-!
-interface FastEthernet0/8
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/9
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/10
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/11
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/12
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/13
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/14 - 0/23
- switchport mode access
-!
-interface FastEthernet0/24
- switchport access vlan 102
- switchport mode access
-!
-interface GigabitEthernet0/1 - 0/2
-!
+ exit
+
+! ===== ШАГ 4: SVI =====
 interface Vlan1
  ip address 192.168.1.253 255.255.255.0
  ip ospf authentication
  ip ospf authentication-key grolch21
-!
+ no shutdown
+ exit
 interface Vlan102
  description Vlan 192.168.2.0/28
  ip address 192.168.2.1 255.255.255.240
-!
+ no shutdown
+ exit
 interface Vlan104
  description Vlan 192.168.4.0/24
  ip address 192.168.4.254 255.255.255.0
-!
-interface Vlan105
- no ip address
-!
+ no shutdown
+ exit
+
+! ===== ШАГ 5: OSPF =====
 router ospf 1111
  log-adjacency-changes
  area 0 authentication
- network 192.168.4.0 0.0.0.255 area 0
  network 192.168.1.0 0.0.0.255 area 0
  network 192.168.2.0 0.0.0.15 area 0
-!
-ip classless
-ip route 0.0.0.0 0.0.0.0 192.168.1.2 200
-!
-ip flow-export version 9
-!
-banner login 
-**********************************************
-* Switch1.Access to authorized persons only! *
-**********************************************
-!
-line con 0
- history size 256
- exec-timeout 0 0
- logging synchronous
-!
-line aux 0
-!
-line vty 0 4
- exec-timeout 0 0
- login local
- history size 256
-line vty 5 15
- exec-timeout 0 0
- login local
- history size 256
-!
-end</code></pre>
+ network 192.168.4.0 0.0.0.255 area 0
+ exit
 
-    <h3>Switch2 - 1.254_running-config</h3>
-    <pre><code>version 12.2
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
+! ===== ШАГ 6: МАРШРУТ ПО УМОЛЧАНИЮ =====
+ip route 0.0.0.0 0.0.0.0 192.168.1.2 200
+
+! ===== ШАГ 7: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>6.4. Switch2 (3560) — OSPF, DHCP VLAN100/107</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД + L3 =====
+enable
+configure terminal
 hostname Switch2
-!
+no ip domain-lookup
+ip routing
+
+! ===== ШАГ 1: DHCP =====
 ip dhcp excluded-address 192.168.0.254
-!
 ip dhcp pool vlan100
  network 192.168.0.0 255.255.255.0
  default-router 192.168.0.254
+ exit
 ip dhcp pool vlan107
  network 192.168.7.0 255.255.255.0
  default-router 192.168.7.254
-!
-ip routing
-!
-ip ssh version 1
-no ip domain-lookup
-ip domain-name alx.local
-!
+ exit
+
+! ===== ШАГ 2: STP =====
 spanning-tree mode rapid-pvst
 spanning-tree vlan 1,100,102-107 priority 36864
-!
+
+! ===== ШАГ 3: ETHERCHANNEL (LACP) =====
+interface range f0/2, f0/5, f0/8, f0/9
+ channel-group 3 mode active
+ switchport trunk allowed vlan 1,100,102-108
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ duplex full
+ speed 100
+ no shutdown
+ exit
 interface Port-channel 3
  switchport trunk encapsulation dot1q
  switchport mode trunk
-!
-interface FastEthernet0/1
- switchport mode access
- duplex full
- speed 100
-!
-interface FastEthernet0/2
- channel-group 3 mode active
- switchport trunk allowed vlan 1,100,102-108
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/3
- switchport mode access
- duplex half
- speed 100
-!
-interface FastEthernet0/4
- switchport access vlan 102
- switchport mode access
-!
-interface FastEthernet0/5
- channel-group 3 mode active
- switchport trunk allowed vlan 1,100,102-108
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/6
-!
-interface FastEthernet0/7
- switchport access vlan 100
-!
-interface FastEthernet0/8
- channel-group 3 mode active
- switchport trunk allowed vlan 1,100,102-108
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/9
- channel-group 3 mode active
- switchport trunk allowed vlan 1,100,102-108
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/10 - 0/24
-!
-interface GigabitEthernet0/1 - 0/2
-!
+ exit
+
+! ===== ШАГ 4: SVI =====
 interface Vlan1
  ip address 192.168.1.254 255.255.255.0
  ip ospf authentication-key grolch21
-!
+ no shutdown
+ exit
 interface Vlan100
  description Vlan 192.168.0.0/24
  ip address 192.168.0.254 255.255.255.0
-!
+ no shutdown
+ exit
 interface Vlan102
  description Vlan 192.168.3.0/25
  ip address 192.168.2.254 255.255.255.128
-!
+ no shutdown
+ exit
 interface Vlan107
  ip address 192.168.7.254 255.255.255.0
-!
-interface Vlan108
- ip address 192.168.8.254 255.255.255.0
- shutdown
-!
+ no shutdown
+ exit
+! Vlan108 намеренно без IP и shutdown (шлюз — на SW00, см. раздел 2.7)
+
+! ===== ШАГ 5: OSPF =====
 router ospf 1222
  log-adjacency-changes
  area 0 authentication
@@ -651,321 +502,195 @@ router ospf 1222
  network 192.168.1.0 0.0.0.255 area 0
  network 192.168.2.128 0.0.0.127 area 0
  network 192.168.7.0 0.0.0.255 area 0
- network 192.168.8.0 0.0.0.255 area 0
-!
-ip classless
-ip route 0.0.0.0 0.0.0.0 192.168.1.2 200
-!
-ip flow-export version 9
-!
-banner login 
-**********************************************
-* Switch2.Access to authorized persons only! *
-**********************************************
-!
-line con 0
- history size 256
- exec-timeout 0 0
- logging synchronous
-!
-line aux 0
-!
-line vty 0 4
- exec-timeout 0 0
- login local
- history size 256
-line vty 5 15
- exec-timeout 0 0
- login local
- history size 256
-!
-end</code></pre>
+ exit
 
-    <h3>Switch11 - 1.252_running-config</h3>
-    <pre><code>version 12.2
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
+! ===== ШАГ 6: МАРШРУТ ПО УМОЛЧАНИЮ =====
+ip route 0.0.0.0 0.0.0.0 192.168.1.2 200
+
+! ===== ШАГ 7: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>6.5. Switch11 (3560) — OSPF, DHCP VLAN105/106</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД + L3 =====
+enable
+configure terminal
 hostname Switch11
-!
-ip dhcp pool vlan106
- network 192.168.6.0 255.255.255.0
- default-router 192.168.6.254
+no ip domain-lookup
+ip routing
+
+! ===== ШАГ 1: DHCP =====
 ip dhcp pool vlan105
  network 192.168.5.0 255.255.255.0
  default-router 192.168.5.254
-!
-ip routing
-!
+ exit
+ip dhcp pool vlan106
+ network 192.168.6.0 255.255.255.0
+ default-router 192.168.6.254
+ exit
+
+! ===== ШАГ 2: STP =====
 spanning-tree mode rapid-pvst
 spanning-tree vlan 1,100,102-107 priority 28672
-!
+
+! ===== ШАГ 3: ETHERCHANNEL (LACP) =====
+interface range f0/1, f0/6-13
+ description lacp-access
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ duplex full
+ speed 100
+ no shutdown
+ exit
 interface Port-channel 1
  switchport trunk encapsulation dot1q
  switchport mode trunk
-!
-interface FastEthernet0/1
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/2
- switchport mode access
- duplex full
- speed 10
-!
-interface FastEthernet0/3
- switchport access vlan 105
- switchport mode access
-!
-interface FastEthernet0/4
- switchport access vlan 106
- switchport mode access
-!
-interface FastEthernet0/5
- switchport mode access
- duplex half
- speed 10
-!
-interface FastEthernet0/6 - 0/13
- description lacp-access
- channel-group 1 mode active
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/14 - 0/24
-!
-interface GigabitEthernet0/1 - 0/2
-!
+ exit
+
+! ===== ШАГ 4: SVI =====
 interface Vlan1
  ip address 192.168.1.252 255.255.255.0
  ip ospf authentication-key grolch21
-!
+ no shutdown
+ exit
 interface Vlan105
  ip address 192.168.5.254 255.255.255.0
-!
+ no shutdown
+ exit
 interface Vlan106
  ip address 192.168.6.254 255.255.255.0
-!
+ no shutdown
+ exit
+
+! ===== ШАГ 5: OSPF =====
 router ospf 1333
  log-adjacency-changes
  area 0 authentication
- network 192.168.6.0 0.0.0.255 area 0
- network 192.168.5.0 0.0.0.255 area 0
  network 192.168.1.0 0.0.0.255 area 0
-!
-ip classless
-ip route 0.0.0.0 0.0.0.0 192.168.1.2 200
-!
-ip flow-export version 9
-!
-line con 0
- history size 256
- exec-timeout 0 0
-!
-line aux 0
-!
-line vty 0 4
- exec-timeout 0 0
- login
- history size 256
-line vty 5 15
- exec-timeout 0 0
- login
- history size 256
-!
-end</code></pre>
+ network 192.168.5.0 0.0.0.255 area 0
+ network 192.168.6.0 0.0.0.255 area 0
+ exit
 
-    <h3>Switch22 - 1.251_running-config</h3>
-    <pre><code>version 12.2
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
+! ===== ШАГ 6: МАРШРУТ ПО УМОЛЧАНИЮ =====
+ip route 0.0.0.0 0.0.0.0 192.168.1.2 200
+
+! ===== ШАГ 7: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>6.6. Switch22 (3560) — OSPF, DHCP VLAN107</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД + L3 =====
+enable
+configure terminal
 hostname Switch22
-!
+no ip domain-lookup
+ip routing
+
+! ===== ШАГ 1: DHCP =====
 ip dhcp pool vlan107
  network 192.168.7.0 255.255.255.0
  default-router 192.168.7.254
-!
-port-channel load-balance src-dst-mac
+ exit
+
+! ===== ШАГ 2: STP =====
 spanning-tree mode rapid-pvst
 spanning-tree vlan 1,100,102-107 priority 45056
-!
+port-channel load-balance src-dst-mac
+
+! ===== ШАГ 3: ETHERCHANNEL (LACP) =====
+interface range f0/1, f0/6-8
+ channel-group 3 mode active
+ switchport trunk allowed vlan 1,100,102-108
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ duplex full
+ speed 100
+ no shutdown
+ exit
 interface Port-channel 3
  switchport trunk encapsulation dot1q
  switchport mode trunk
-!
-interface FastEthernet0/1
- channel-group 3 mode active
- switchport trunk allowed vlan 1,100,102-108
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/2
-!
-interface FastEthernet0/3
- switchport access vlan 107
-!
-interface FastEthernet0/4
- switchport mode access
- duplex full
- speed 10
-!
-interface FastEthernet0/5
- switchport mode access
- duplex half
- speed 10
-!
-interface FastEthernet0/6 - 0/8
- channel-group 3 mode active
- switchport trunk allowed vlan 1,100,102-108
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/9 - 0/15
-!
-interface FastEthernet0/16
- switchport trunk allowed vlan 1,102-108
- switchport trunk encapsulation dot1q
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/17 - 0/24
-!
-interface GigabitEthernet0/1 - 0/2
-!
+ exit
+
+! ===== ШАГ 4: SVI (только Vlan1, остальные — транзит) =====
 interface Vlan1
  ip address 192.168.1.251 255.255.255.0
-!
-interface Vlan107
- no ip address
-!
-ip classless
-!
-ip flow-export version 9
-!
-line con 0
-!
-line aux 0
-!
-line vty 0 4
- login
-!
-end</code></pre>
+ no shutdown
+ exit
+! Vlan107 без IP — шлюз на SW2
+! Vlan108 без IP — шлюз на SW00
 
-    <h3>Switch0 - 1.250_running-config</h3>
-    <pre><code>version 12.2
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
+! ===== ШАГ 5: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>6.7. Switch0 (2960, L2) — PAgP, доступ VLAN108</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД (ip routing НЕ включаем!) =====
+enable
+configure terminal
 hostname Switch0
-!
-clock timezone MSK 4
-!
-ip ssh version 2
 no ip domain-lookup
-ip domain-name nio.spbaep.ru
-!
-username admin privilege 1 password 0 admin
-username netadmin privilege 1 password 7 0870
-username rootlocal secret 5 $1$mERr$BmZwOSnY6O4ZP4seqmy.5.
-!
+
+! ===== ШАГ 1: STP =====
 spanning-tree mode pvst
-!
-interface FastEthernet0/1 - 0/2
+
+! ===== ШАГ 2: ETHERCHANNEL (PAgP) =====
+interface range f0/3-5
  description pagp-trunk
- switchport trunk allowed vlan 1,102-108
  channel-group 2 mode auto
- switchport mode trunk
- duplex full
- speed 100
- shutdown
-!
-interface FastEthernet0/3 - 0/5
- description pagp-trunk
  switchport trunk allowed vlan 1,102-108
- channel-group 2 mode auto
  switchport mode trunk
  duplex full
  speed 100
-!
-interface FastEthernet0/6 - 0/7
-!
-interface FastEthernet0/8
- switchport trunk allowed vlan 1,108
- switchport mode trunk
- duplex full
- speed 100
-!
-interface FastEthernet0/9
-!
-interface FastEthernet0/10
- switchport access vlan 108
-!
-interface FastEthernet0/11 - 0/24
-!
-interface GigabitEthernet0/1 - 0/2
-!
+ no shutdown
+ exit
 interface Port-channel 2
  switchport mode trunk
-!
+ exit
+
+! ===== ШАГ 3: SVI + шлюз =====
 interface Vlan1
  ip address 192.168.1.250 255.255.255.0
-!
+ no shutdown
+ exit
 ip default-gateway 192.168.1.254
-!
-line con 0
- logging synchronous
- login
- history size 256
- exec-timeout 0 0
-!
-line vty 0 4
- login
- history size 256
-line vty 5 15
- login
- history size 256
-!
-end</code></pre>
 
-    <h3>Switch00 - 1.249_running-config</h3>
-    <pre><code>version 12.2
-no service timestamps log datetime msec
-no service timestamps debug datetime msec
-no service password-encryption
-!
+! ===== ШАГ 4: ПОРТ ДОСТУПА =====
+interface f0/10
+ switchport mode access
+ switchport access vlan 108
+ spanning-tree portfast
+ no shutdown
+ exit
+
+! ===== ШАГ 5: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>6.8. Switch00 (3560, L3) — PAgP, DHCP VLAN103/108, OSPF</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД + L3 =====
+enable
+configure terminal
 hostname Switch00
-!
+no ip domain-lookup
+ip routing
+
+! ===== ШАГ 1: DHCP =====
 ip dhcp pool vlan103
  network 192.168.3.0 255.255.255.0
  default-router 192.168.3.254
+ exit
 ip dhcp pool vlan108
  network 192.168.8.0 255.255.255.0
  default-router 192.168.8.254
-!
-ip routing
-!
+ exit
+
+! ===== ШАГ 2: STP =====
 spanning-tree mode pvst
-!
-interface Port-channel 2
- switchport trunk encapsulation dot1q
- switchport mode trunk
-!
-interface FastEthernet0/1 - 0/5
+
+! ===== ШАГ 3: ETHERCHANNEL (PAgP) =====
+interface range f0/1-5
  description pagp-trunk
  channel-group 2 mode desirable
  switchport trunk allowed vlan 1,102-108
@@ -973,52 +698,48 @@ interface FastEthernet0/1 - 0/5
  switchport mode trunk
  duplex full
  speed 100
-!
-interface FastEthernet0/6
- switchport access vlan 103
-!
-interface FastEthernet0/7 - 0/9
-!
-interface FastEthernet0/10
- switchport access vlan 108
- switchport mode access
-!
-interface FastEthernet0/11 - 0/24
-!
-interface GigabitEthernet0/1 - 0/2
-!
+ no shutdown
+ exit
+interface Port-channel 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ exit
+
+! ===== ШАГ 4: SVI =====
 interface Vlan1
  ip address 192.168.1.249 255.255.255.0
  ip ospf authentication-key grolch21
-!
+ no shutdown
+ exit
 interface Vlan103
  ip address 192.168.3.254 255.255.255.0
  ip ospf authentication-key grolch21
-!
+ no shutdown
+ exit
 interface Vlan108
  ip address 192.168.8.254 255.255.255.0
-!
+ no shutdown
+ exit
+
+! ===== ШАГ 5: OSPF =====
 router ospf 1444
  log-adjacency-changes
  area 0 authentication
  network 192.168.1.0 0.0.0.255 area 0
  network 192.168.3.0 0.0.0.255 area 0
  network 192.168.8.0 0.0.0.255 area 0
-!
-ip classless
-ip route 0.0.0.0 0.0.0.0 192.168.1.2 
-!
-ip flow-export version 9
-!
-line con 0
-!
-line aux 0
-!
-line vty 0 4
- login
-!
-end</code></pre>
+ exit
 
+! ===== ШАГ 6: МАРШРУТ ПО УМОЛЧАНИЮ =====
+ip route 0.0.0.0 0.0.0.0 192.168.1.2
+
+! ===== ШАГ 7: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <p style="margin-top: 40px; text-align: center; font-style: italic; color: var(--accent);">
+        Конфиги очищены от дефолтных строк CPT 6.2. Всё, что осталось — значимо для работы сети.
+    </p>
 </div>
 
 <script>

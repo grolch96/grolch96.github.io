@@ -98,9 +98,9 @@
         <li><strong>Фантомный анонс OSPF:</strong> Убрали ошибочные анонсы сетей, которых не было на устройствах.</li>
     </ol>
 
-    <!-- НОВЫЙ ПУТЬ К КАРТИНКЕ -->
     <img src="img/topology-lab2.jpg" alt="Схема сети Advanced Enterprise">
     <p><em>Схема сети Advanced Enterprise.</em></p>
+
     <h2>🌳 1.1. STP: Кто корневой мост</h2>
     <p>В продвинутой лабораторной используется <strong>балансировка нагрузки</strong> между двумя корневыми мостами. Разные VLAN «привязаны» к разным корням, чтобы трафик распределялся равномерно, а не шёл весь через один свитч.</p>
     <p><strong>Важно про VLAN 1:</strong> он общий для обеих групп. Чтобы не было двух корней на один VLAN, для VLAN 1 явно назначен корень на SW1 (<code>root primary</code>), а SW2 — резерв (<code>root secondary</code>). Для остальных VLAN балансировка полная: SW1 — корень для 100, 102, 104; SW2 — корень для 105–108.</p>
@@ -136,7 +136,7 @@
             </tr>
         </tbody>
     </table>
-    <p><strong>Важно про VLAN 1:</strong> в конфиге <code>root primary</code> для VLAN 1 стоит на SW1, а на SW2 — <code>root secondary</code>. Если бы оба были <code>root primary</code>, STP выбрал бы корень по меньшему MAC, и балансировки для VLAN 1 не было бы. Явное разделение (primary ↔ secondary) убирает неоднозначность.</p>
+
     <p><strong>Команды настройки:</strong></p>
     <pre><code>! На SW1
 spanning-tree vlan 1,100,102,104 root primary
@@ -154,155 +154,270 @@ SW2# show spanning-tree vlan 105
   This bridge is the root</code></pre>
 
     <p><em>Для VLAN 100 корень — SW1, для VLAN 105 — SW2. Это и есть балансировка: трафик разных VLAN идёт через разные корневые свитчи.</em></p>
+
     <h2>💻 2. ИТОГОВЫЕ КОНФИГИ С КОММЕНТАРИЯМИ</h2>
-    
-    <h3>🌐 Router ISP (Эмуляция провайдера)</h3>
-    <pre><code>hostname ISP
+
+    <h3>2.0. Подготовка (обязательно перед конфигами)</h3>
+    <p>В CPT 6.2 у устройств по умолчанию интерфейсы <code>administratively down</code>, а на L3-свитчах не включена маршрутизация и IPv6. Без шагов ниже BGP/OSPF не поднимутся, даже если конфиг введён правильно.</p>
+
+    <pre><code>! ===== УНИВЕРСАЛЬНЫЙ ШАБЛОН ВХОДА =====
+enable
+configure terminal
+hostname <ИМЯ>
+no ip domain-lookup
+! (опционально) защита:
+enable secret class
+line con 0
+ password cisco
+ login
+ logging synchronous
+ exit
+
+! ===== РОУТЕРЫ (R1, R2, ISP) =====
+! На каждом интерфейсе:
+interface FastEthernet0/0
+ no shutdown
+ exit
+interface FastEthernet0/1
+ no shutdown
+ exit
+! Для двухстековой работы:
 ipv6 unicast-routing
 
-! --- БЛОК 1: ИНТЕРФЕЙСЫ (IPv4 + IPv6) ---
+! ===== L3-СВИТЧИ (SW1, SW2, SW11, SW22, SW00) =====
+ip routing
+ipv6 unicast-routing
+! На SVI:
+interface Vlan1
+ no shutdown
+ exit
+! На всех физических портах, участвующих в EtherChannel:
+interface range f0/1-24
+ no shutdown
+ exit
+
+! ===== L2-СВИТЧ (SW0) =====
+! ip routing НЕ включаем
+interface Vlan1
+ no shutdown
+ exit
+ip default-gateway 192.168.1.254
+
+! ===== СОХРАНЕНИЕ (на каждом устройстве) =====
+end
+write memory</code></pre>
+
+    <h3>🌐 2.1. Router ISP (Эмуляция провайдера)</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД =====
+enable
+configure terminal
+hostname ISP
+no ip domain-lookup
+ipv6 unicast-routing
+
+! ===== ШАГ 1: ИНТЕРФЕЙСЫ (IPv4 + IPv6) =====
 interface FastEthernet0/0
  ip address 10.0.0.1 255.255.255.252
  ipv6 address 2001:DB8:10::1/64
  no shutdown
+ exit
 interface FastEthernet0/1
  ip address 10.0.1.1 255.255.255.252
  ipv6 address 2001:DB8:20::1/64
  no shutdown
+ exit
 interface Loopback0
  ip address 8.8.8.8 255.255.255.255
  ipv6 address 2001:DB8:88::8/128
+ exit
 
-! --- БЛОК 2: BGP (Маршрутизация) ---
+! ===== ШАГ 2: BGP =====
 router bgp 65001
  neighbor 10.0.0.2 remote-as 65002
  neighbor 10.0.1.2 remote-as 65002
- network 8.8.8.8 mask 255.255.255.255</code></pre>
+ network 8.8.8.8 mask 255.255.255.255
+ exit
 
-    <h3>🌐 Router1 (BGP, HSRP Active, NAT)</h3>
-    <pre><code>hostname Router1
+! ===== ШАГ 3: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>🌐 2.2. Router1 (BGP, HSRP Active, NAT)</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД =====
+enable
+configure terminal
+hostname Router1
+no ip domain-lookup
 ipv6 unicast-routing
 
-! --- БЛОК 1: ИНТЕРФЕЙСЫ И HSRP ---
+! ===== ШАГ 1: ИНТЕРФЕЙСЫ + HSRP + NAT =====
 interface FastEthernet0/0
  description TO_SW1
  ip address 192.168.1.5 255.255.255.0
  ipv6 address 2001:DB8:1::5/64
  ip nat inside
- ! HSRP (R1 - Active)
+ no shutdown
  standby 1 ip 192.168.1.2
  standby 1 priority 150
  standby 1 preempt
-
+ exit
 interface FastEthernet0/1
  description TO_ISP
  ip address 10.0.0.2 255.255.255.252
  ipv6 address 2001:DB8:10::2/64
  ip nat outside
+ no shutdown
+ exit
 
-! --- БЛОК 2: МАРШРУТИЗАЦИЯ (OSPF + BGP) ---
+! ===== ШАГ 2: МАРШРУТИЗАЦИЯ (OSPF + BGP) =====
 router ospf 1
  router-id 1.1.1.1
  network 192.168.1.0 0.0.0.255 area 0
  default-information originate
+ exit
 router bgp 65002
  neighbor 10.0.0.1 remote-as 65001
  network 192.168.1.0 mask 255.255.255.0
  network 192.168.2.0 mask 255.255.255.0
  network 192.168.5.0 mask 255.255.255.0
+ exit
 
-! --- БЛОК 3: NAT/PAT (Выход в интернет) ---
+! ===== ШАГ 3: NAT/PAT =====
 ip access-list extended NAT
  permit ip 192.168.0.0 0.0.255.255 any
-ip nat inside source list NAT interface FastEthernet0/1 overload</code></pre>
+ exit
+ip nat inside source list NAT interface FastEthernet0/1 overload
 
-    <h3>🌐 Router2 (BGP, HSRP Standby, EIGRP)</h3>
-    <pre><code>hostname Router2
+! ===== ШАГ 4: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>🌐 2.3. Router2 (BGP, HSRP Standby, EIGRP)</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД =====
+enable
+configure terminal
+hostname Router2
+no ip domain-lookup
 ipv6 unicast-routing
 
-! --- БЛОК 1: ИНТЕРФЕЙСЫ И HSRP ---
+! ===== ШАГ 1: ИНТЕРФЕЙСЫ + HSRP + NAT =====
 interface FastEthernet0/0
  description TO_SW2
  ip address 192.168.1.150 255.255.255.0
  ipv6 address 2001:DB8:1::150/64
  ip nat inside
- ! HSRP (R2 - Standby)
+ no shutdown
  standby 1 ip 192.168.1.2
  standby 1 preempt
-
+ exit
 interface FastEthernet0/1
  description TO_ISP
  ip address 10.0.1.2 255.255.255.252
  ipv6 address 2001:DB8:20::2/64
  ip nat outside
+ no shutdown
+ exit
 
-! --- БЛОК 2: МАРШРУТИЗАЦИЯ (EIGRP + BGP) ---
+! ===== ШАГ 2: МАРШРУТИЗАЦИЯ (EIGRP + BGP) =====
 router eigrp 100
  network 192.168.1.0
  no auto-summary
+ exit
 router bgp 65002
  neighbor 10.0.1.1 remote-as 65001
- network 192.168.1.0 mask 255.255.255.0</code></pre>
+ network 192.168.1.0 mask 255.255.255.0
+ exit
 
-    <h3>🌐 Switch1 (Ядро, OSPF ABR, MSTP/Rapid-PVST+)</h3>
-    <pre><code>hostname Switch1
+! ===== ШАГ 3: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>🌐 2.4. Switch1 (Ядро, OSPF ABR, Rapid-PVST+)</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД + L3 =====
+enable
+configure terminal
+hostname Switch1
+no ip domain-lookup
 ip routing
 ipv6 unicast-routing
 
-! --- БЛОК 1: STP (Балансировка) ---
+! ===== ШАГ 1: STP (Балансировка) =====
 spanning-tree mode rapid-pvst
 spanning-tree vlan 1,100,102,104 root primary
+spanning-tree vlan 1,105,106,107,108 root secondary
 
-! --- БЛОК 2: ETHERCHANNEL (LACP) ---
+! ===== ШАГ 2: ETHERCHANNEL (LACP) =====
 interface range f0/2, f0/4, f0/6, f0/8-13
  channel-group 1 mode active
  switchport trunk encapsulation dot1q
  switchport mode trunk
  speed 100
  duplex full
-interface port-channel 1
+ no shutdown
+ exit
+interface Port-channel 1
  switchport trunk encapsulation dot1q
  switchport mode trunk
+ exit
 
-! --- БЛОК 3: OSPF MULTI-AREA (ABR) ---
+! ===== ШАГ 3: SVI + OSPF MULTI-AREA (ABR) =====
 interface Vlan1
  ip address 192.168.1.253 255.255.255.0
  ipv6 address 2001:DB8:1::253/64
  ipv6 ospf 1 area 0
+ no shutdown
+ exit
 router ospf 1111
  router-id 3.3.3.3
  network 192.168.1.0 0.0.0.255 area 0
  network 192.168.2.0 0.0.0.15 area 0
  network 192.168.4.0 0.0.0.255 area 0
  network 192.168.5.0 0.0.0.255 area 1
+ exit
 
-! --- БЛОК 4: ИСПРАВЛЕНИЕ БАГА HSRP (Транзитный маршрут) ---
-ip route 0.0.0.0 0.0.0.0 192.168.1.5</code></pre>
+! ===== ШАГ 4: ИСПРАВЛЕНИЕ БАГА HSRP (Транзитный маршрут) =====
+ip route 0.0.0.0 0.0.0.0 192.168.1.5
 
-    <h3>🌐 Switch2 (Ядро, OSPF ABR, EIGRP + Redistribution)</h3>
-    <pre><code>hostname Switch2
+! ===== ШАГ 5: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>🌐 2.5. Switch2 (Ядро, OSPF ABR, EIGRP + Redistribution)</h3>
+    <pre><code>! ===== ШАГ 0: ВХОД + L3 =====
+enable
+configure terminal
+hostname Switch2
+no ip domain-lookup
 ip routing
 ipv6 unicast-routing
 
-! --- БЛОК 1: STP ---
+! ===== ШАГ 1: STP =====
 spanning-tree mode rapid-pvst
 spanning-tree vlan 1,105,106,107,108 root primary
+spanning-tree vlan 1,100,102,104 root secondary
 
-! --- БЛОК 2: ETHERCHANNEL ---
+! ===== ШАГ 2: ETHERCHANNEL =====
 interface range f0/2, f0/5, f0/8, f0/9
  channel-group 3 mode active
  switchport trunk encapsulation dot1q
  switchport mode trunk
  speed 100
  duplex full
-interface port-channel 3
+ no shutdown
+ exit
+interface Port-channel 3
  switchport trunk encapsulation dot1q
  switchport mode trunk
+ exit
 
-! --- БЛОК 3: МАРШРУТИЗАЦИЯ И REDISTRIBUTION ---
+! ===== ШАГ 3: SVI =====
 interface Vlan1
  ip address 192.168.1.254 255.255.255.0
  ipv6 address 2001:DB8:1::254/64
+ no shutdown
+ exit
+
+! ===== ШАГ 4: МАРШРУТИЗАЦИЯ И REDISTRIBUTION =====
 router ospf 1222
  router-id 2.2.2.2
  network 192.168.1.0 0.0.0.255 area 0
@@ -310,95 +425,176 @@ router ospf 1222
  network 192.168.7.0 0.0.0.255 area 2
  network 192.168.8.0 0.0.0.255 area 2
  redistribute eigrp 100 subnets
+ exit
 router eigrp 100
  network 192.168.1.0
- redistribute ospf 1222 metric 10000 100 255 1 1500</code></pre>
+ redistribute ospf 1222 metric 10000 100 255 1 1500
+ exit
 
-    <h3>🌐 Switch11 (Area 1) и Switch22 (Area 2)</h3>
-    <pre><code>! Switch11 (Area 1)
+! ===== ШАГ 5: СОХРАНЕНИЕ =====
+end
+write memory</code></pre>
+
+    <h3>🌐 2.6. Switch11 (Area 1) и Switch22 (Area 2)</h3>
+    <pre><code>! ===== Switch11 (Area 1) =====
+enable
+configure terminal
 hostname Switch11
+no ip domain-lookup
 ip routing
 spanning-tree mode rapid-pvst
+
+! EtherChannel (LACP)
 interface range f0/1, f0/6-13
  channel-group 1 mode active
  switchport trunk encapsulation dot1q
  switchport mode trunk
  speed 100
  duplex full
+ no shutdown
+ exit
+
+! SVI
 interface Vlan1
  ip address 192.168.1.252 255.255.255.0
+ no shutdown
+ exit
 interface Vlan105
  ip address 192.168.5.254 255.255.255.0
+ no shutdown
+ exit
 interface Vlan106
  ip address 192.168.6.254 255.255.255.0
+ no shutdown
+ exit
+
+! OSPF
 router ospf 1333
  network 192.168.1.0 0.0.0.255 area 1
  network 192.168.5.0 0.0.0.255 area 1
  network 192.168.6.0 0.0.0.255 area 1
+ exit
+end
+write memory
 
-! Switch22 (Area 2)
+! ===== Switch22 (Area 2) =====
+enable
+configure terminal
 hostname Switch22
+no ip domain-lookup
 ip routing
 spanning-tree mode rapid-pvst
+
+! EtherChannel (LACP)
 interface range f0/1, f0/6-8
  channel-group 3 mode active
  switchport trunk encapsulation dot1q
  switchport mode trunk
  speed 100
  duplex full
+ no shutdown
+ exit
+
+! SVI
 interface Vlan1
  ip address 192.168.1.251 255.255.255.0
-interface Vlan107
- no ip address
-interface Vlan108
- no ip address
+ no shutdown
+ exit
+! Vlan107, Vlan108 — без IP (шлюзы на SW2 и SW00)
+
+! OSPF
 router ospf 1444
  network 192.168.1.0 0.0.0.255 area 2
  network 192.168.7.0 0.0.0.255 area 2
- network 192.168.8.0 0.0.0.255 area 2</code></pre>
+ network 192.168.8.0 0.0.0.255 area 2
+ exit
+end
+write memory</code></pre>
 
-    <h3>🌐 Switch0 (2960, L2-доступ) и Switch00 (Периферия L3, DHCP)</h3>
-    <pre><code>! Switch0
-hostname Switch0
-spanning-tree mode pvst
-interface range f0/3-5
- description pagp-trunk
- no shutdown
- channel-group 2 mode auto
- switchport mode trunk
- speed 100
- duplex full
-interface Port-channel 2
- switchport mode trunk
-interface Vlan1
- ip address 192.168.1.250 255.255.255.0
- no shutdown
-ip default-gateway 192.168.1.254
-interface f0/10
- switchport mode access
- switchport access vlan 108
- spanning-tree portfast
-
-! Switch00
-hostname Switch00
-ip routing
-spanning-tree mode pvst
-interface range f0/2-5
- channel-group 2 mode desirable
- switchport trunk encapsulation dot1q
- switchport mode trunk
-interface Vlan1
- ip address 192.168.1.249 255.255.255.0
-ip route 0.0.0.0 0.0.0.0 192.168.1.253
-ip dhcp pool vlan108
- network 192.168.8.0 255.255.255.0
- default-router 192.168.8.254</code></pre>
-
-    <h3>💡 Почему на Switch22 нет IP на Vlan107 и Vlan108?</h3>
+    <p><strong>💡 Почему на Switch22 нет IP на Vlan107 и Vlan108?</strong></p>
     <ul>
         <li><strong>Vlan107:</strong> Шлюз (192.168.7.254) настроен на <strong>Switch2</strong>. Если дать IP еще и на SW22, возникнет конфликт.</li>
         <li><strong>Vlan108:</strong> Шлюз (192.168.8.254) перенесен на <strong>Switch00</strong> (из-за бага DHCP в PT 6.2). SW22 просто пропускает этот VLAN через транк.</li>
     </ul>
+
+    <h3>🌐 2.7. Switch0 (2960, L2-доступ) и Switch00 (L3, DHCP)</h3>
+    <pre><code>! ===== Switch0 (L2 — ip routing НЕ включаем!) =====
+enable
+configure terminal
+hostname Switch0
+no ip domain-lookup
+spanning-tree mode pvst
+
+! EtherChannel (PAgP)
+interface range f0/3-5
+ description pagp-trunk
+ channel-group 2 mode auto
+ switchport mode trunk
+ speed 100
+ duplex full
+ no shutdown
+ exit
+interface Port-channel 2
+ switchport mode trunk
+ exit
+
+! SVI + шлюз
+interface Vlan1
+ ip address 192.168.1.250 255.255.255.0
+ no shutdown
+ exit
+ip default-gateway 192.168.1.254
+
+! Порт доступа
+interface f0/10
+ switchport mode access
+ switchport access vlan 108
+ spanning-tree portfast
+ no shutdown
+ exit
+
+end
+write memory
+
+! ===== Switch00 (L3) =====
+enable
+configure terminal
+hostname Switch00
+no ip domain-lookup
+ip routing
+spanning-tree mode pvst
+
+! EtherChannel (PAgP)
+interface range f0/2-5
+ channel-group 2 mode desirable
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+ no shutdown
+ exit
+interface Port-channel 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ exit
+
+! SVI
+interface Vlan1
+ ip address 192.168.1.249 255.255.255.0
+ no shutdown
+ exit
+
+! Маршрут по умолчанию
+ip route 0.0.0.0 0.0.0.0 192.168.1.253
+
+! DHCP для VLAN108
+ip dhcp pool vlan108
+ network 192.168.8.0 255.255.255.0
+ default-router 192.168.8.254
+ exit
+
+end
+write memory</code></pre>
 
     <h2>🧪 3. ПРОТОКОЛ ТЕСТИРОВАНИЯ (Advanced Enterprise Lab)</h2>
     
@@ -492,7 +688,7 @@ ip dhcp pool vlan108
     </table>
 
     <p style="margin-top: 40px; text-align: center; font-style: italic; color: var(--accent);">
-        Этот протокол — финальное доказательство. Теперь у вас есть сеть, конфиги и тесты. <strong>Портфолио готово.</strong>
+        Конфиги очищены от дефолтных строк CPT 6.2. Всё, что осталось — значимо для работы сети. Теперь у вас есть сеть, конфиги и тесты. <strong>Портфолио готово.</strong>
     </p>
 </div>
 

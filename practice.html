@@ -208,6 +208,15 @@ body.learning-mode .progress-summary { display: block; }
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> подключитесь к коммутатору по консоли или SSH. Узнайте, на каких портах реально висят ПК (по схеме или через <code>show cdp neighbors</code> / <code>show mac address-table</code>). Войдите в режим конфигурации: <code>enable</code> → <code>configure terminal</code>.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+! Проверить, что порты свободны и нет чужих VLAN
+show vlan brief
+show interfaces status</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Создать VLAN на SW1 и SW2:</strong></p>
             <div class="code-wrap">
                 <pre>vlan 10
@@ -265,6 +274,15 @@ interface f0/2
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> убедитесь, что все 4 порта (f0/1–f0/4) физически подключены и подняты. Проверьте скорость/дуплекс на каждом: <code>show interfaces f0/1</code> (и т.д.). Если скорость разная — выровняйте до начала сборки канала. Войдите в режим конфигурации: <code>enable</code> → <code>configure terminal</code>.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show interfaces status
+show interfaces f0/1
+! Убедиться, что все 4 порта в состоянии connected</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. На SW1 (активная сторона):</strong></p>
             <div class="code-wrap">
                 <pre>interface range f0/1-4
@@ -323,6 +341,17 @@ interface port-channel 1
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> то же, что и в задаче 2 — проверить физическое состояние портов и одинаковые speed/duplex. Убедитесь, что ни на одном порту нет остатков старой конфигурации (например, `channel-group` с прошлых лаб). Если есть — удалите: <code>no channel-group</code>. Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show interfaces status
+! Если порт уже в канале — снять
+interface range f0/1-4
+ no channel-group
+ exit</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. На SW3 (desirable):</strong></p>
             <div class="code-wrap">
                 <pre>interface range f0/1-4
@@ -380,6 +409,14 @@ interface port-channel 2
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте текущего корневого моста (<code>show spanning-tree vlan 1</code> — строка <code>Root ID</code>). Если корень уже другой — это нормально, мы его переопределим. Убедитесь, что на всех трёх свитчах одинаковый режим STP (например, `rapid-pvst`). Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show spanning-tree vlan 1
+show spanning-tree summary</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Включить Rapid-PVST+ на всех свитчах:</strong></p>
             <div class="code-wrap">
                 <pre>spanning-tree mode rapid-pvst</pre>
@@ -422,6 +459,14 @@ interface port-channel 2
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-адресацию на интерфейсах (<code>show ip interface brief</code>). Убедитесь, что сети 10.0.0.0/30 и 192.168.1.0/24 реально настроены. Проверьте связность до соседа: <code>ping 10.0.0.1</code> (с R1). Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show ip interface brief
+ping 10.0.0.1</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Настроить R1:</strong></p>
             <div class="code-wrap">
                 <pre>router ospf 1
@@ -479,6 +524,17 @@ interface f0/1
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что R1 и R2 видят друг друга по L2 (ping между их реальными IP). Убедитесь, что на интерфейсах f0/0 нет остатков старой конфигурации HSRP (например, `standby 2`). Если есть — удалите. Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show standby brief
+! Если есть лишние группы — удалить
+interface f0/0
+ no standby 2
+ exit</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Настроить R1 (Active):</strong></p>
             <div class="code-wrap">
                 <pre>interface f0/0
@@ -531,6 +587,14 @@ interface f0/1
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-связность между R1 (10.0.0.2) и ISP (10.0.0.1): <code>ping 10.0.0.1</code>. Убедитесь, что TCP 179 не блокируется ACL. Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+ping 10.0.0.1
+show ip interface brief</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Настроить ISP:</strong></p>
             <div class="code-wrap">
                 <pre>router bgp 65001
@@ -565,7 +629,15 @@ interface f0/1
     <div class="script-card">
         <h2>8. IPv6 и OSPFv3 (Двухстековая маршрутизация)</h2>
         <p><strong>Задача:</strong> Настроить IPv6-адресацию и OSPFv3 между двумя роутерами, проверить связность по IPv6.</p>
-        
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что IPv6 включён глобально: <code>show ipv6 interface brief</code>. Если интерфейсы в состоянии down — поднимите их. Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show ipv6 interface brief
+! Если IPv6 не включён — включить
+ipv6 unicast-routing</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
         <div class="task-block">
             <h3>📋 Условие</h3>
             <ul>
@@ -577,6 +649,15 @@ interface f0/1
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что IPv6 включён глобально: <code>show ipv6 interface brief</code>. Если интерфейсы в состоянии down — поднимите их. Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show ipv6 interface brief
+! Если IPv6 не включён — включить
+ipv6 unicast-routing</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Настроить R1:</strong></p>
             <div class="code-wrap">
                 <pre>ipv6 unicast-routing
@@ -635,6 +716,14 @@ router ospfv3 1
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что Po1 (транк) реально собран и в статусе <code>SU</code> (<code>show etherchannel summary</code>). Убедитесь, что DHCP-сервер доступен (пинг с ПК до SW00). Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show etherchannel summary
+show ip interface brief</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Включить DHCP Snooping глобально и в VLAN:</strong></p>
             <div class="code-wrap">
                 <pre>ip dhcp snooping
@@ -691,6 +780,14 @@ no ip dhcp snooping information option</pre>
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что SVI VLAN 10 и VLAN 20 уже созданы и в статусе up/up (<code>show ip interface brief</code>). Если нет — создайте их до настройки пулов. Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show ip interface brief
+show vlan brief</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Создать SVI и включить маршрутизацию:</strong></p>
             <div class="code-wrap">
                 <pre>ip routing
@@ -749,6 +846,14 @@ ip dhcp pool VLAN20
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что интерфейсы f0/0 и f0/1 в статусе up/up. Убедитесь, что внутренняя сеть 192.168.10.0/24 реально доступна (пинг с R1 до ПК). Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show ip interface brief
+ping 192.168.10.11</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Пометить интерфейсы inside/outside:</strong></p>
             <div class="code-wrap">
                 <pre>interface f0/0
@@ -802,6 +907,14 @@ ip nat inside source list NAT interface f0/1 overload</pre>
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что R1 и R2 видят друг друга по OSPF (<code>show ip ospf neighbor</code> — FULL), а R2 и R3 — по EIGRP (<code>show ip eigrp neighbors</code> — UP). Если соседство не поднято — redistribution не сработает. Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show ip ospf neighbor
+show ip eigrp neighbors</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Настроить R1 (OSPF):</strong></p>
             <div class="code-wrap">
                 <pre>router ospf 1
@@ -860,6 +973,14 @@ router eigrp 100
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что все свитчи в одном режиме STP (<code>show spanning-tree summary</code>). Убедитесь, что имена регионов и ревизии совпадут (это критично для MSTP: если регион разный — свитчи не «увидят» друг друга). Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+show spanning-tree summary
+show spanning-tree mst configuration</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Включить MSTP и создать регион на обоих коммутаторах:</strong></p>
             <div class="code-wrap">
                 <pre>spanning-tree mode mst
@@ -914,6 +1035,14 @@ spanning-tree mst 2 root primary</pre>
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что R1 и SW1 видят друг друга (пинг). Убедитесь, что на SW1 нет локально настроенного времени, которое конфликтует с NTP (если есть — сбросьте: <code>clock set</code>). Войдите в режим конфигурации.</p>
+<div class="code-wrap">
+    <pre>enable
+configure terminal
+ping 192.168.1.5
+show clock</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Настроить R1 как NTP-сервер:</strong></p>
             <div class="code-wrap">
                 <pre>clock timezone MSK 3 0
@@ -958,6 +1087,14 @@ ntp server 192.168.1.5</pre>
         
         <div class="task-block">
             <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что WLC подключён к сети и доступен по management IP (<code>ping 192.168.1.100</code>). Убедитесь, что AP физически подключён к SW1 и порт в trunk-режиме. Войдите в WLC через GUI (браузер) или CLI (SSH).</p>
+<div class="code-wrap">
+    <pre>! На SW1 — проверить, что порт к WLC в trunk
+show interfaces status
+! На WLC (через SSH/GUI) — проверить, что AP виден
+show ap summary</pre>
+    <button class="copy-btn">Копировать</button>
+</div>
             <p><strong>Шаг 1. Настроить WLC (через GUI или CLI):</strong></p>
             <div class="code-wrap">
                 <pre>! Настройка WLC (пример для Packet Tracer)
