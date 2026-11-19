@@ -494,12 +494,19 @@ show spanning-tree summary</pre>
         </div>
         <div class="task-block solution">
             <h3>🛠️ Решение</h3>
-            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-адресацию на интерфейсах (<code>show ip interface brief</code>). Убедитесь, что сети 10.0.0.0/30 и 192.168.1.0/24 реально настроены. Проверьте связность до соседа: <code>ping 10.0.0.1</code> (с R1). Войдите в режим конфигурации.</p>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-адресацию на интерфейсах (<code>show ip interface brief</code>). Убедитесь, что интерфейсы сети 10.0.0.0/30 и 192.168.1.0/24 реально настроены и все линки присоединены и подняты, в т.ч. и для конечных устройств. Проверьте связность до соседа: <code>ping 10.0.0.2 и до конечного ПК</code> (с R1 и по аналогии с R2). Войдите в режим конфигурации.</p>
             <div class="code-wrap">
 <pre>enable
-configure terminal
 show ip interface brief
-ping 10.0.0.1</pre>
+configure terminal
+int f0/0
+ip addr 10.0.0.1 255.255.255.252
+no shut
+exit
+int f0/1
+ip addr 192.168.0.1 255.255.255.0
+no shut
+</pre>
                 <button class="copy-btn">Копировать</button>
             </div>
             <p><strong>Шаг 1. Настроить R1:</strong></p>
@@ -535,9 +542,11 @@ interface f0/1
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
 <tr><td class="cmd"><code>show ip ospf neighbor</code></td><td class="ok">Сосед в статусе <code>FULL</code>.</td><td class="bad"><code>EXSTART</code>/<code>EXCHANGE</code> — MTU; соседа нет — area/subnet/MD5/hello</td></tr>
-<tr><td class="cmd"><code>show ip route ospf</code></td><td class="ok">Маршрут до сети 192.168.2.0 с меткой <code>O</code>.</td><td class="bad">Соседство есть, маршрута нет — не та area</td></tr>
+<tr><td class="cmd"><code>show ip route ospf</code></td><td class="ok">Маршрут до сети 192.168.2.0 с меткой <code>O</code>.</td><td class="bad">Соседство есть, маршрута нет — не та area, либо выключен интерфейс присоединенного устройства. Так будет, несмотря на "no shut" интерфейса 2-ой сети и его зелёный линк в CPT</td></tr>
 <tr><td class="cmd"><code>ping 192.168.2.1</code> (с R1)</td><td class="ok">Успешно.</td><td class="bad">Не проходит — MD5 mismatch / ACL</td></tr>
 </tbody></table>
+<br>
+И полезный контроль аутентификации: временно смените ключ на одном из роутеров <code>ip ospf message-digest-key 1 md5 другоеслово</code>. Cоседство должно разорваться <code>show ip ospf neighbor</code> - сосед и маршруты исчезнут). Вернёте ключ — соседство восстановится. Это наглядное подтверждение, что MD5 реально работает.
         </div>
         <p class="analogy"><strong>💡 Аналогия:</strong> OSPF — это как навигатор, который строит карту города. Каждый роутер рассказывает соседям, что он видит (LSDB), и все вместе вычисляют кратчайшие пути по алгоритму Дейкстры. Если одна улица закрыта — навигатор сам перестроит маршрут.</p>
     </div>
