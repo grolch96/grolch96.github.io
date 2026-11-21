@@ -916,7 +916,7 @@ configure terminal
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>show ip bgp summary</code></td><td class="ok">Сосед 10.0.0.1 в статусе <code>Established</code>, uptime &gt; 00:00:00.</td><td class="bad"><code>Idle</code>/<code>Active</code> — TCP 179, AS mismatch; uptime 00:00:00 — флап</td></tr>
+<tr><td class="cmd"><code>show ip bgp summary</code> — колонка State/PfxRcd</td><td class="ok">На месте слова «State» — число полученных префиксов (например, <code>1</code>): это и есть Established.</td><td class="bad">Видно слово <code>Idle</code>/<code>Active</code>/<code>Connect</code> — соседство не установлено; число 0 — сессия есть, префиксов не получено</td></tr>
 <tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1</code> на R1</td><td class="ok">State <code>Established</code>, BGP version 4, remote AS 65001, счётчики таблиц версий совпадают.</td><td class="bad">Remote AS не тот, что на соседе — соседство зависнет в Idle; <code>Active</code> — R1 сам пытается открыть TCP, значит порт 179 на другой стороне закрыт</td></tr>
 <tr><td class="cmd"><code>show tcp brief</code></td><td class="ok">TCP-сессия на порту 179 (LISTEN/ESTAB с 10.0.0.x).</td><td class="bad">Сессии нет — ACL/маршрут до соседа отсутствуют</td></tr>
 </tbody>
@@ -937,16 +937,19 @@ configure terminal
 <tbody>
 <tr><td class="cmd"><code>ping 8.8.8.8</code> с ПК за R1</td><td class="ok">Успешно (при наличии NAT).</td><td class="bad">Не проходит — дефолт не дошёл до RIB</td></tr>
 <tr><td class="cmd"><code>traceroute 8.8.8.8</code> с ПК</td><td class="ok">Первый хоп — R1, дальше — ISP.</td><td class="bad">Пакет уходит не через R1 — проверьте таблицу маршрутизации R1</td></tr>
-<tr><td class="cmd">Тест разрыва: <code>shutdown</code> f0/1 на R1, затем <code>no shutdown</code></td><td class="ok">BGP-сессия рвётся, маршруты исчезают; после восстановления — возвращаются автоматически (holdtime 180 с в PT может тянуться заметно дольше пинга).</td><td class="bad">После восстановления соседство не поднялось само — проверьте <code>neighbor</code>-строки на обеих сторонах</td></tr>
+<tr><td class="cmd">Тест разрыва: <code>shutdown</code> f0/1 на R1, затем <code>no shutdown</code></td><td class="ok">Сессия рвётся сразу (fast-external-fallover), дефолт исчезает из RIB; после <code>no shutdown</code> соседство и маршруты возвращаются автоматически.</td><td class="bad">После восстановления соседство не поднялось само — проверьте <code>neighbor</code>-строки на обеих сторонах. Держите в голове: holdtime 180 с важен только для «мягких» сбоев, при падении интерфейса сессия рвётся мгновенно</td></tr>
+
 </tbody>
 </table>
 <div class="note"><strong>Примечания:</strong>
 <ul>
 <li><code>network</code> в BGP объявляет только сети, уже лежащие в RIB (connected, static, выученные по IGP). Типичная ловушка: команда введена, сети нет — и в <code>advertised-routes</code> пусто.</li>
-<li>В Packet Tracer holdtime/timers могут быть «заторможены»: после <code>no shutdown</code> соседство поднимается не мгновенно — дайте сессии 30–60 секунд перед повторной диагностикой.</li>
+<li>Если поправили <code>network</code> или <code>neighbor</code> и ждёте обновления — можно не ждать таймеров, а «мягко» перезапустить обмен: <code>clear ip bgp * soft</code>. TCP-сессия при этом не рвётся, роутеры просто заново обмениваются префиксами. Жёсткий вариант <code>clear ip bgp *</code> в лабе тоже допустим, но сессия пересоберётся с нуля (состояние Idle → Active → Established пройдёт заново).</li>
+<li>В Packet Tracer holdtime/timers могут быть «заторможены»: после <code>no shutdown</code> соседство поднимается не мгновенно — дайте сессии 30–60 секунд перед повторной диагностикой. При этом само падение сессии при <code>shutdown</code> интерфейса происходит мгновенно (fast-external-fallover) — задержка есть только на восстановление.</li>
 <li>Если дефолт получен, но на ПК интернета нет — проверьте NAT (задача 11) и наличие маршрута назад: трафик от ПК идёт через R1, но ответ ISP не найдёт путь к 192.168.1.10 без анонса вашей сети.</li>
 </ul>
 </div>
+
         </div>
         <p class="analogy"><strong>💡 Аналогия:</strong> BGP — это как дипломатические переговоры между странами (автономными системами). Каждая страна рассказывает соседям, какие дороги у неё есть, и договаривается, как пропускать чужие фуры. Внутренние дороги (OSPF) — это местные улицы, а BGP — международные трассы.</p>
     </div>
