@@ -865,19 +865,21 @@ interface f0/0
 <!-- ЗАДАЧА 7 -->
     <div class="script-card">
         <h2>7. BGP (Стык с провайдером) <input type="checkbox" class="self-check" data-task="7" title="Отметить как решённую"></h2>
-        <p><strong>Задача:</strong> Настроить eBGP между корпоративным роутером (R1) и провайдером (ISP), чтобы R1 получал маршрут в интернет. Это единственный способ получить маршрут в интернет от провайдера и анонсировать ему свою сеть.</p>
+        <p><strong>Задача:</strong> Настроить eBGP между корпоративными роутерами (R1, R2 2811 — AS 65002) и провайдером (ISP 2911 — AS 65001), чтобы R1 и R2 получали маршрут в интернет и анонсировали ISP свою сеть. Два аплинка дают резервирование: отказ одного стыка не разрывает связность — трафик уходит через второй.</p>
         <div class="task-block">
             <h3>📋 Условие</h3>
             <ul>
-                <li>R1: AS 65002, IP 10.0.0.2/30 на f0/1 (к ISP).</li>
-                <li>ISP: AS 65001, IP 10.0.0.1/30 на f0/0.</li>
-                <li>R1 должен анонсировать сеть 192.168.1.0/24.</li>
-                <li>ISP анонсирует маршрут по умолчанию (0.0.0.0/0).</li>
+                <li>Топология: ПК (192.168.1.10) — SW — R1 и R2 (HSRP из задачи 6) — двумя линками к ISP.</li>
+                <li>R1: AS 65002, LAN 192.168.1.5/24 на f0/0, стык 10.0.0.2/30 на f0/1.</li>
+                <li>R2: AS 65002, LAN 192.168.1.150/24 на f0/0, стык 10.0.1.2/30 на f0/1.</li>
+                <li>ISP: AS 65001, 10.0.0.1/30 на g0/0 и 10.0.1.1/30 на g0/1, Loopback0 8.8.8.8/32 — «хост в интернете».</li>
+                <li>R1 и R2 анонсируют сеть 192.168.1.0/24. ISP отдаёт обоим маршрут по умолчанию (0.0.0.0/0).</li>
+                <li>Шлюз ПК — виртуальный IP 192.168.1.2 (HSRP), конфигурация HSRP и NAT из предыдущих задач сохраняется.</li>
             </ul>
         </div>
         <div class="task-block solution">
             <h3>🛠️ Решение</h3>
-            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-связность между R1 (10.0.0.2) и ISP (10.0.0.1): <code>ping 10.0.0.1</code>. Убедитесь, что TCP 179 не блокируется ACL. Войдите в режим конфигурации.</p>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-связность стыков: с R1 — <code>ping 10.0.0.1</code>, с R2 — <code>ping 10.0.1.1</code>. BGP строится поверх IP: пока стыки не пингуются, соседство не поднимется в принципе.</p>
             <div class="code-wrap">
 <pre>enable
 ping 10.0.0.1
@@ -886,21 +888,67 @@ configure terminal
 </pre>
                 <button class="copy-btn">Копировать</button>
             </div>
-            <p><strong>Шаг 1. Настроить ISP:</strong></p>
+            <p><strong>Шаг 1. ISP — интерфейсы и loopback «интернета»:</strong></p>
+            <div class="code-wrap">
+<pre>interface g0/0
+ ip address 10.0.0.1 255.255.255.252
+ no shutdown
+interface g0/1
+ ip address 10.0.1.1 255.255.255.252
+ no shutdown
+interface loopback0
+ ip address 8.8.8.8 255.255.255.255
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. R1 — внешний интерфейс (внутренний и HSRP уже настроены в задаче 6):</strong></p>
+            <div class="code-wrap">
+<pre>interface f0/1
+ ip address 10.0.0.2 255.255.255.252
+ ip nat outside
+ no shutdown
+exit
+router bgp 65002
+ neighbor 10.0.0.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. R2 — зеркально, второй стык в отдельной подсети /30:</strong></p>
+            <div class="code-wrap">
+<pre>interface f0/1
+ ip address 10.0.1.2 255.255.255.252
+ ip nat outside
+ no shutdown
+exit
+router bgp 65002
+ neighbor 10.0.1.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 4. ISP — BGP и дефолт. Сначала соседей, потом дефолт.</strong> Команда <code>default-originate</code> в Packet Tracer <em>не поддерживается</em> — CLI ответит <code>% Invalid input detected</code>. Обход: кладём дефолт в RIB самого ISP и анонсируем его через <code>network 0.0.0.0</code>:</p>
             <div class="code-wrap">
 <pre>router bgp 65001
  neighbor 10.0.0.2 remote-as 65002
- neighbor 10.0.0.2 default-originate</pre>
+ neighbor 10.0.1.2 remote-as 65002
+ network 8.8.8.8 mask 255.255.255.255
+ network 0.0.0.0 mask 0.0.0.0
+exit
+ip route 0.0.0.0 0.0.0.0 loopback0
+end
+</pre>
                 <button class="copy-btn">Копировать</button>
             </div>
-            <p><strong>Шаг 2. Настроить R1:</strong></p>
-            <div class="code-wrap">
-<pre>router bgp 65002
- neighbor 10.0.0.1 remote-as 65001
- network 192.168.1.0 mask 255.255.255.0</pre>
-                <button class="copy-btn">Копировать</button>
-            </div>
-            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Важный нюанс:</strong> команда <code>network</code> в BGP не «создаёт» сеть, а только объявляет уже существующую в таблице маршрутизации. Если 192.168.1.0/24 не прописан на R1 (например, LAN за свитчем не поднят), сосед его не получит — и это не баг BGP, а нормальное поведение. Проверяйте сначала <code>show ip route connected</code>.</p>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Три важных нюанса:</strong></p>
+            <ul style="font-size: 14px; color: var(--muted);">
+                <li><code>network</code> в BGP не «создаёт» сеть, а только объявляет уже существующую в таблице маршрутизации. Поэтому строка <code>ip route 0.0.0.0 0.0.0.0 loopback0</code> обязательна: без дефолта в RIB ISP анонс <code>0.0.0.0/0</code> не заработает. IOS предупредит <code>%Default route without gateway...</code> — это не ошибка, а предупреждение; в реальной сети так делать не стоит, в лабе ISP — «конец интернета», и маршрут формально нужен только для BGP-анонса.</li>
+                <li>Указать шлюзом дефолта собственный адрес (например, <code>ip route 0.0.0.0 0.0.0.0 8.8.8.8</code> на самом ISP) нельзя — получим <code>%Invalid next hop address (it's this router)</code>.</li>
+                <li>Вводите блоки BGP строго в консоль нужного устройства. Если блок ISP вставить в R1, роутер объявит соседом самого себя — увидите <code>% Cannot configure the local system as neighbor</code>. Лечится полным удалением процесса: <code>no router bgp 65001</code>, затем настройка с нуля.</li>
+            </ul>
         </div>
         <div class="check-block">
             <h3>✅ Проверка</h3>
@@ -908,16 +956,16 @@ configure terminal
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>show ip interface brief</code> на R1 и ISP</td><td class="ok">Соседние интерфейсы up/up: 10.0.0.1/30 и 10.0.0.2/30.</td><td class="bad">down/down — кабель/порт; administratively down — забыт <code>no shutdown</code></td></tr>
-<tr><td class="cmd"><code>ping 10.0.0.1</code> с R1 (и обратно с ISP)</td><td class="ok">Ответы приходят.</td><td class="bad">Не пингуется — соседство BGP не поднимется в принципе: BGP строится поверх IP</td></tr>
+<tr><td class="cmd"><code>show ip interface brief</code> на R1, R2, ISP</td><td class="ok">Все стыковые интерфейсы up/up: 10.0.0.1/30↔10.0.0.2/30 и 10.0.1.1/30↔10.0.1.2/30.</td><td class="bad">down/down — кабель/порт; administratively down — забыт <code>no shutdown</code></td></tr>
+<tr><td class="cmd"><code>ping 10.0.0.1</code> с R1, <code>ping 10.0.1.1</code> с R2</td><td class="ok">Ответы приходят с обоих стыков.</td><td class="bad">Не пингуется — соседство BGP не поднимется в принципе: BGP строится поверх IP</td></tr>
 </tbody>
 </table>
 <h3 class="stage">Этап 1. Соседство BGP</h3>
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>show ip bgp summary</code> — колонка State/PfxRcd</td><td class="ok">На месте слова «State» — число полученных префиксов (например, <code>1</code>): это и есть Established.</td><td class="bad">Видно слово <code>Idle</code>/<code>Active</code>/<code>Connect</code> — соседство не установлено; число 0 — сессия есть, префиксов не получено</td></tr>
-<tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1</code> на R1</td><td class="ok">State <code>Established</code>, BGP version 4, remote AS 65001, счётчики таблиц версий совпадают.</td><td class="bad">Remote AS не тот, что на соседе — соседство зависнет в Idle; <code>Active</code> — R1 сам пытается открыть TCP, значит порт 179 на другой стороне закрыт</td></tr>
+<tr><td class="cmd"><code>show ip bgp summary</code> на ISP</td><td class="ok">Два соседа: вместо слова «State» — число полученных префиксов (например, <code>4</code>). Первые 15–20 секунд Idle/Active — норма, eBGP поднимается не мгновенно.</td><td class="bad">Один сосед из двух — проверьте второй стык и remote-as; ошибка <code>Cannot configure the local system as neighbor</code> — блок ISP введён не в своё устройство, конфиг соседа совпадает с локальным IP</td></tr>
+<tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1</code> на R1</td><td class="ok">State <code>Established</code>, BGP version 4, remote AS 65001.</td><td class="bad">Remote AS не тот, что на соседе — соседство зависнет в Idle; <code>Active</code> — R1 сам пытается открыть TCP, значит порт 179 на другой стороне закрыт</td></tr>
 <tr><td class="cmd"><code>show tcp brief</code></td><td class="ok">TCP-сессия на порту 179 (LISTEN/ESTAB с 10.0.0.x).</td><td class="bad">Сессии нет — ACL/маршрут до соседа отсутствуют</td></tr>
 </tbody>
 </table>
@@ -925,34 +973,35 @@ configure terminal
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>show ip bgp</code></td><td class="ok">Маршрут <code>0.0.0.0/0</code> (дефолт) получен от ISP, метка <code>&gt;</code>.</td><td class="bad">Пусто — нет <code>default-originate</code></td></tr>
-<tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1 advertised-routes</code></td><td class="ok">R1 анонсирует сеть 192.168.1.0/24.</td><td class="bad">Префикс не объявлен — нет network statement, либо сети нет в RIB (см. примечание в решении)</td></tr>
-<tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1 routes</code></td><td class="ok">Все полученные от ISP префиксы, лучший — с меткой <code>&gt;</code>.</td><td class="bad">Сосед Established, а префиксов нет — подождите ~30 с или проверьте фильтры</td></tr>
-<tr><td class="cmd"><code>show ip route bgp</code></td><td class="ok">Дефолт в RIB с меткой <code>B</code> (административная дистанция 20 для eBGP).</td><td class="bad">В BGP-таблице есть, а в RIB нет — маршрут не «лучший» (next-hop недостижим: без <code>next-hop-self</code> на ISP в eBGP это редкость, но в лабах бывает)</td></tr>
+<tr><td class="cmd"><code>show ip bgp</code> на ISP</td><td class="ok">Сеть 192.168.1.0/24 с двумя путями: лучший <code>&gt;</code> через 10.0.0.2 (R1), второй без <code>&gt;</code> через 10.0.1.2 (R2). Плюс локальные <code>0.0.0.0/0</code> и <code>8.8.8.8/32</code>.</td><td class="bad">Префикса нет — нет <code>network</code> на R1/R2 или сети нет в RIB (см. примечания); один путь вместо двух — соседство со вторым роутером не установлено</td></tr>
+<tr><td class="cmd"><code>show ip route</code> на R1 и R2</td><td class="ok">У каждого: <code>B* 0.0.0.0/0</code> через своего ISP (R1 — via 10.0.0.1, R2 — via 10.0.1.1) и <code>B 8.8.8.8</code>. Строка «Gateway of last resort» — на стык.</td><td class="bad">Дефолта нет — не введён <code>ip route 0.0.0.0 0.0.0.0 loopback0</code> на ISP либо не задан <code>network 0.0.0.0 mask 0.0.0.0</code>; подождите ~60 с, при необходимости <code>clear ip bgp * soft</code></td></tr>
+<tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1 advertised-routes</code> на R1</td><td class="ok">R1 анонсирует 192.168.1.0/24.</td><td class="bad">Префикс не объявлен — нет network statement, либо сети нет в RIB (см. примечания)</td></tr>
 </tbody>
 </table>
 <h3 class="stage">Этап 3. Сквозной трафик</h3>
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>ping 8.8.8.8</code> с ПК за R1</td><td class="ok">Успешно (при наличии NAT).</td><td class="bad">Не проходит — дефолт не дошёл до RIB</td></tr>
-<tr><td class="cmd"><code>traceroute 8.8.8.8</code> с ПК</td><td class="ok">Первый хоп — R1, дальше — ISP.</td><td class="bad">Пакет уходит не через R1 — проверьте таблицу маршрутизации R1</td></tr>
-<tr><td class="cmd">Тест разрыва: <code>shutdown</code> f0/1 на R1, затем <code>no shutdown</code></td><td class="ok">Сессия рвётся сразу (fast-external-fallover), дефолт исчезает из RIB; после <code>no shutdown</code> соседство и маршруты возвращаются автоматически.</td><td class="bad">После восстановления соседство не поднялось само — проверьте <code>neighbor</code>-строки на обеих сторонах. Держите в голове: holdtime 180 с важен только для «мягких» сбоев, при падении интерфейса сессия рвётся мгновенно</td></tr>
-
+<tr><td class="cmd"><code>ping 8.8.8.8</code> с ПК (шлюз 192.168.1.2)</td><td class="ok">0% потерь. TTL ответов 254 — пакет прошёл один хоп от NAT-границы до loopback: доказательство, что трансляция сработала на внешнем интерфейсе.</td><td class="bad">Ответы не приходят — дефолт не дошёл до RIB или не работает NAT: <code>show ip nat translations</code> пусто → проверьте ACL, метки <code>inside/outside</code> и что они висят на реальных именах интерфейсов (на 2911 это <code>g0/x</code>, а не <code>f0/x</code>)</td></tr>
+<tr><td class="cmd"><code>traceroute 8.8.8.8</code> с ПК</td><td class="ok">Первый хоп — 192.168.1.2 (HSRP), дальше — стык ISP.</td><td class="bad">Пакет уходит не туда — проверьте таблицу маршрутизации активного роутера</td></tr>
+<tr><td class="cmd">Тест разрыва: <code>shutdown</code> f0/1 на R1, затем <code>no shutdown</code></td><td class="ok">Сессия рвётся мгновенно (fast-external-fallover), у ISP путь <code>&gt;</code> до 192.168.1.0/24 переходит на 10.0.1.2 (R2), HSRP-роль перехватывает R2 — пинги с ПК не прерываются. После <code>no shutdown</code> соседство и роль Active возвращаются сами (preempt).</td><td class="bad">После восстановления соседство не поднялось само — проверьте <code>neighbor</code>-строки на обеих сторонах; пинги при обрыве умирают — смотрите, куда уходит Active-роль (<code>show standby brief</code>) и есть ли у оставшегося роутера живой стык к ISP</td></tr>
 </tbody>
 </table>
 <div class="note"><strong>Примечания:</strong>
 <ul>
 <li><code>network</code> в BGP объявляет только сети, уже лежащие в RIB (connected, static, выученные по IGP). Типичная ловушка: команда введена, сети нет — и в <code>advertised-routes</code> пусто.</li>
+<li><code>default-originate</code> — валидная команда реального IOS, но в Packet Tracer 6.2 её нет (кара под командой в CLI). Рабочий обход: дефолт в RIB ISP статикой + <code>network 0.0.0.0 mask 0.0.0.0</code>. Заодно это отличие стоит отметить в отчёте: «провайдер отдаёт полный дефолт, а не только маршрут до 8.8.8.8».</li>
 <li>Если поправили <code>network</code> или <code>neighbor</code> и ждёте обновления — можно не ждать таймеров, а «мягко» перезапустить обмен: <code>clear ip bgp * soft</code>. TCP-сессия при этом не рвётся, роутеры просто заново обмениваются префиксами. Жёсткий вариант <code>clear ip bgp *</code> в лабе тоже допустим, но сессия пересоберётся с нуля (состояние Idle → Active → Established пройдёт заново).</li>
-<li>В Packet Tracer holdtime/timers могут быть «заторможены»: после <code>no shutdown</code> соседство поднимается не мгновенно — дайте сессии 30–60 секунд перед повторной диагностикой. При этом само падение сессии при <code>shutdown</code> интерфейса происходит мгновенно (fast-external-fallover) — задержка есть только на восстановление.</li>
-<li>Если дефолт получен, но на ПК интернета нет — проверьте NAT (задача 11) и наличие маршрута назад: трафик от ПК идёт через R1, но ответ ISP не найдёт путь к 192.168.1.10 без анонса вашей сети.</li>
+<li>В Packet Tracer holdtime/timers могут быть «заторможены»: после <code>no shutdown</code> соседство поднимается не мгновенно — дайте сессии 30–60 секунд перед повторной диагностикой. Само падение при <code>shutdown</code> интерфейса происходит мгновенно (fast-external-fallover) — задержка есть только на восстановление.</li>
+<li>NAT обязателен: без него пакет от ПК дойдёт до 8.8.8.8, а ответ ISP не найдёт обратного пути к 192.168.1.10 (ISP не знает эту сеть — она анонсирована только «внутрь» eBGP). Симптом «пинг полупроходит» — классика для траблешутинга.</li>
+<li>После настройки не забудьте <code>write memory</code> на всех устройствах — PT-лабы теряют конфиг при случайном закрытии.</li>
 </ul>
 </div>
 
         </div>
-        <p class="analogy"><strong>💡 Аналогия:</strong> BGP — это как дипломатические переговоры между странами (автономными системами). Каждая страна рассказывает соседям, какие дороги у неё есть, и договаривается, как пропускать чужие фуры. Внутренние дороги (OSPF) — это местные улицы, а BGP — международные трассы.</p>
+        <p class="analogy"><strong>💡 Аналогия:</strong> BGP — это как дипломатические переговоры между странами (автономными системами). Каждая страна рассказывает соседям, какие дороги у неё есть, и договаривается, как пропускать чужие фуры. Внутренние дороги (OSPF) — это местные улицы, а BGP — международные трассы. Два стыка к ISP — как два погранперехода: закрылся один, фуры едут через второй.</p>
     </div>
+
 
     <!-- ЗАДАЧА 8 -->
     <div class="script-card">
@@ -1504,74 +1553,145 @@ spanning-tree mst 2 root primary</pre>
         <p class="analogy"><strong>💡 Аналогия:</strong> MSTP — это как несколько параллельных дорог для разных видов транспорта (инстансов). Грузовики (Instance 1) едут через один мост, легковые (Instance 2) — через другой. <code>root primary</code> на SW1 для Instance 1 = «грузовики едут через SW1». <code>root secondary</code> = «если мост SW1 закрыт, грузовики едут через резервный (SW2)». Так трафик распределяется, а не идёт весь через один свитч. Важно: у каждого инстанса корень ровно один — если оба свитча «primary», STP выберет корень по MAC, и балансировки не будет.</p>
     </div>
 
-    <!-- ЗАДАЧА 14 -->
+<!-- ЗАДАЧА 14 -->
     <div class="script-card">
         <h2>14. NTP (Синхронизация времени) <input type="checkbox" class="self-check" data-task="14" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить синхронизацию времени между сетевыми устройствами, чтобы логи и сертификаты работали корректно. Без синхронизации времени логи разных устройств не сопоставить, а сертификаты/DHCP-lease ломаются.</p>
         <div class="task-block">
             <h3>📋 Условие</h3>
             <ul>
-                <li>R1 — NTP-сервер (источник времени).</li>
-                <li>SW1 — NTP-клиент (синхронизируется с R1).</li>
+                <li>Server-PT (192.168.1.100/24, подключён к SW1) — NTP-сервер, централизованный источник времени.</li>
+                <li>R1 и SW1 — NTP-клиенты (синхронизируются с сервером).</li>
                 <li>Часовой пояс — Москва (UTC+3).</li>
+                <li>Бонус-кейс: до синхронизации логи SW1 выглядят как <code>*??? 01, 00:04:55</code> — устройство честно показывает, что времени у него нет. После NTP — нормальные даты.</li>
             </ul>
         </div>
         <div class="task-block solution">
             <h3>🛠️ Решение</h3>
-            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что R1 и SW1 видят друг друга (пинг). Убедитесь, что на SW1 нет локально настроенного времени, которое конфликтует с NTP (если есть — сбросьте: <code>clock set</code>). Войдите в режим конфигурации.</p>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка устройств:</strong> задайте имена, базовые настройки и адресацию в LAN (NTP строится поверх IP — пока клиенты не пингуют сервер, синхронизация не заработает). На SW1 после включения <code>service timestamps</code> вы сразу увидите кейс «логи без времени» — это нормально, NTP его исправит.</p>
+            <p><strong>Шаг 0.1. R1 — имя, база, адрес в LAN:</strong></p>
             <div class="code-wrap">
-<pre>enable
-ping 192.168.1.5
-show clock
-configure terminal
+<pre>configure terminal
+hostname R1
+no ip domain-lookup
+service timestamps log datetime msec
+line console 0
+ logging synchronous
+ exit
+interface f0/0
+ description Link-to-SW1
+ ip address 192.168.1.5 255.255.255.0
+ no shutdown
+ exit
+end
+clock set 12:00:00 22 Nov 2026
 </pre>
                 <button class="copy-btn">Копировать</button>
             </div>
-            <p><strong>Шаг 1. Настроить R1 как NTP-сервер:</strong></p>
+ <p><strong>Шаг 0.2. SW1 — имя, база, адрес через SVI:</strong> порт f0/1 остаётся обычным L2-портом VLAN 1, адрес вешается не на физический порт, а на SVI — так R1, SW1 и NTP-сервер окажутся в одном широковещательном домене:</p>
             <div class="code-wrap">
-<pre>clock timezone MSK 3 0
-ntp master 1</pre>
+<pre>configure terminal
+hostname SW1
+no ip domain-lookup
+service timestamps log datetime msec
+line console 0
+ logging synchronous
+ exit
+interface f0/1
+ description Link-to-R1
+ switchport
+ switchport mode access
+ shutdown
+ no shutdown
+ exit
+interface vlan 1
+ ip address 192.168.1.2 255.255.255.0
+ no shutdown
+ exit
+end
+</pre>
                 <button class="copy-btn">Копировать</button>
             </div>
-            <p><strong>Шаг 2. Настроить SW1 как NTP-клиент:</strong></p>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Почему SVI, а не <code>no switchport</code>:</strong> если сделать f0/1 routed-портом с IP, он выйдет из VLAN 1 — и сервер (который живёт в VLAN 1) не сможет даже разрешить ARP'ом адрес шлюза. Второй IP из той же подсети на <code>interface vlan 1</code> IOS не даст — перекрытие с f0/1. Поэтому для этой топологии единственный рабочий вариант: порты L2 в VLAN 1, адрес управления — на SVI. Порт к серверу (например, f0/2) настройки не требует: default — access в VLAN 1.</p>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Ловушка PT:</strong> если когда-то на порту вводился <code>no switchport</code>, вернуть его в L2 одной командой <code>switchport mode access</code> нельзя — она не убирает routed-режим. Нужен явный <code>switchport</code> (без параметров) плюс <code>switchport mode access</code>; связка <code>shutdown</code>/<code>no shutdown</code> заставляет PT пересобрать линк (после смены режима порта он иногда «зависает» в down). Проверка: в <code>show running-config</code> у блока f0/1 строки <code>no switchport</code> быть не должно, а <code>show ip interface brief</code> показывает f0/1 и Vlan1 в up/up.</p>
+
+            <p><strong>Шаг 0.3. Server-PT — адрес и NTP-сервис:</strong></p>
+            <ul style="font-size: 14px; color: var(--muted);">
+                <li>Подключите Server-PT к SW1 любым свободным портом (VLAN 1 уже несёт нашу подсеть, настраивать порт не нужно).</li>
+                <li>Desktop → IP Configuration: адрес <code>192.168.1.100</code>, маска <code>255.255.255.0</code>, шлюз <code>192.168.1.2</code>.</li>
+                <li>Services → NTP: переключатель <strong>Service: On</strong>. Ключи шифрования не нужны.</li>
+            </ul>
+            <p><strong>Шаг 0.4. Проверка связности (с SW1):</strong></p>
             <div class="code-wrap">
-<pre>clock timezone MSK 3 0
-ntp server 192.168.1.5</pre>
+<pre>ping 192.168.1.5
+ping 192.168.1.100
+</pre>
                 <button class="copy-btn">Копировать</button>
             </div>
+            <p><strong>Шаг 1. R1 — таймзона и роль клиента.</strong> Команда <code>ntp master</code> в Packet Tracer 6.2 <em>не поддерживается</em> (каре под командой): серверную роль в старых PT играет только устройство Server-PT. Поэтому R1 — клиент, как и SW1:</p>
+            <div class="code-wrap">
+<pre>configure terminal
+clock timezone MSK 3 0
+ntp server 192.168.1.100
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. SW1 — то же самое:</strong></p>
+            <div class="code-wrap">
+<pre>configure terminal
+clock timezone MSK 3 0
+ntp server 192.168.1.100
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Важные нюансы:</strong></p>
+            <ul style="font-size: 14px; color: var(--muted);">
+                <li><code>clock timezone</code> — это только отображение. Источник времени (UTC) приходит по NTP; таймзона переводит его в локальный вид. Задайте её одинаково на обоих устройствах, иначе время «уедет» на 3 часа.</li>
+                <li><code>service timestamps log datetime msec</code>: ключ <code>localtime</code> PT 6.2 не знает (каре под командой) — в реальном IOS строка валидна, в PT пишите без него.</li>
+                <li>В реальном IOS роутер, синхронизированный с внешним источником, сам отвечает на NTP-запросы клиентов даже без <code>ntp master</code> — эта команда нужна лишь, чтобы роутер мог быть «сам себе источником». В PT 6.2 серверная роль на роутере не реализована, поэтому клиенты ходят напрямую к Server-PT. Это отличие стоит отметить в отчёте.</li>
+                <li>Дефолтная точка в PT показывает «1970-й»: клиент синхронизируется «с чем дают», поэтому на сервере время должно быть осмысленным. Ручной <code>clock set</code> на R1 из Шага 0.1 нужен, чтобы его логи имели смысл ещё <em>до</em> синхронизации.</li>
+                <li>Сервер подключён к SW1, а не к R1 напрямую: NTP-сервер в реальной сети — это LAN-хост. Прямой кабель к R1 потребовал бы второй подсети и маршрутов — лишний слой для задачи, которая должна быть простой.</li>
+            </ul>
         </div>
         <div class="check-block">
             <h3>✅ Проверка</h3>
-<h3 class="stage">Этап 0. Связность</h3>
+<h3 class="stage">Этап 0. Связность и база</h3>
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>ping 192.168.1.5</code> с SW1</td><td class="ok">R1 отвечает.</td><td class="bad">Не пингуется — NTP не заработает в принципе: он поверх IP</td></tr>
-<tr><td class="cmd"><code>show clock</code> на R1 до настройки</td><td class="ok">Время хоть какое-то выставлено (PT по умолчанию часто 1970-й или системное).</td><td class="bad">Клиент возьмёт «что дают» — если у R1 1970-й, то и у SW1 будет 1970-й: это «синхронизировано», но бесполезно</td></tr>
+<tr><td class="cmd"><code>ping 192.168.1.100</code> с SW1 (и с R1)</td><td class="ok">Сервер отвечает с обоих клиентов.</td><td class="bad">Не пингуется — NTP не заработает в принципе: он поверх IP. Проверьте адрес сервера, порт на SW1 и Service: On</td></tr>
+<tr><td class="cmd"><code>ping 192.168.1.5</code> с SW1</td><td class="ok">R1 отвечает.</td><td class="bad">Проблема в адресации LAN — см. ловушку PT в Шаге 0.2</td></tr>
+<tr><td class="cmd"><code>show running-config | include description</code> на R1 и SW1</td><td class="ok">У стыковых интерфейсов есть описания (<code>Link-to-SW1</code> / <code>Link-to-R1</code>), имена устройств заданы.</td><td class="bad">Пусто — базовая дисциплина пропущена; без описаний конфиг через месяц станет нечитаемым</td></tr>
+<tr><td class="cmd"><code>show clock</code> на Server-PT (вкладка Desktop)</td><td class="ok">Время осмысленное (не 1970-й).</td><td class="bad">Клиенты возьмут «что дают» — синхронизация с мусорным временем бесполезна для логов</td></tr>
 </tbody>
 </table>
-<h3 class="stage">Этап 1. Синхронизация</h3>
+<h3 class="stage">Этап 1. Синхронизация (подождать 30–60 с после Шагов 1–2)</h3>
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>show ntp status</code> на SW1</td><td class="ok">Статус <code>synchronized</code>.</td><td class="bad"><code>unsynchronized</code> — нет ответа сервера</td></tr>
-<tr><td class="cmd"><code>show ntp associations</code></td><td class="ok">Сервер 192.168.1.5 в статусе <code>*</code> (выбран).</td><td class="bad">Нет звёздочки — peer не выбран</td></tr>
-<tr><td class="cmd"><code>show clock</code> на SW1 и R1</td><td class="ok">Время совпадает (с точностью до секунды).</td><td class="bad">Расхождение — синхронизация не прошла</td></tr>
-<tr><td class="cmd"><code>show running-config | include ntp</code></td><td class="ok"><code>ntp server 192.168.1.5</code> на SW1, <code>ntp master 1</code> на R1.</td><td class="bad">Неверный IP сервера / нет <code>ntp master</code></td></tr>
-<tr><td class="cmd"><code>show ntp status</code> на R1 (сервер)</td><td class="ok">Clock is unsynchronized или synchronized на master — но stratum задан (в PT <code>ntp master 1</code> даёт stratum 1).</td><td class="bad">Нет <code>ntp master</code> — сервер не отвечает клиентам</td></tr>
-<tr><td class="cmd"><code>show clock detail</code> на SW1</td><td class="ok">Указан источник времени — NTP (ссылка на сервер).</td><td class="bad">Время локальное — синхронизация не прошла, проверьте IP и связность</td></tr>
+<tr><td class="cmd"><code>show ntp status</code> на SW1</td><td class="ok">Статус <code>synchronized</code>.</td><td class="bad"><code>unsynchronized</code> — нет ответа сервера: проверьте пинг, Service: On, адрес в <code>ntp server</code></td></tr>
+<tr><td class="cmd"><code>show ntp associations</code></td><td class="ok">Сервер 192.168.1.100 в статусе <code>*</code> (выбран).</td><td class="bad">Нет звёздочки — peer не выбран; подождите ещё минуту</td></tr>
+<tr><td class="cmd"><code>show clock</code> на SW1 и R1</td><td class="ok">Время совпадает с серверным (с точностью до секунды) и имеет осмысленную дату.</td><td class="bad">Расхождение — проверьте, что <code>clock timezone MSK 3 0</code> задана одинаково</td></tr>
+<tr><td class="cmd"><code>show running-config | include ntp</code></td><td class="ok">На обоих устройствах <code>ntp server 192.168.1.100</code>.</td><td class="bad">Неверный IP / команда не принялась — сверьте ввод</td></tr>
+<tr><td class="cmd"><code>show clock detail</code> на SW1</td><td class="ok">Указан источник времени — NTP (ссылка на сервер).</td><td class="bad">Время локальное — синхронизация не прошла</td></tr>
+<tr><td class="cmd">Логи SW1: любое действие с записью в лог</td><td class="ok">Штамп вида <code>*MSK Nov 22 12:xx:xx.xxx</code> — нормальные дата и время вместо <code>*??? 01, 00:04:55</code>.</td><td class="bad">Всё ещё <code>???</code> — синхронизация не прошла; сам по себе это наглядный кейс «логи без NTP» для отчёта</td></tr>
 </tbody>
 </table>
 <div class="note"><strong>Примечания:</strong>
 <ul>
-<li><code>clock timezone</code> — это только отображение. Источник времени (UTC) приходит по NTP; таймзона просто переводит его в локальное отображение. Если после синхронизации время «уехало» на 3 часа — проверьте, что <code>clock timezone MSK 3 0</code> задана одинаково на обоих устройствах.</li>
+<li><code>ntp master</code> отсутствует в PT 6.2 (каре под командой) — это валидная команда реального IOS. В лабе роль сервера играет Server-PT; в реальной сети роутер без <code>ntp master</code> тоже умеет отвечать клиентам, если сам синхронизирован.</li>
 <li>В Packet Tracer NTP-синхронизация иногда тянется 30–60 секунд — не спешите перенастраивать, подождите и повторите <code>show ntp status</code>.</li>
 <li>Звёздочка <code>*</code> в <code>show ntp associations</code> — признак того, что этот peer выбран как источник. Плюс <code>+</code> — кандидат, но не выбран.</li>
+<li>Если есть доступ к PT поновее (7.x+) — там <code>ntp master</code> поддерживается, и R1 можно оставить сервером: тогда шаги сводятся к «ntp master 1 на R1, ntp server 192.168.1.5 на SW1», а Server-PT не нужен. Проверьте <code>ntp master ?</code> — если каре, работаете по этой карточке.</li>
+<li>После настройки не забудьте <code>write memory</code> на R1 и SW1.</li>
 </ul>
 </div>
         </div>
-        <p class="analogy"><strong>💡 Аналогия:</strong> NTP — это как служба точного времени: все часы в офисе синхронизируются с одними «главными» часами (NTP-сервер). Без этого логи разных устройств невозможно сопоставить (одни пишут 12:00, другие 12:05), а сертификаты могут «не работать» из-за расхождения времени.</p>
+        <p class="analogy"><strong>💡 Аналогия:</strong> NTP — это как служба точного времени: все часы в офисе синхронизируются с одними «главными» часами (NTP-сервер). Без этого логи разных устройств невозможно сопоставить (одни пишут 12:00, другие 12:05), а сертификаты могут «не работать» из-за расхождения времени. А логи вида <code>*???</code> — это часы, у которых вообще не выставлено ни даты, ни стрелок: тикают, но что показывают — непонятно.</p>
     </div>
+
 
     <!-- ЗАДАЧА 15 -->
     <div class="script-card">
