@@ -1,0 +1,2498 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практикум: решение задач по технологиям Cisco</title>
+<style>
+    :root {
+        --bg: #f4f4f6; --fg: #1a1a2e; --card: #ffffff; --border: #d0d7de;
+        --accent: #7fa8d4; --accent-green: #2e7d32; --accent-blue: #2980b9;
+        --term-bg: #1e1e1e; --term-fg: #d4d4d4;
+        --bg-overlay: rgba(244, 244, 246, 0.85);
+        --muted: #6b7280;
+    }
+    [data-theme="dark"] {
+        --bg: #1a1a1a; --fg: #c9d1d9; --card: #2a2a2a; --border: #444;
+        --accent: #a3c4e8; --accent-green: #81c784; --accent-blue: #64b5f6;
+        --term-bg: #111; --term-fg: #e0e0e0;
+        --bg-overlay: rgba(26, 26, 26, 0.85);
+        --muted: #9aa4b2;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg);
+        background-image:
+            linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+            url('img/bg-cisco4obr.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        color: var(--fg); line-height: 1.6;
+        margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
+        min-height: 100vh;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
+    .back-link:hover { text-decoration: underline; }
+
+    .theme-btn {
+        position: fixed; top: 20px; right: 20px; padding: 10px 15px;
+        background: var(--card); color: var(--fg); border: 1px solid var(--border);
+        border-radius: 20px; cursor: pointer; font-weight: bold; z-index: 100;
+        transition: transform 0.1s, background 0.2s;
+    }
+    .theme-btn:hover { background: var(--accent); color: #fff; }
+    .theme-btn:active { transform: scale(0.95); }
+
+    .script-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 12px; padding: 25px; margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .script-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+    .task-block {
+        margin-top: 15px; padding: 15px;
+        background: var(--bg); border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+    .task-block h3 { margin-top: 0; color: var(--accent-blue); }
+    .check-block {
+        margin-top: 15px; padding: 15px;
+        background: rgba(46, 125, 50, 0.1);
+        border-left: 4px solid var(--accent-green);
+        border-radius: 6px;
+    }
+    .check-block h3 { margin-top: 0; color: var(--accent-green); }
+
+    .code-wrap { position: relative; margin-top: 10px; min-width: 0; }
+    .code-wrap pre {
+        background: var(--term-bg); color: var(--term-fg);
+        padding: 15px; border-radius: 6px;
+        font-family: Consolas, monospace; font-size: 13px;
+        margin: 0; max-height: 300px; max-width: 100%;
+        overflow-x: auto; overflow-y: auto;
+        white-space: pre;
+    }
+    .copy-btn {
+        position: absolute; top: 8px; right: 8px;
+        background: #238636; color: #fff; border: none; padding: 5px 12px;
+        border-radius: 4px; cursor: pointer; font-size: 12px;
+        transition: background 0.2s, transform 0.1s;
+    }
+    .copy-btn:hover { background: #2ea043; }
+    .copy-btn:active { transform: scale(0.9); }
+    .copy-btn.copied { background: #1f6feb; }
+
+    .code-wrap pre::-webkit-scrollbar { width: 8px; height: 8px; }
+    .code-wrap pre::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+    .code-wrap pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    .code-wrap pre::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+    .intro {
+        background: rgba(127, 168, 212, 0.1); border-left: 4px solid var(--accent);
+        padding: 12px 16px; border-radius: 6px; margin: 20px 0;
+        font-style: italic;
+    }
+
+    .hidden-blur {
+        filter: blur(6px);
+        opacity: 0.6;
+        pointer-events: none;
+        transition: filter 0.4s ease, opacity 0.4s ease;
+    }
+
+    .reveal-btn {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background 0.2s, transform 0.1s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .reveal-btn:hover { background: var(--accent-green); }
+    .reveal-btn:active { transform: scale(0.96); }
+
+    .self-check {
+        display: none;
+        margin-left: 15px;
+        vertical-align: middle;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--accent-green);
+        transform: scale(1.2);
+    }
+    body.learning-mode .self-check { display: inline-block; }
+
+    h2.checked {
+        opacity: 0.6;
+        text-decoration: line-through;
+        transition: all 0.3s ease;
+    }
+
+    .progress-summary {
+        background: var(--card);
+        border: 2px solid var(--accent);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 40px auto;
+        text-align: center;
+        max-width: 600px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        display: none;
+    }
+    body.learning-mode .progress-summary { display: block; }
+    .progress-summary h3 { margin-top: 0; color: var(--accent); font-size: 1.4em; }
+    .progress-summary .counter { font-size: 2em; font-weight: bold; color: var(--accent-green); }
+    .progress-summary .total { font-size: 1.2em; color: var(--muted); }
+
+    .level-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-left: 8px;
+        vertical-align: middle;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .level-junior { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+    .level-middle { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+    .level-senior { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+
+    .check-table {
+        width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 14px;
+    }
+    .check-table th {
+        text-align: left; padding: 8px 10px;
+        background: rgba(46, 125, 50, 0.14);
+        border: 1px solid var(--border);
+        font-size: 13px; white-space: nowrap;
+    }
+    .check-table td {
+        padding: 8px 10px; border: 1px solid var(--border);
+        vertical-align: top; line-height: 1.45;
+    }
+    .check-table td.cmd code { white-space: pre-wrap; word-break: break-word; }
+    .check-table td.ok { background: rgba(46, 125, 50, 0.06); }
+    .check-table td.bad { background: rgba(231, 76, 60, 0.06); }
+    .check-table code {
+        background: rgba(127, 127, 127, 0.12);
+        padding: 1px 5px; border-radius: 3px; font-size: 13px;
+    }
+
+    .analogy {
+        margin-top: 12px; padding: 10px 14px;
+        background: rgba(127, 168, 212, 0.1);
+        border-left: 3px solid var(--accent);
+        border-radius: 4px; font-size: 14px;
+    }
+
+    details.qa { margin-top: 10px; }
+    details.qa summary { cursor: pointer; font-weight: bold; color: var(--accent); }
+    details.qa[open] summary { margin-bottom: 8px; }
+
+    .red-flag { color: #e74c3c; font-weight: 700; }
+    .green-flag { color: var(--accent-green); font-weight: 700; }
+
+    .blitz-q { margin: 0 0 4px; }
+
+    /* Скрытый запуск блока обучения */
+    details.secret { padding: 0; background: transparent; border: none; box-shadow: none; margin-top: 30px; }
+    details.secret > summary {
+        cursor: default; padding: 10px 0; list-style: none; user-select: none;
+        height: 40px; box-sizing: border-box; background: transparent;
+        border: none; outline: none;
+    }
+    details.secret > summary::-webkit-details-marker { display: none; }
+</style>
+</head>
+<body data-theme="light">
+
+<button class="theme-btn" id="theme-btn">🌙 Тема</button>
+
+<div class="container">
+    <a href="index.html" class="back-link">← На главную</a>
+    <h1>🎯 Практикум: решение задач по технологиям Cisco</h1>
+
+    <p>Здесь собраны практические задачи по каждой технологии из Лабораторных 1 и 2. Для каждой — условие, пошаговое решение и проверка. Это не просто теория, а отработка навыков на конкретных сценариях.</p>
+    <button id="toggle-learn-btn" class="reveal-btn">🎓 Включить режим обучения (скрыть ответы)</button>
+    <div class="intro">
+        📌 <strong>Как пользоваться:</strong> Прочитайте задачу, попробуйте решить сами, затем сверьтесь с решением. Все команды можно скопировать в терминал.
+    </div>
+
+<!-- ЗАДАЧА 1 -->
+<div class="script-card">
+    <h2>1. VLAN и Trunk <input type="checkbox" class="self-check" data-task="1" title="Отметить как решённую"></h2>
+    <p><strong>Задача:</strong> Разделить сеть на два VLAN (10 — IT, 20 — Бухгалтерия) и настроить trunk между коммутаторами. Разделение отделов в одном физическом свитче + один аплинк между свитчами. Без trunk пришлось бы тянуть отдельный кабель на каждый VLAN.</p>
+    <div class="task-block">
+        <h3>📋 Условие</h3>
+        <ul>
+            <li>Коммутатор SW1 (доступ к VLAN 10 и 20).</li>
+            <li>Коммутатор SW2 (доступ к VLAN 10 и 20).</li>
+            <li>Между SW1 и SW2 — trunk (802.1Q).</li>
+            <li>ПК1 в VLAN 10 (на SW1) и ПК2 в VLAN 20 (на SW2).</li>
+        </ul>
+    </div>
+    <div class="task-block solution">
+        <h3>🛠️ Решение</h3>
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> подключитесь к коммутатору по консоли или SSH. Узнайте, на каких портах реально висят ПК (по схеме или через <code>show cdp neighbors</code> / <code>show mac address-table</code>). Войдите в режим конфигурации: <code>enable</code> → <code>configure terminal</code>.</p>
+        <div class="code-wrap">
+<pre>enable
+! Проверить, что порты свободны и нет чужих VLAN
+show vlan brief
+show interfaces status
+configure terminal
+</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 1. Создать VLAN на SW1 и SW2:</strong></p>
+        <div class="code-wrap">
+<pre>vlan 10
+ name IT
+vlan 20
+ name Accounting</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 2. Настроить access-порты для ПК:</strong></p>
+        <div class="code-wrap">
+<pre>interface f0/1
+ switchport mode access
+ switchport access vlan 10
+interface f0/2
+ switchport mode access
+ switchport access vlan 20</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 3. Настроить trunk между SW1 и SW2:</strong></p>
+        <div class="code-wrap">
+<pre>interface f0/24
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+    </div>
+    <div class="check-block">
+        <h3>✅ Проверка</h3>
+
+        <h3 class="stage">Этап 0. Физика и база</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show interfaces status</code></td><td class="ok">Порты ПК и f0/24 — <code>connected</code>.</td><td class="bad"><code>notconnect</code> — кабель или погашенный порт; VLAN здесь ещё не виден, это уровень L1</td></tr>
+<tr><td class="cmd"><code>show cdp neighbors</code></td><td class="ok">SW2 виден через f0/24 (и наоборот).</td><td class="bad">Не виден — линк не поднялся или <code>cdp run</code> выключен</td></tr>
+<tr><td class="cmd"><code>show vlan brief</code></td><td class="ok">Порты ПК числятся в VLAN 10/20, все прочие — в VLAN 1.</td><td class="bad">Все порты в VLAN 1 — доступ-настройка ещё не применена</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 1. VLAN созданы на ОБОИХ свитчах</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show vlan brief</code> на SW1 и на SW2</td><td class="ok">VLAN 10 (IT) и 20 (Accounting) существуют на обоих свитчах.</td><td class="bad">VLAN есть только на SW1 — trunk <strong>не создаёт VLAN на соседе</strong>. Если на SW2 VLAN не создан, порты в него не назначить, а трафик через транк не пройдёт. Создайте <code>vlan 10 / vlan 20</code> на SW2 руками (VTP в лабах не тянет)</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 2. Access-порты</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show interfaces f0/1 switchport</code></td><td class="ok"><code>Access Mode VLAN: 10</code>, режим <code>static access</code>.</td><td class="bad">Port в VLAN 1 — забыт <code>switchport access vlan</code>; режим <code>trunk</code> — ПК в тегированном порту не заговорит</td></tr>
+<tr><td class="cmd"><code>show interfaces f0/2 switchport</code></td><td class="ok"><code>Access Mode VLAN: 20</code>.</td><td class="bad">Перепутаны VLAN местами — классическая ловушка: с виду всё работает, но отделы «поменялись»</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 3. Trunk</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show interfaces trunk</code></td><td class="ok">f0/24 в trunking, VLANs allowed: 10,20.</td><td class="bad">Порта нет в списке — режим не trunk или <code>allowed vlan</code> не задан; VLAN в списке «pruning» — порт-сосед не знает о них</td></tr>
+<tr><td class="cmd"><code>show interfaces f0/24 switchport</code></td><td class="ok"><code>Trunking Enabled</code>, Native VLAN 1 на ОБОИХ свитчах.</td><td class="bad">Mismatch native VLAN — native должен совпадать на концах транка, иначе native-трафик перепутается между VLAN (в PT ловится через CDP-сообщение о mismatch)</td></tr>
+<tr><td class="cmd"><code>show interfaces f0/24</code></td><td class="ok">up/up, счётчики input/output ошибок не растут.</td><td class="bad">Ошибки растут — либо mismatch, либо дуплекс на одной из сторон сбит</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 4. Трафик (главный тест)</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">ping с ПК1 (VLAN 10) до ПК2 (VLAN 20)</td><td class="ok"><strong>Не проходит</strong> — это норма (разные VLAN, нет маршрутизации).</td><td class="bad">Проходит — порты не в тех VLAN / trunk не работает</td></tr>
+<tr><td class="cmd">ping между двумя ПК в одном VLAN (если есть ПК3 в VLAN 10 на SW2)</td><td class="ok">Проходит — трафик пошёл через trunk с тегом 802.1Q.</td><td class="bad">Не проходит внутри одного VLAN — VLAN не создан на SW2 или не в allowed на транке</td></tr>
+<tr><td class="cmd"><code>show mac address-table</code> на SW2</td><td class="ok">MAC ПК1 выучен на порту f0/24 (через транк).</td><td class="bad">MAC не выучен — тегированный трафик не проходит: смотреть транк и allowed VLAN</td></tr>
+</tbody></table>
+    </div>
+    <p class="analogy"><strong>💡 Аналогия:</strong> VLAN — это как разные квартиры в одном доме (свитче). Trunk — это общий лифт, который возит жильцов всех квартир, но у каждого пассажира есть «этикетка» (тег 802.1Q), чтобы лифт знал, на каком этаже его высадить.</p>
+</div>
+
+<!-- ЗАДАЧА 2 -->
+<div class="script-card">
+    <h2>2. EtherChannel LACP <input type="checkbox" class="self-check" data-task="2" title="Отметить как решённую"></h2>
+    <p><strong>Задача:</strong> Объединить 4 физических линка между SW1 и SW2 в один логический канал (Po1) с помощью LACP. Агрегация полосы и резервирование: 4×100 Мбит = 400 Мбит, падение одного линка не рвёт связь.</p>
+    <div class="task-block">
+        <h3>📋 Условие</h3>
+        <ul>
+            <li>SW1 и SW2 соединены 4 портами (f0/1–f0/4).</li>
+            <li>Нужно объединить их в Po1 (LACP, active).</li>
+            <li>Проверить, что при падении одного порта канал остаётся рабочим.</li>
+        </ul>
+    </div>
+    <div class="task-block solution">
+        <h3>🛠️ Решение</h3>
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> убедитесь, что все 4 порта (f0/1–f0/4) физически подключены и подняты. Проверьте скорость/дуплекс на каждом: <code>show interfaces f0/1</code> (и т.д.). Если скорость разная — выровняйте до начала сборки канала. Войдите в режим конфигурации: <code>enable</code> → <code>configure terminal</code>.</p>
+        <div class="code-wrap">
+<pre>enable
+show interfaces status
+show interfaces f0/1
+! Убедиться, что все 4 порта в состоянии connected</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 1. На SW1 (активная сторона):</strong></p>
+        <div class="code-wrap">
+<pre>
+configure terminal
+interface range f0/1-4
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 2. На SW2 (активная сторона):</strong></p>
+        <div class="code-wrap">
+<pre>interface range f0/1-4
+ channel-group 1 mode active
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Важно:</strong> в Packet Tracer 6.2 без <code>speed 100</code> и <code>duplex full</code> на всех портах канал не соберётся. В реальной жизни LACP технически допускает разные скорости, но выравнивать их — хорошая практика (иначе балансировка будет неравномерной).</p>
+    </div>
+    <div class="check-block">
+        <h3>✅ Проверка</h3>
+
+        <h3 class="stage">Этап 0. Физика до сборки канала</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show interfaces status</code></td><td class="ok">f0/1–f0/4 на обоих свитчах — <code>connected</code>, 100/full.</td><td class="bad">Хотя бы один порт <code>notconnect</code> — LACP не соберёт канал из неполного набора</td></tr>
+<tr><td class="cmd"><code>show etherchannel summary</code></td><td class="ok">Po1 ещё не существует (или пустой).</td><td class="bad">Есть старые каналы с прошлых лаб — удалить: <code>no channel-group</code> на портах, иначе LACP запутается в конфигурации</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 1. Сборка канала</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show etherchannel summary</code></td><td class="ok">Po1 в статусе <code>SU</code>, порты <code>P</code>.</td><td class="bad"><code>SD</code> — канал в down; <code>D</code> — несовместимая конфигурация члена; <code>I</code> — standalone; <code>s</code> — suspended (обычно из-за mismatch speed/duplex/VLAN)</td></tr>
+<tr><td class="cmd"><code>show etherchannel port-channel</code></td><td class="ok">Протокол LACP, все 4 порта в группе.</td><td class="bad">Wrong mode: <code>on</code> vs <code>active</code>/<code>passive</code>. <code>on+on</code> соберётся, но без LACP; <code>active+active</code> — ок; <code>passive+passive</code> — не соберётся</td></tr>
+<tr><td class="cmd"><code>show interfaces port-channel 1</code></td><td class="ok">up/up, счётчики ошибок не растут.</td><td class="bad">Порт-член с другой конфигурацией (VLAN, trunk) — выровняйте настройки на всех членах</td></tr>
+<tr><td class="cmd"><code>show interfaces f0/1 | include duplex|speed</code></td><td class="ok">Одинаковые speed/duplex на всех членах.</td><td class="bad">В PT 6.2 без <code>speed 100 duplex full</code> канал не соберётся</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 2. Транк поверх канала</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show interfaces trunk</code></td><td class="ok">Po1 в списке транков, VLANs allowed согласованы.</td><td class="bad">Транк не поднялся — настройка <code>switchport mode trunk</code> применена только на физ. портах, но не на Po1 (или наоборот)</td></tr>
+<tr><td class="cmd">ping между ПК за SW1 и за SW2 (если есть)</td><td class="ok">Проходит — канал пропускает тегированный трафик.</td><td class="bad">Не проходит — канал собран, но транк не согласован</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 3. Failover</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">Тест на отказ: <code>shutdown</code> f0/1 на SW1 → <code>no shutdown</code></td><td class="ok">Канал остаётся <code>SU</code>, пинги не прерываются.</td><td class="bad">Канал падает целиком — члены не в одной группе или разные VLAN/режимы на членах</td></tr>
+<tr><td class="cmd"><code>show etherchannel summary</code> во время сбоя</td><td class="ok">Po1 SU, но один из портов выбыл (3 из 4 активны).</td><td class="bad">Все порты <code>D</code>/<code>s</code> — группа развалилась, смотреть mismatch на членах</td></tr>
+</tbody></table>
+    </div>
+    <p class="analogy"><strong>💡 Аналогия:</strong> EtherChannel — это как несколько полос на шоссе, которые вместе образуют одну широкую дорогу. LACP — это «диспетчер», который проверяет, что все полосы одинаковой ширины и ведут в одну сторону. Если одна полоса закрыта — машины едут по остальным, пробки нет.</p>
+</div>
+
+<!-- ЗАДАЧА 3 -->
+<div class="script-card">
+    <h2>3. EtherChannel PAgP <input type="checkbox" class="self-check" data-task="3" title="Отметить как решённую"></h2>
+    <p><strong>Задача:</strong> Объединить 4 физических линка между SW3 и SW4 в один логический канал (Po2) с помощью PAgP. То же, что LACP, но в чисто Cisco-среде (легаси-протокол, в новых сетях почти не встретите).</p>
+    <div class="task-block">
+        <h3>📋 Условие</h3>
+        <ul>
+            <li>SW3 и SW4 соединены 4 портами (f0/1–f0/4).</li>
+            <li>Нужно объединить их в Po2 (PAgP).</li>
+            <li>Одна сторона — <code>desirable</code>, другая — <code>auto</code>.</li>
+        </ul>
+    </div>
+    <div class="task-block solution">
+        <h3>🛠️ Решение</h3>
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> то же, что и в задаче 2 — проверить физическое состояние портов и одинаковые speed/duplex. Убедитесь, что ни на одном порту нет остатков старой конфигурации (например, <code>channel-group</code> с прошлых лаб). Если есть — удалите: <code>no channel-group</code>. Войдите в режим конфигурации.</p>
+        <div class="code-wrap">
+<pre>enable
+show interfaces status
+! Если порт уже в канале — снять
+configure terminal
+interface range f0/1-4
+ no channel-group
+ exit</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 1. На SW3 (desirable):</strong></p>
+        <div class="code-wrap">
+<pre>interface range f0/1-4
+ channel-group 2 mode desirable
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 2. На SW4 (auto):</strong></p>
+        <div class="code-wrap">
+<pre>interface range f0/1-4
+ channel-group 2 mode auto
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ speed 100
+ duplex full
+interface port-channel 2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Важно:</strong> в Packet Tracer 6.2 без <code>speed 100</code> и <code>duplex full</code> на всех портах канал не соберётся. В реальной жизни PAgP технически допускает разные скорости, но выравнивать их — хорошая практика.</p>
+    </div>
+    <div class="check-block">
+        <h3>✅ Проверка</h3>
+
+        <h3 class="stage">Этап 0. Физика до сборки канала</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show interfaces status</code></td><td class="ok">f0/1–f0/4 на SW3 и SW4 — <code>connected</code>, 100/full.</td><td class="bad">Разные speed/duplex на членах — канал не соберётся (в PT 6.2 — всегда)</td></tr>
+<tr><td class="cmd"><code>show etherchannel summary</code></td><td class="ok">Старых каналов нет.</td><td class="bad">Остатки прошлых лаб — удалить через <code>no channel-group</code>, иначе PAgP не стартует</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 1. Сборка канала</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show etherchannel summary</code></td><td class="ok">Po2 в статусе <code>SU</code>, порты <code>P</code>.</td><td class="bad"><code>SD</code>/<code>D</code>/<code>I</code>/<code>s</code> — канал не собрался</td></tr>
+<tr><td class="cmd"><code>show etherchannel port-channel</code></td><td class="ok">Протокол PAgP: SW3 — <code>desirable</code>, SW4 — <code>auto</code>.</td><td class="bad">Wrong mode: обе стороны <code>auto</code> — канал не соберётся (оба ждут, кто первый предложит); <code>desirable+desirable</code> — соберётся; <code>desirable+auto</code> — соберётся; <code>on</code> с PAgP — не соберётся</td></tr>
+<tr><td class="cmd"><code>show pagp neighbor</code> (если доступна)</td><td class="ok">Сосед виден, режим совпадает.</td><td class="bad">Соседа нет — режимы не совместимы или линк не поднят</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 2. Транк поверх канала</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show interfaces trunk</code></td><td class="ok">Po2 в режиме trunk.</td><td class="bad">Нет транка — интерфейс Po2 не настроен; настройки надо задавать и на физ.портах, и на Po2</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 3. Failover</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">Тест на отказ: <code>shutdown</code> f0/2 на SW3</td><td class="ok">Канал остаётся <code>SU</code>.</td><td class="bad">Канал падает целиком — члены не в одной группе</td></tr>
+<tr><td class="cmd"><code>no shutdown</code> на f0/2</td><td class="ok">Порт вернулся в группу, канал снова 4 члена.</td><td class="bad">Порт остался <code>D</code>/<code>s</code> — после возвращения настроек снова выровнять speed/duplex/VLAN</td></tr>
+</tbody></table>
+    </div>
+    <p class="analogy"><strong>💡 Аналогия:</strong> PAgP — это тот же «диспетчер», что и LACP, но работает только в «своём» городе (сети Cisco). Одна сторона кричит «я хочу канал!» (<code>desirable</code>), другая отвечает «я слышу, давай!» (<code>auto</code>). Если оба молчат — канала нет.</p>
+</div>
+
+<!-- ЗАДАЧА 4 -->
+<div class="script-card">
+    <h2>4. STP (Защита от петель) <input type="checkbox" class="self-check" data-task="4" title="Отметить как решённую"></h2>
+    <p><strong>Задача:</strong> Настроить Rapid-PVST+ так, чтобы SW1 был корневым мостом, а избыточные порты на SW3 заблокировались. Без STP кольцо из свитчей = broadcast-шторм за секунды и падение всей L2-сети.</p>
+    <div class="task-block">
+        <h3>📋 Условие</h3>
+        <ul>
+            <li>Три коммутатора (SW1, SW2, SW3) соединены в кольцо.</li>
+            <li>SW1 должен стать Root Bridge (приоритет 24576).</li>
+            <li>На SW3 избыточные порты должны быть в статусе <code>Altn BLK</code>.</li>
+        </ul>
+    </div>
+    <div class="task-block solution">
+        <h3>🛠️ Решение</h3>
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте текущего корневого моста (<code>show spanning-tree vlan 1</code> — строка <code>Root ID</code>). Если корень уже другой — это нормально, мы его переопределим. Убедитесь, что на всех трёх свитчах одинаковый режим STP (например, <code>rapid-pvst</code>). Войдите в режим конфигурации.</p>
+        <div class="code-wrap">
+<pre>enable
+show spanning-tree vlan 1
+show spanning-tree summary</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 1. Включить Rapid-PVST+ на всех свитчах:</strong></p>
+        <div class="code-wrap">
+<pre>
+configure terminal
+ spanning-tree mode rapid-pvst</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 2. Назначить SW1 корневым мостом:</strong></p>
+        <div class="code-wrap">
+<pre>spanning-tree vlan 1,100,102-107 priority 24576</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Примечание:</strong> <code>priority 24576</code> — это ручной способ назначить корень. Альтернатива — <code>spanning-tree vlan 1,100,102-107 root primary</code>: макрос, который сам выставляет приоритет 24576 (или ниже текущего корня на 4096). Результат одинаковый, но <code>root primary</code> удобнее: не нужно помнить числа.</p>
+    </div>
+    <div class="check-block">
+        <h3>✅ Проверка</h3>
+
+        <h3 class="stage">Этап 0. Режим STP и линки</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show spanning-tree summary</code></td><td class="ok">Режим rapid-pvst на всех трёх свитчах.</td><td class="bad">Разные режимы STP — BPDU не согласуются, кольцо не будет корректно разблокировано</td></tr>
+<tr><td class="cmd"><code>show interfaces status</code> (кольцо)</td><td class="ok">Все порты кольца <code>connected</code>.</td><td class="bad">Слабое звено в кольце — STP не сможет выбрать альтернативный путь при отказе</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 1. Корневой мост</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show spanning-tree vlan 1</code> на SW1</td><td class="ok">Строка <code>This bridge is the root</code>, Priority 24576.</td><td class="bad">Корень не SW1 — приоритет 24576 не применился (проверить, что задан именно для VLAN 1, а не только для 100 и 102-107)</td></tr>
+<tr><td class="cmd"><code>show spanning-tree vlan 1</code> на SW2/SW3</td><td class="ok">Root ID совпадает с MAC SW1, приоритет 24576.</td><td class="bad">Слышат другой корень — проверить, что приоритет задан на всех VLAN и SW1 реально включён</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 2. Блокировка и роли</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show spanning-tree vlan 1</code> на SW3</td><td class="ok">Порты, ведущие к SW2 (или к SW1 — по стоимости пути), — в <code>Altn BLK</code>.</td><td class="bad">Оба порта <code>Desg FWD</code> = петля, блокировки нет</td></tr>
+<tr><td class="cmd">Подождать 30–50 сек после включения STP</td><td class="ok">Оранжевые линки в PT — это <strong>норма</strong> (blocking, а не ошибка).</td><td class="bad">Если порты остаются оранжевыми дольше минуты — смотрите режим STP и priority</td></tr>
+<tr><td class="cmd"><code>show spanning-tree vlan 1</code> на SW2</td><td class="ok">Один порт <code>Root FWD</code>, остальные <code>Desg FWD</code>.</td><td class="bad">Все порты <code>Desg</code> — нет понимания, куда идти к корню</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 3. Failover</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">Shutdown основного пути (например, <code>shutdown</code> линка SW1–SW2)</td><td class="ok">SW3 (или SW2) переходит на резервный путь: заблокированный порт становится <code>FWD</code> за секунды (rapid-pvst сходится быстро).</td><td class="bad">Порты остаются <code>BLK</code> — смотрим режим STP и приоритеты</td></tr>
+<tr><td class="cmd">ping между ПК во время сбоя</td><td class="ok">1–2 потери, дальше пинг продолжается.</td><td class="bad">Долгие потери — STP не сходится или кольцо не полнокомплектное</td></tr>
+<tr><td class="cmd">Вернуть линк: <code>no shutdown</code></td><td class="ok">Роли вернулись: заблокированный порт снова <code>Altn BLK</code>.</td><td class="bad">Осталось заблокированным не то — норма, STP выбрал свой путь; главное — нет петли</td></tr>
+</tbody></table>
+    </div>
+    <p class="analogy"><strong>💡 Аналогия:</strong> STP — это как схема объезда на дороге с кольцом. Один мост назначается «главным» (Root Bridge), остальные строят к нему кратчайшие пути. Лишние дороги, которые могли бы замкнуть кольцо, перекрываются (Blocking), чтобы машины не ездили по кругу. Если главный мост сломается — резервный сразу откроется.</p>
+</div>
+
+<!-- ЗАДАЧА 5 -->
+<div class="script-card">
+    <h2>5. OSPF (Динамическая маршрутизация) <input type="checkbox" class="self-check" data-task="5" title="Отметить как решённую"></h2>
+    <p><strong>Задача:</strong> Настроить OSPF между двумя роутерами (R1 и R2) и проверить, что они видят сети друг друга. Автоматический обмен маршрутами между роутерами; ручные статики не масштабируются.</p>
+    <div class="task-block">
+        <h3>📋 Условие</h3>
+        <ul>
+            <li>R1: сеть 10.0.0.0/30 на f0/0, сеть 192.168.1.0/24 на f0/1 (LAN).</li>
+            <li>R2: сеть 10.0.0.0/30 на f0/0, сеть 192.168.2.0/24 на f0/1 (LAN).</li>
+            <li>Настроить OSPF Area 0, чтобы R1 и R2 обменялись маршрутами.</li>
+            <li>Включить аутентификацию MD5.</li>
+        </ul>
+    </div>
+    <div class="task-block solution">
+        <h3>🛠️ Решение</h3>
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-адресацию на интерфейсах (<code>show ip interface brief</code>). Убедитесь, что интерфейсы сети 10.0.0.0/30 и 192.168.1.0/24 реально настроены и все линки присоединены и подняты, в т.ч. и для конечных устройств. Проверьте связность до соседа: <code>ping 10.0.0.2</code> и до конечного ПК (с R1 и по аналогии с R2). Войдите в режим конфигурации.</p>
+        <div class="code-wrap">
+<pre>enable
+show ip interface brief
+configure terminal
+int f0/0
+ip addr 10.0.0.1 255.255.255.252
+no shut
+exit
+int f0/1
+ip addr 192.168.1.1 255.255.255.0
+no shut
+</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 1. Настроить R1:</strong></p>
+        <div class="code-wrap">
+<pre>router ospf 1
+ router-id 1.1.1.1
+ network 10.0.0.0 0.0.0.3 area 0
+ network 192.168.1.0 0.0.0.255 area 0
+ area 0 authentication message-digest
+interface f0/0
+ ip ospf message-digest-key 1 md5 secret
+interface f0/1
+ ip ospf message-digest-key 1 md5 secret</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 2. Настроить R2:</strong></p>
+        <div class="code-wrap">
+<pre>router ospf 1
+ router-id 2.2.2.2
+ network 10.0.0.0 0.0.0.3 area 0
+ network 192.168.2.0 0.0.0.255 area 0
+ area 0 authentication message-digest
+int range f0/0-1
+ ip ospf message-digest-key 1 md5 secret
+ </pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+    </div>
+    <div class="check-block">
+        <h3>✅ Проверка</h3>
+
+        <h3 class="stage">Этап 0. Базовая связность</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip interface brief</code></td><td class="ok">f0/0 и f0/1 — up/up с нужными IP (10.0.0.x и 192.168.x.1).</td><td class="bad"><code>administratively down</code> — забыт <code>no shut</code>; IP не тот — OSPF не соберёт соседство</td></tr>
+<tr><td class="cmd">ping 10.0.0.2 (с R1)</td><td class="ok">Успешно.</td><td class="bad">Не пингуется — OSPF не соберётся, начинать соседство без L3-связности бессмысленно</td></tr>
+<tr><td class="cmd">ping до ПК своей LAN (с R1)</td><td class="ok">Успешно.</td><td class="bad">Не проходит — интерфейс LAN поднят, но сеть не объявлена или ПК без шлюза</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 1. Соседство</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip ospf neighbor</code></td><td class="ok">Сосед в статусе <code>FULL</code>, Router ID 2.2.2.2.</td><td class="bad"><code>EXSTART</code>/<code>EXCHANGE</code> — MTU; соседа нет — area/subnet/mask/MD5/hello; <code>ATTEMPT</code>/<code>DOWN</code> — hello не проходят</td></tr>
+<tr><td class="cmd"><code>show ip ospf interface f0/0</code></td><td class="ok">Area 0, ключ MD5 с номером 1, hello-таймер 10 с.</td><td class="bad">Area не та — соседство не соберётся; ключа нет — смотрите, что MD5 включён и на глобальном уровне area, и на интерфейсе</td></tr>
+<tr><td class="cmd"><code>show ip ospf</code></td><td class="ok">Router ID 1.1.1.1, Area 0 активна.</td><td class="bad">Router ID не тот, что планировали — сбросьте <code>clear ip ospf process</code> (или перезагрузите роутер)</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 2. Маршруты</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip route ospf</code></td><td class="ok">Маршрут до сети 192.168.2.0 с меткой <code>O</code>, next-hop 10.0.0.2.</td><td class="bad">Соседство есть, маршрута нет — не та area, либо выключен интерфейс присоединенного устройства. Так будет, несмотря на «no shut» интерфейса 2-ой сети и его зелёный линк в CPT</td></tr>
+<tr><td class="cmd"><code>show ip protocols</code></td><td class="ok">В Routing for Networks перечислены обе сети, аутентификация message-digest.</td><td class="bad">Сети нет в списке — проверить маску wildcard (0.0.0.3 для /30, 0.0.0.255 для /24)</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 3. Связность между LAN</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">ping 192.168.2.1 (с R1)</td><td class="ok">Успешно.</td><td class="bad">Не проходит — MD5 mismatch / ACL</td></tr>
+<tr><td class="cmd">ping 192.168.2.10 (с ПК за R1, если есть)</td><td class="ok">Успешно — с шлюзом по умолчанию на ПК (192.168.1.1).</td><td class="bad">Не проходит с ПК, но проходит с R1 — ПК без шлюза или шлюз не тот</td></tr>
+</tbody></table>
+
+        <h3 class="stage">Этап 4. Тест аутентификации (наглядное подтверждение MD5)</h3>
+        <table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">Временно смените ключ на одном из роутеров: <code>ip ospf message-digest-key 1 md5 другоеслово</code></td><td class="ok">Соседство разорвалось: <code>show ip ospf neighbor</code> — сосед и маршруты исчезли.</td><td class="bad">Соседство не рвётся — аутентификация не включена на этой сети/интерфейсе, смотрите <code>area 0 authentication message-digest</code> и ключ на интерфейсе</td></tr>
+<tr><td class="cmd">Вернуть ключ: <code>ip ospf message-digest-key 1 md5 secret</code></td><td class="ok">Соседство восстановилось, маршрут <code>O 192.168.2.0</code> вернулся.</td><td class="bad">Не восстановилось — проверьте, что ключ на ОБОИХ роутерах снова одинаковый</td></tr>
+</tbody></table>
+
+        <div class="note">
+            <strong>Примечания:</strong>
+            <ul>
+                <li>Смена ключа — это живое доказательство для отчёта: вы видите руками, что без совпадающего ключа OSPF не доверяет соседу. Это нагляднее любого вывода <code>show</code>.</li>
+                <li><code>debug ip ospf hello</code> в PT 6.2 может не работать или рвать соседство — не стоит увлекаться, ограничьтесь <code>show</code>-командами.</li>
+            </ul>
+        </div>
+    </div>
+    <p class="analogy"><strong>💡 Аналогия:</strong> OSPF — это как навигатор, который строит карту города. Каждый роутер рассказывает соседям, что он видит (LSDB), и все вместе вычисляют кратчайшие пути по алгоритму Дейкстры. Если одна улица закрыта — навигатор сам перестроит маршрут.</p>
+</div>
+
+<!-- ============================================================= -->
+<!-- ЗАДАЧА 6. HSRP — заменить ей старый блок целиком              -->
+<!-- ============================================================= -->
+<style>
+  /* Стили таблиц — самодостаточные, под любую тему страницы */
+  .hsrp-stage { font-size: 15px; margin: 18px 0 8px; }
+  .hsrp-tbl { width: 100%; border-collapse: collapse; margin: 10px 0 4px; font-size: 14px; }
+  .hsrp-tbl th, .hsrp-tbl td { border: 1px solid rgba(128,128,128,.35); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .hsrp-tbl th { background: rgba(128,128,128,.15); font-weight: 600; }
+  .hsrp-tbl td:first-child { white-space: normal; }
+  .hsrp-tbl .ok  { background: rgba(46,204,113,.12); }
+  .hsrp-tbl .bad { background: rgba(231,76,60,.12); }
+  .hsrp-tbl code { font-size: 13px; }
+  .hsrp-note ul { margin: 6px 0 0 18px; padding: 0; }
+  .hsrp-note li { margin-bottom: 6px; }
+</style>
+
+<div class="script-card">
+    <h2>6. HSRP (Резервирование шлюза) <input type="checkbox" class="self-check" data-task="6" title="Отметить как решённую"></h2>
+
+    <p><strong>Задача:</strong> Настроить HSRP на двух роутерах (R1 и R2), чтобы при падении R1 трафик перехватывал R2 без обрыва связи у клиентов. Шлюз по умолчанию не должен быть single point of failure — тогда клиенты не заметят падения R1.</p>
+
+    <div class="task-block">
+        <h3>📋 Условие</h3>
+        <ul>
+            <li>R1 (192.168.1.3) ---- SW ---- R2 (192.168.1.4).</li>
+            <li>ПК (192.168.1.10) ---- SW.</li>
+            <li>Виртуальный IP-шлюз: 192.168.1.2.</li>
+            <li>R1 — Active (приоритет 150, preempt).</li>
+            <li>R2 — Standby (приоритет 100).</li>
+        </ul>
+    </div>
+
+    <div class="task-block solution">
+        <h3>🛠️ Решение</h3>
+
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что R1 и R2 видят друг друга по L2 (ping между их реальными IP). Убедитесь, что на интерфейсах f0/0 нет остатков старой конфигурации HSRP (например, <code>standby 2</code>). Если есть — удалите. Войдите в режим конфигурации.</p>
+        <div class="code-wrap">
+<pre>enable
+show standby brief
+! Если есть лишние группы — удалить
+configure terminal
+interface f0/0
+ no standby 2
+ exit</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+
+        <p><strong>Шаг 1. Настроить R1 (Active):</strong></p>
+        <div class="code-wrap">
+<pre>interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 priority 150
+ standby 1 preempt</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+
+        <p><strong>Шаг 2. Настроить R2 (Standby):</strong></p>
+        <div class="code-wrap">
+<pre>interface f0/0
+ standby 1 ip 192.168.1.2
+ standby 1 priority 100
+ standby 1 preempt</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+
+        <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Зачем <code>preempt</code>:</strong> без него R1 после перезагрузки останется Standby, даже если у него приоритет 150 (выше, чем 100 у R2). <code>preempt</code> разрешает «отбирать» роль Active, если приоритет выше. Если <code>preempt</code> только у R2 — R1 не сможет вернуть роль. Если у обоих — R1 вернёт Active (150 &gt; 100).<br>
+        При этом не забудьте <code>no shutdown</code> на f0/0 обоих роутеров: без него линки останутся красными, а группа HSRP вообще не поднимется.</p>
+    </div>
+
+    <div class="check-block">
+        <h3>✅ Проверка</h3>
+
+        <h3 class="hsrp-stage">Этап 0. Базовая связность и топология</h3>
+        <table class="hsrp-tbl">
+          <tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr>
+          <tr><td><code>show ip interface brief</code> на R1 и R2</td>
+              <td class="ok">Fa0/0: up/up, IP 192.168.1.3 и 192.168.1.4</td>
+              <td class="bad"><code>administratively down</code> — забыт <code>no shutdown</code>; <code>down/down</code> — кабель или порт</td></tr>
+          <tr><td><code>show ip arp</code> на R1</td>
+              <td class="ok">Видна запись для 192.168.1.10 (MAC ПК)</td>
+              <td class="bad">Записи нет — ПК не в сегменте, линк не поднялся</td></tr>
+          <tr><td><code>show mac address-table</code> на свитче</td>
+              <td class="ok">Порты ПК и обоих роутеров в одной VLAN (по умолчанию VLAN 1)</td>
+              <td class="bad">Разные VLAN — трафик не пойдёт, HSRP не поднимется</td></tr>
+          <tr><td><code>ping 192.168.1.3</code> и <code>ping 192.168.1.4</code> с ПК</td>
+              <td class="ok">Оба реальных IP отвечают</td>
+              <td class="bad">Не пингуются — проблема в L2, до HSRP дело не дойдёт</td></tr>
+        </table>
+
+        <h3 class="hsrp-stage">Этап 1. Состояние группы HSRP</h3>
+        <table class="hsrp-tbl">
+          <tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr>
+          <tr><td><code>show standby brief</code></td>
+              <td class="ok">R1 — Active (Pri 150), R2 — Standby (Pri 100), оба адреса 192.168.1.2, группа 1</td>
+              <td class="bad">Два Active — split brain (нет общего L2 или разные группы); оба Init — VLAN down или неверный IP в группе</td></tr>
+          <tr><td><code>show standby</code></td>
+              <td class="ok">State is Active; virtual IP 192.168.1.2; virtual MAC 0000.0C9F.F001; timers 3/1 (hello/hold)</td>
+              <td class="bad">MAC не вида 0000.0Cxx.Fxxx — номер группы различается на роутерах; timers расходятся — выровнять на обоих</td></tr>
+          <tr><td><code>show standby | include preempt</code></td>
+              <td class="ok">Preempt есть на обоих роутерах</td>
+              <td class="bad">Нет preempt — R1 не вернёт роль после ребута</td></tr>
+          <tr><td><code>show run | section standby</code></td>
+              <td class="ok">Блок «standby 1 ip / priority / preempt» на обоих роутерах</td>
+              <td class="bad">Разные номера группы или IP — группа не соберётся</td></tr>
+        </table>
+
+        <h3 class="hsrp-stage">Этап 2. Работа клиента</h3>
+        <table class="hsrp-tbl">
+          <tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr>
+          <tr><td><code>arp -d</code> на ПК, затем <code>arp -a</code> и <code>ping 192.168.1.2</code></td>
+              <td class="ok">MAC шлюза — 0000.0C9F.F001 (виртуальный); пинг идёт</td>
+              <td class="bad">MAC реального роутера — трафик идёт мимо HSRP: очистить ARP и проверить, кто отвечает</td></tr>
+          <tr><td><code>ping 192.168.1.2</code> с ПК</td>
+              <td class="ok">Не прерывается при смене ролей</td>
+              <td class="bad">Прерывается надолго — проверить priority/preempt и hold-таймер</td></tr>
+        </table>
+
+        <h3 class="hsrp-stage">Этап 3. Failover и восстановление</h3>
+        <table class="hsrp-tbl">
+          <tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr>
+          <tr><td>Тест Failover: <code>shutdown f0/0</code> на R1</td>
+              <td class="ok">R2 становится Active за время hold-таймера (~3 с): смена купола в консоли R2, сообщение «Standby router is active»</td>
+              <td class="bad">R2 остаётся Standby — VIP или номер группы не совпадают, либо линк R2 к свитчу не поднят</td></tr>
+          <tr><td><code>ping 192.168.1.2</code> с ПК во время сбоя</td>
+              <td class="ok">1–2 потерянных пакета, дальше пинг продолжается (R2 перехватил виртуальный IP)</td>
+              <td class="bad">Пинг умирает навсегда — Standby не принял роль, см. строку выше</td></tr>
+          <tr><td>Вернуть R1: <code>no shutdown f0/0</code></td>
+              <td class="ok">R1 возвращает роль Active (preempt, 150 &gt; 100), R2 снова Standby</td>
+              <td class="bad">R1 остался Standby — нет preempt на R1</td></tr>
+          <tr><td><code>show standby brief</code> после восстановления</td>
+              <td class="ok">R1 Active, R2 Standby — как до теста</td>
+              <td class="bad">Роли «перевернулись» и не вернулись — preempt настроен только на одной стороне</td></tr>
+        </table>
+
+        <h3 class="hsrp-stage">Этап 4 (бонус). Живая смена ролей и трекинг аплинка</h3>
+        <table class="hsrp-tbl">
+          <tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr>
+          <tr><td><code>debug standby brief</code> на R2 + <code>shutdown f0/0</code> на R1</td>
+              <td class="ok">Сообщения вида «Hellotime expired → Active: 192.168.1.3 → Taking over as Active» с метками времени</td>
+              <td class="bad">Дебаг молчит — R2 не видит hellos соседа (проблема в сегменте)</td></tr>
+          <tr><td><code>standby 1 track &lt;интерфейс&gt; &lt;cost&gt;</code> на обоих</td>
+              <td class="ok">При падении аплинка R1 к внешней сети роль уходит к R2, даже если Fa0/0 жив</td>
+              <td class="bad">Трекинга нет — R1 остаётся Active с «мёртвым» WAN, клиенты теряют выход наружу</td></tr>
+        </table>
+
+        <div class="hsrp-note">
+        <strong>Примечания:</strong>
+        <ul>
+          <li><code>debug standby brief</code> может засыпать консоль — запускать осторожно и выключать через <code>undebug all</code>. Зато в отчёте это самый наглядный аргумент: виден сам момент передачи роли с таймстампами.</li>
+          <li>Hold-таймер (1 с по умолчанию) определяет, сколько пакетов потеряет клиент при сбое. В отчёте стоит указать timers 3/1 и объяснить, что потеря ограничена ~3 секундами.</li>
+          <li>Строку про <code>standby track</code> можно вынести отдельным пунктом «что можно улучшить» — направление развития лабы.</li>
+        </ul>
+        </div>
+    </div>
+
+    <p class="analogy"><strong>💡 Аналогия:</strong> HSRP — это как два охранника на входе в офис, но у них общее удостоверение (виртуальный IP). Один работает (<code>Active</code>), второй на подстраховке (<code>Standby</code>). Если первый упадёт — второй сразу берёт его удостоверение, и посетители не замечают подмены.</p>
+</div>
+
+<!-- ЗАДАЧА 7 -->
+    <div class="script-card">
+        <h2>7. BGP (Стык с провайдером) <input type="checkbox" class="self-check" data-task="7" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить eBGP между корпоративными роутерами (R1, R2 2811 — AS 65002) и провайдером (ISP 2911 — AS 65001), чтобы R1 и R2 получали маршрут в интернет и анонсировали ISP свою сеть. Два аплинка дают резервирование: отказ одного стыка не разрывает связность — трафик уходит через второй.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>Топология: ПК (192.168.1.10) — SW — R1 и R2 (HSRP из задачи 6) — двумя линками к ISP.</li>
+                <li>R1: AS 65002, LAN 192.168.1.5/24 на f0/0, стык 10.0.0.2/30 на f0/1.</li>
+                <li>R2: AS 65002, LAN 192.168.1.150/24 на f0/0, стык 10.0.1.2/30 на f0/1.</li>
+                <li>ISP: AS 65001, 10.0.0.1/30 на g0/0 и 10.0.1.1/30 на g0/1, Loopback0 8.8.8.8/32 — «хост в интернете».</li>
+                <li>R1 и R2 анонсируют сеть 192.168.1.0/24. ISP отдаёт обоим маршрут по умолчанию (0.0.0.0/0).</li>
+                <li>Шлюз ПК — виртуальный IP 192.168.1.2 (HSRP), конфигурация HSRP и NAT из предыдущих задач сохраняется.</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте IP-связность стыков: с R1 — <code>ping 10.0.0.1</code>, с R2 — <code>ping 10.0.1.1</code>. BGP строится поверх IP: пока стыки не пингуются, соседство не поднимется в принципе.</p>
+            <div class="code-wrap">
+<pre>enable
+ping 10.0.0.1
+show ip interface brief
+configure terminal
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. ISP — интерфейсы и loopback «интернета»:</strong></p>
+            <div class="code-wrap">
+<pre>interface g0/0
+ ip address 10.0.0.1 255.255.255.252
+ no shutdown
+interface g0/1
+ ip address 10.0.1.1 255.255.255.252
+ no shutdown
+interface loopback0
+ ip address 8.8.8.8 255.255.255.255
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. R1 — внешний интерфейс (внутренний и HSRP уже настроены в задаче 6):</strong></p>
+            <div class="code-wrap">
+<pre>interface f0/1
+ ip address 10.0.0.2 255.255.255.252
+ ip nat outside
+ no shutdown
+exit
+router bgp 65002
+ neighbor 10.0.0.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. R2 — зеркально, второй стык в отдельной подсети /30:</strong></p>
+            <div class="code-wrap">
+<pre>interface f0/1
+ ip address 10.0.1.2 255.255.255.252
+ ip nat outside
+ no shutdown
+exit
+router bgp 65002
+ neighbor 10.0.1.1 remote-as 65001
+ network 192.168.1.0 mask 255.255.255.0
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 4. ISP — BGP и дефолт. Сначала соседей, потом дефолт.</strong> Команда <code>default-originate</code> в Packet Tracer <em>не поддерживается</em> — CLI ответит <code>% Invalid input detected</code>. Обход: кладём дефолт в RIB самого ISP и анонсируем его через <code>network 0.0.0.0</code>:</p>
+            <div class="code-wrap">
+<pre>router bgp 65001
+ neighbor 10.0.0.2 remote-as 65002
+ neighbor 10.0.1.2 remote-as 65002
+ network 8.8.8.8 mask 255.255.255.255
+ network 0.0.0.0 mask 0.0.0.0
+exit
+ip route 0.0.0.0 0.0.0.0 loopback0
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Три важных нюанса:</strong></p>
+            <ul style="font-size: 14px; color: var(--muted);">
+                <li><code>network</code> в BGP не «создаёт» сеть, а только объявляет уже существующую в таблице маршрутизации. Поэтому строка <code>ip route 0.0.0.0 0.0.0.0 loopback0</code> обязательна: без дефолта в RIB ISP анонс <code>0.0.0.0/0</code> не заработает. IOS предупредит <code>%Default route without gateway...</code> — это не ошибка, а предупреждение; в реальной сети так делать не стоит, в лабе ISP — «конец интернета», и маршрут формально нужен только для BGP-анонса.</li>
+                <li>Указать шлюзом дефолта собственный адрес (например, <code>ip route 0.0.0.0 0.0.0.0 8.8.8.8</code> на самом ISP) нельзя — получим <code>%Invalid next hop address (it's this router)</code>.</li>
+                <li>Вводите блоки BGP строго в консоль нужного устройства. Если блок ISP вставить в R1, роутер объявит соседом самого себя — увидите <code>% Cannot configure the local system as neighbor</code>. Лечится полным удалением процесса: <code>no router bgp 65001</code>, затем настройка с нуля.</li>
+            </ul>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Физика и базовая связность</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip interface brief</code> на R1, R2, ISP</td><td class="ok">Все стыковые интерфейсы up/up: 10.0.0.1/30↔10.0.0.2/30 и 10.0.1.1/30↔10.0.1.2/30.</td><td class="bad">down/down — кабель/порт; administratively down — забыт <code>no shutdown</code></td></tr>
+<tr><td class="cmd"><code>ping 10.0.0.1</code> с R1, <code>ping 10.0.1.1</code> с R2</td><td class="ok">Ответы приходят с обоих стыков.</td><td class="bad">Не пингуется — соседство BGP не поднимется в принципе: BGP строится поверх IP</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Соседство BGP</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip bgp summary</code> на ISP</td><td class="ok">Два соседа: вместо слова «State» — число полученных префиксов (например, <code>4</code>). Первые 15–20 секунд Idle/Active — норма, eBGP поднимается не мгновенно.</td><td class="bad">Один сосед из двух — проверьте второй стык и remote-as; ошибка <code>Cannot configure the local system as neighbor</code> — блок ISP введён не в своё устройство, конфиг соседа совпадает с локальным IP</td></tr>
+<tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1</code> на R1</td><td class="ok">State <code>Established</code>, BGP version 4, remote AS 65001.</td><td class="bad">Remote AS не тот, что на соседе — соседство зависнет в Idle; <code>Active</code> — R1 сам пытается открыть TCP, значит порт 179 на другой стороне закрыт</td></tr>
+<tr><td class="cmd"><code>show tcp brief</code></td><td class="ok">TCP-сессия на порту 179 (LISTEN/ESTAB с 10.0.0.x).</td><td class="bad">Сессии нет — ACL/маршрут до соседа отсутствуют</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Обмен маршрутами</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip bgp</code> на ISP</td><td class="ok">Сеть 192.168.1.0/24 с двумя путями: лучший <code>&gt;</code> через 10.0.0.2 (R1), второй без <code>&gt;</code> через 10.0.1.2 (R2). Плюс локальные <code>0.0.0.0/0</code> и <code>8.8.8.8/32</code>.</td><td class="bad">Префикса нет — нет <code>network</code> на R1/R2 или сети нет в RIB (см. примечания); один путь вместо двух — соседство со вторым роутером не установлено</td></tr>
+<tr><td class="cmd"><code>show ip route</code> на R1 и R2</td><td class="ok">У каждого: <code>B* 0.0.0.0/0</code> через своего ISP (R1 — via 10.0.0.1, R2 — via 10.0.1.1) и <code>B 8.8.8.8</code>. Строка «Gateway of last resort» — на стык.</td><td class="bad">Дефолта нет — не введён <code>ip route 0.0.0.0 0.0.0.0 loopback0</code> на ISP либо не задан <code>network 0.0.0.0 mask 0.0.0.0</code>; подождите ~60 с, при необходимости <code>clear ip bgp * soft</code></td></tr>
+<tr><td class="cmd"><code>show ip bgp neighbors 10.0.0.1 advertised-routes</code> на R1</td><td class="ok">R1 анонсирует 192.168.1.0/24.</td><td class="bad">Префикс не объявлен — нет network statement, либо сети нет в RIB (см. примечания)</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 3. Сквозной трафик</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>ping 8.8.8.8</code> с ПК (шлюз 192.168.1.2)</td><td class="ok">0% потерь. TTL ответов 254 — пакет прошёл один хоп от NAT-границы до loopback: доказательство, что трансляция сработала на внешнем интерфейсе.</td><td class="bad">Ответы не приходят — дефолт не дошёл до RIB или не работает NAT: <code>show ip nat translations</code> пусто → проверьте ACL, метки <code>inside/outside</code> и что они висят на реальных именах интерфейсов (на 2911 это <code>g0/x</code>, а не <code>f0/x</code>)</td></tr>
+<tr><td class="cmd"><code>traceroute 8.8.8.8</code> с ПК</td><td class="ok">Первый хоп — 192.168.1.2 (HSRP), дальше — стык ISP.</td><td class="bad">Пакет уходит не туда — проверьте таблицу маршрутизации активного роутера</td></tr>
+<tr><td class="cmd">Тест разрыва: <code>shutdown</code> f0/1 на R1, затем <code>no shutdown</code></td><td class="ok">Сессия рвётся мгновенно (fast-external-fallover), у ISP путь <code>&gt;</code> до 192.168.1.0/24 переходит на 10.0.1.2 (R2), HSRP-роль перехватывает R2 — пинги с ПК не прерываются. После <code>no shutdown</code> соседство и роль Active возвращаются сами (preempt).</td><td class="bad">После восстановления соседство не поднялось само — проверьте <code>neighbor</code>-строки на обеих сторонах; пинги при обрыве умирают — смотрите, куда уходит Active-роль (<code>show standby brief</code>) и есть ли у оставшегося роутера живой стык к ISP</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li><code>network</code> в BGP объявляет только сети, уже лежащие в RIB (connected, static, выученные по IGP). Типичная ловушка: команда введена, сети нет — и в <code>advertised-routes</code> пусто.</li>
+<li><code>default-originate</code> — валидная команда реального IOS, но в Packet Tracer 6.2 её нет (кара под командой в CLI). Рабочий обход: дефолт в RIB ISP статикой + <code>network 0.0.0.0 mask 0.0.0.0</code>. Заодно это отличие стоит отметить в отчёте: «провайдер отдаёт полный дефолт, а не только маршрут до 8.8.8.8».</li>
+<li>Если поправили <code>network</code> или <code>neighbor</code> и ждёте обновления — можно не ждать таймеров, а «мягко» перезапустить обмен: <code>clear ip bgp * soft</code>. TCP-сессия при этом не рвётся, роутеры просто заново обмениваются префиксами. Жёсткий вариант <code>clear ip bgp *</code> в лабе тоже допустим, но сессия пересоберётся с нуля (состояние Idle → Active → Established пройдёт заново).</li>
+<li>В Packet Tracer holdtime/timers могут быть «заторможены»: после <code>no shutdown</code> соседство поднимается не мгновенно — дайте сессии 30–60 секунд перед повторной диагностикой. Само падение при <code>shutdown</code> интерфейса происходит мгновенно (fast-external-fallover) — задержка есть только на восстановление.</li>
+<li>NAT обязателен: без него пакет от ПК дойдёт до 8.8.8.8, а ответ ISP не найдёт обратного пути к 192.168.1.10 (ISP не знает эту сеть — она анонсирована только «внутрь» eBGP). Симптом «пинг полупроходит» — классика для траблешутинга.</li>
+<li>После настройки не забудьте <code>write memory</code> на всех устройствах — PT-лабы теряют конфиг при случайном закрытии.</li>
+</ul>
+</div>
+
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> BGP — это как дипломатические переговоры между странами (автономными системами). Каждая страна рассказывает соседям, какие дороги у неё есть, и договаривается, как пропускать чужие фуры. Внутренние дороги (OSPF) — это местные улицы, а BGP — международные трассы. Два стыка к ISP — как два погранперехода: закрылся один, фуры едут через второй.</p>
+    </div>
+
+
+    <!-- ЗАДАЧА 8 -->
+    <div class="script-card">
+        <h2>8. IPv6 и OSPFv3 (Двухстековая маршрутизация) <input type="checkbox" class="self-check" data-task="8" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить IPv6-адресацию и OSPFv3 между двумя роутерами, проверить связность по IPv6. Двухстековая сеть — стандарт; OSPFv3 даёт ту же динамику, что OSPFv2, но для IPv6.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1: сеть 2001:DB8:1::/64 на f0/0, сеть 2001:DB8:10::/64 на f0/1 (к R2).</li>
+                <li>R2: сеть 2001:DB8:10::/64 на f0/0, сеть 2001:DB8:2::/64 на f0/1.</li>
+                <li>Настроить OSPFv3 Area 0 для динамической маршрутизации.</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что IPv6 включён глобально: <code>show ipv6 interface brief</code>. Если интерфейсы в состоянии down — поднимите их. Войдите в режим конфигурации.</p>
+            <div class="code-wrap">
+<pre>enable
+show ipv6 interface brief
+! Если IPv6 не включён — включить
+configure terminal
+ipv6 unicast-routing</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. Настроить R1:</strong></p>
+            <div class="code-wrap">
+<pre>ipv6 unicast-routing
+interface f0/0
+ ipv6 address 2001:DB8:1::1/64
+ ipv6 ospf 1 area 0
+interface f0/1
+ ipv6 address 2001:DB8:10::1/64
+ ipv6 ospf 1 area 0
+router ospfv3 1
+ router-id 1.1.1.1</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить R2:</strong></p>
+            <div class="code-wrap">
+<pre>ipv6 unicast-routing
+interface f0/0
+ ipv6 address 2001:DB8:10::2/64
+ ipv6 ospf 1 area 0
+interface f0/1
+ ipv6 address 2001:DB8:2::1/64
+ ipv6 ospf 1 area 0
+router ospfv3 1
+ router-id 2.2.2.2</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Примечание про Packet Tracer:</strong> если IOS в PT не принимает <code>router ospfv3 1</code>, используйте классический вариант: <code>ipv6 router ospf 1</code> → внутри <code>router-id 1.1.1.1</code>. Включение OSPFv3 на интерфейсах командой <code>ipv6 ospf 1 area 0</code> при этом не меняется. Router-id в IPv6 обязателен и вручную: автоматом берётся только из loopback или IPv4 — которых может не быть.</p>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Адресация и физика</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ipv6 interface brief</code></td><td class="ok">Глобальные 2001:DB8:1::/64, 10::/64, 2::/64 + link-local FE80::, up.</td><td class="bad">Нет адреса / забыт <code>ipv6 unicast-routing</code></td></tr>
+<tr><td class="cmd"><code>ping 2001:DB8:10::2</code> с R1 (линк к R2)</td><td class="ok">Ответы приходят.</td><td class="bad">Не пингуется — L3-связности нет, OSPFv3 не поднимется; проверьте маску /64 и no shutdown</td></tr>
+<tr><td class="cmd"><code>ping FE80::1</code> (link-local соседа, на интерфейсе к нему)</td><td class="ok">Отвечает (с указанием исходящего интерфейса).</td><td class="bad">Link-local нет — интерфейс IPv6 не включён</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Соседство OSPFv3</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ospfv3 neighbor</code></td><td class="ok">Сосед в статусе <code>FULL</code>.</td><td class="bad">Нет соседа — router-id, area, интерфейс не в процессе</td></tr>
+<tr><td class="cmd"><code>show ipv6 ospf neighbor</code> (классический вариант)</td><td class="ok">То же самое: сосед FULL, по link-local адресу.</td><td class="bad">Роутеры в разных процессах/зонах — соседство не строится</td></tr>
+<tr><td class="cmd"><code>show ipv6 ospf interface f0/1</code> на R1</td><td class="ok">Интерфейс в OSPF, area 0, cost по скорости линка, тип сети broadcast.</td><td class="bad">Интерфейса нет в выводе — забыли <code>ipv6 ospf 1 area 0</code> на нём</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Маршруты и сквозной трафик</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ipv6 route ospf</code></td><td class="ok">Маршрут до 2001:DB8:2::/64.</td><td class="bad">Пусто — интерфейсы не в OSPFv3</td></tr>
+<tr><td class="cmd"><code>show ipv6 route</code></td><td class="ok">Плюс connected-сети (C) и link-local (L) на каждом интерфейсе.</td><td class="bad">Нет C-записей — адресация не применилась</td></tr>
+<tr><td class="cmd"><code>ping 2001:DB8:2::1</code> (с R1)</td><td class="ok">Успешно.</td><td class="bad">Не проходит — соседство не поднялось</td></tr>
+<tr><td class="cmd"><code>ping 2001:DB8:2::X</code> с ПК в сети 2001:DB8:1::/64</td><td class="ok">Успешно (ПК должен иметь IPv6-шлюз — link-local R1 или 2001:DB8:1::1).</td><td class="bad">Не проходит — у ПК не прописан IPv6-шлюз (в настройках IPv6 на клиенте)</td></tr>
+<tr><td class="cmd">Тест разрыва: <code>shutdown</code> f0/1 на R1</td><td class="ok">Соседство падает, маршруты исчезают из <code>show ipv6 route ospf</code>; после возврата — восстанавливаются.</td><td class="bad">Маршруты не вернулись — интерфейс не вернулся в процесс (проверьте <code>ipv6 ospf 1 area 0</code>)</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li><code>ipv6 unicast-routing</code> нужно на <strong>обоих</strong> роутерах — без него роутер просто не пересылает IPv6-трафик, даже с полными маршрутами.</li>
+<li>Соседство OSPFv3 строится по link-local адресам, а не по глобальным — не пугайтесь в выводах адресов FE80::.</li>
+<li>Router-id в IPv6 обязателен: если оба роутера возьмут одинаковый id (или 0.0.0.0), соседство не соберётся.</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> IPv6 — это как новый стандарт почтовых индексов: вместо 4 цифр (IPv4) — длинный буквенно-цифровой код (128 бит). OSPFv3 — это тот же навигатор, что и OSPF, но для новых индексов. Соседство он строит по «временным» адресам (link-local), которые есть на каждом интерфейсе.</p>
+    </div>
+
+    <!-- ЗАДАЧА 9 -->
+    <div class="script-card">
+        <h2>9. Безопасность L2 (Port Security + DHCP Snooping) <input type="checkbox" class="self-check" data-task="9" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Защитить порт коммутатора от подключения чужих устройств в офисный порт и включить DHCP Snooping для защиты от левых DHCP-серверов.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>Коммутатор SW1. Порт f0/10 — доступ для клиента.</li>
+                <li>Транк-порт Po1 — к реальному DHCP-серверу (trust).</li>
+                <li>Включить Port Security на f0/10 (1 MAC, violation shutdown).</li>
+                <li>Включить DHCP Snooping в VLAN 10, доверенный порт — только Po1.</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что Po1 (транк) реально собран и в статусе <code>SU</code> (<code>show etherchannel summary</code>). Убедитесь, что DHCP-сервер доступен. Войдите в режим конфигурации.</p>
+            <div class="code-wrap">
+<pre>enable
+show etherchannel summary
+show ip interface brief
+configure terminal
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. Включить DHCP Snooping глобально и в VLAN:</strong></p>
+            <div class="code-wrap">
+<pre>ip dhcp snooping
+ip dhcp snooping vlan 10
+no ip dhcp snooping information option</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить доверенный порт (транк):</strong></p>
+            <div class="code-wrap">
+<pre>interface Port-channel 1
+ ip dhcp snooping trust</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Включить Port Security на порту клиента:</strong></p>
+            <div class="code-wrap">
+<pre>interface f0/10
+ switchport mode access
+ switchport access vlan 10
+ switchport port-security
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Порядок важен:</strong> сначала убедитесь, что DHCP работает (клиент получает адрес), и только потом добавляйте защиты. Если включить Port Security до того, как клиент получил адрес через sticky, в binding попадёт не тот MAC — и при следующем подключении сработает violation.</p>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Исходное состояние (до защит)</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">Клиент в VLAN 10 получает адрес по DHCP</td><td class="ok">Адрес выдан сервером (не APIPA).</td><td class="bad">Не получает — чинить DHCP до включения snooping, иначе не поймёте, что сломалось</td></tr>
+<tr><td class="cmd"><code>show etherchannel summary</code></td><td class="ok">Po1 — <code>SU</code>, порты <code>P</code>.</td><td class="bad">Канал не собран — trust-порт в решении висит на несуществующем интерфейсе</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. DHCP Snooping</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip dhcp snooping</code></td><td class="ok">Po1 в статусе <code>trust</code>, f0/10 — untrusted.</td><td class="bad">Нет trust на Po1 — легитимные ответы DHCP дропаются</td></tr>
+<tr><td class="cmd"><code>show ip dhcp snooping binding</code></td><td class="ok">Записи MAC↔IP клиентов VLAN 10.</td><td class="bad">Пусто — клиенты не получают адреса</td></tr>
+<tr><td class="cmd">После включения snooping повторно запросить адрес на клиенте</td><td class="ok">Адрес выдаётся как прежде.</td><td class="bad">Перестал выдаваться — клиентский порт untrusted (это норма), но сервер недоступен: проверьте trust на Po1 и роут между свитчем и сервером</td></tr>
+<tr><td class="cmd">Тест «левого» DHCP: поднять второй сервер на untrusted-порту</td><td class="ok">Ответы дропаются, клиенты продолжают получать адреса только от легитимного сервера.</td><td class="bad">Клиенты получают адреса от двух серверов / от чужого — snooping не работает</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Port Security</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show port-security interface f0/10</code></td><td class="ok">Статус <code>Secure-up</code>, maximum 1.</td><td class="bad"><code>err-disabled</code> — сработал violation (<code>shutdown</code>)</td></tr>
+<tr><td class="cmd"><code>show port-security address</code></td><td class="ok">MAC ПК закреплён за f0/10.</td><td class="bad">Чужой MAC в таблице</td></tr>
+<tr><td class="cmd"><code>show port-security</code> (общий)</td><td class="ok">Все защищённые порты перечислены, Violation — Shutdown.</td><td class="bad">Порты, куда вы забыли добавить <code>switchport port-security</code>, в списке отсутствуют</td></tr>
+<tr><td class="cmd">Тест смены MAC: смените MAC на ПК (в PT — в настройках устройства)</td><td class="ok">Порт сразу уходит в <code>err-disabled</code>, свитч пишет в лог «Security violation».</td><td class="bad">Нет реакции — port-security не включён на порту (или maximum больше 1)</td></tr>
+<tr><td class="cmd">Восстановление после violation: <code>interface f0/10</code> → <code>shutdown</code> → <code>no shutdown</code></td><td class="ok">Порт снова <code>Secure-up</code>, клиент снова работает.</td><td class="bad">Порт так и остался в err-disable — без ручного shutdown/no shutdown он сам не поднимется</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li><code>no ip dhcp snooping information option</code> — в реальных сетях нужно, когда между клиентом и сервером стоит ещё один свитч, добавляющий Option 82 (в PT часто нужен, иначе сервер не принимает запросы). Но это компромисс по безопасности: в проде лучше правильно настроить trust-цепочку, а не отключать опцию.</li>
+<li>Violation <code>shutdown</code> — самый безопасный режим для офисных портов, но требует ручного восстановления. Для лабы это наглядно; в проде часто ставят <code>restrict</code> с логированием.</li>
+<li>Если в PT несколько ПК на одном порту (через мини-свитч), maximum 1 их убьёт — выставляйте maximum по числу устройств за портом.</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> Port Security — это как вахтёр, который пускает в здание только тех, кого знает в лицо (MAC). DHCP Snooping — это как проверка паспорта у «почтальона» (DHCP-сервера): письма с непроверенным адресом не принимаются.</p>
+    </div>
+
+    <!-- ЗАДАЧА 10 -->
+    <div class="script-card">
+        <h2>10. DHCP (Автоматизация выдачи адресов) <input type="checkbox" class="self-check" data-task="10" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить DHCP-сервер на L3-коммутаторе для выдачи адресов клиентам в VLAN 10 и VLAN 20. Ручная выдача IP не масштабируется; DHCP + excluded-address = предсказуемость.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>SW1 (L3-коммутатор) с VLAN 10 (192.168.10.0/24) и VLAN 20 (192.168.20.0/24).</li>
+                <li>Шлюзы: .254 в каждом VLAN (SVI).</li>
+                <li>Исключить из выдачи адреса шлюзов и серверов (.1–.10).</li>
+                <li>Клиенты должны получать IP, маску, шлюз и DNS (8.8.8.8).</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что SVI VLAN 10 и VLAN 20 уже созданы и в статусе up/up (<code>show ip interface brief</code>). Если нет — создайте их до настройки пулов. Войдите в режим конфигурации.</p>
+            <div class="code-wrap">
+<pre>enable
+show ip interface brief
+show vlan brief
+configure terminal
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. Создать SVI и включить маршрутизацию:</strong></p>
+            <div class="code-wrap">
+<pre>ip routing
+interface Vlan10
+ ip address 192.168.10.254 255.255.255.0
+ no shutdown
+interface Vlan20
+ ip address 192.168.20.254 255.255.255.0
+ no shutdown</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Исключить адреса и создать пулы:</strong></p>
+            <div class="code-wrap">
+<pre>ip dhcp excluded-address 192.168.10.1 192.168.10.10
+ip dhcp excluded-address 192.168.20.1 192.168.20.10
+ip dhcp pool VLAN10
+ network 192.168.10.0 255.255.255.0
+ default-router 192.168.10.254
+ dns-server 8.8.8.8
+ip dhcp pool VLAN20
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.254
+ dns-server 8.8.8.8</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Каркас: SVI и маршрутизация</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip interface brief</code> | include Vlan</td><td class="ok">SVI Vlan10/Vlan20 в состоянии up/up.</td><td class="bad">SVI down — нет активных портов в VLAN</td></tr>
+<tr><td class="cmd"><code>show run | include ip routing</code></td><td class="ok">Строка <code>ip routing</code> присутствует.</td><td class="bad">Нет — L3-коммутатор работает как обычный свитч, маршрутизации между VLAN не будет</td></tr>
+<tr><td class="cmd"><code>ping 192.168.10.254</code> с ПК в VLAN 10 (до настройки DHCP)</td><td class="ok">Ответ шлюза.</td><td class="bad">Не отвечает — сначала чинить L2/access-порты, а не DHCP</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Выдача адресов</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">На ПК в VLAN 10 выбрать «DHCP»</td><td class="ok">IP из диапазона 192.168.10.11–253.</td><td class="bad">APIPA 169.254.x.x — DHCP недоступен</td></tr>
+<tr><td class="cmd">На ПК в VLAN 20 выбрать «DHCP»</td><td class="ok">IP из 192.168.20.11–253 (не из пула VLAN 10!).</td><td class="bad">Адрес из чужой сети — ПК физически подключён не в тот VLAN (access-порт)</td></tr>
+<tr><td class="cmd"><code>ipconfig /all</code> на ПК (в PT: Details → свой адрес)</td><td class="ok">IP, маска /24, шлюз .254, DNS 8.8.8.8 — все поля заполнены.</td><td class="bad">Пустой шлюз — забыли <code>default-router</code> в пуле; пустой DNS — забыли <code>dns-server</code></td></tr>
+<tr><td class="cmd"><code>show ip dhcp binding</code></td><td class="ok">Выданные адреса и MAC-адреса клиентов.</td><td class="bad">Пусто — пул / SVI сломаны</td></tr>
+<tr><td class="cmd"><code>show ip dhcp pool</code></td><td class="ok">Пулы VLAN10/VLAN20, статистика, шлюз .254.</td><td class="bad">Забыли <code>default-router</code> / <code>excluded-address</code></td></tr>
+<tr><td class="cmd">Проверка excluded: выданные адреса не в диапазоне .1–.10</td><td class="ok">Все адреса клиентов ≥ .11, шлюзы .254 свободны.</td><td class="bad">Кто-то получил .1–.10 — excluded-address не применился (введён после выдачи адреса; верните адрес: <code>clear ip dhcp binding *</code> и повторно запросите DHCP)</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Сквозная связь между VLAN</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>ping 192.168.20.254</code> с ПК VLAN 10</td><td class="ok">Успешно (маршрутизация между VLAN).</td><td class="bad">Не проходит — нет <code>ip routing</code></td></tr>
+<tr><td class="cmd"><code>ping 192.168.20.X</code> (адрес клиента в VLAN 20) с ПК VLAN 10</td><td class="ok">Успешно.</td><td class="bad">Не проходит при работающем пинге шлюза — на клиенте VLAN 20 не прописан шлюз (после DHCP он должен появиться автоматически)</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li>В Packet Tracer клиенты не «перезапрашивают» адрес после правок пула. Если пул меняли после выдачи — на ПК нажмите Static/DHCP переключателем или используйте <code>clear ip dhcp binding *</code> на свитче, чтобы перераздать.</li>
+<li>Один пул на один VLAN: если клиенты разных VLAN получают адреса из одного диапазона — вероятно, оба access-порта в одном VLAN (проверьте <code>show vlan brief</code>).</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> DHCP — это как администратор гостиницы, который выдаёт гостям (ПК) ключи от номеров (IP). Гость говорит «хочу номер» (Discover), администратор предлагает варианты (Offer), гость выбирает (Request), администратор подтверждает (Ack).</p>
+    </div>
+
+    <!-- ЗАДАЧА 11 -->
+    <div class="script-card">
+        <h2>11. NAT/PAT (Выход в интернет) <input type="checkbox" class="self-check" data-task="11" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить PAT (Overload) на граничном роутере, чтобы все клиенты внутренней сети выходили в интернет под одним внешним IP. Частные адреса (RFC1918) не маршрутизируются в интернете — нужен выход под одним публичным IP.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1: f0/0 — внутренний (192.168.10.0/24), f0/1 — внешний (10.0.0.2/30, к ISP).</li>
+                <li>Внутренняя сеть 192.168.10.0/24.</li>
+                <li>Все клиенты должны выходить в интернет под IP 10.0.0.2.</li>
+                <li>Сервер 192.168.10.10 должен быть доступен извне (Static NAT).</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что интерфейсы f0/0 и f0/1 в статусе up/up. Убедитесь, что внутренняя сеть 192.168.10.0/24 реально доступна (пинг с R1 до ПК). Войдите в режим конфигурации.</p>
+            <div class="code-wrap">
+<pre>enable
+show ip interface brief
+ping 192.168.10.11
+configure terminal
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. Пометить интерфейсы inside/outside:</strong></p>
+            <div class="code-wrap">
+<pre>interface f0/0
+ ip nat inside
+interface f0/1
+ ip nat outside</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Создать ACL для NAT и включить PAT:</strong></p>
+            <div class="code-wrap">
+<pre>ip access-list extended NAT
+ permit ip 192.168.10.0 0.0.0.255 any
+ip nat inside source list NAT interface f0/1 overload</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Static NAT для сервера (проброс порта):</strong></p>
+            <div class="code-wrap">
+<pre>ip nat inside source static tcp 192.168.10.10 80 interface f0/1 80</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Не забудьте про маршрут по умолчанию:</strong> NAT превращает адреса, но сам не даёт путь наружу. На R1 нужна строка вида <code>ip route 0.0.0.0 0.0.0.0 10.0.0.1</code> (или дефолт от ISP по BGP из задачи 7). Без неё NAT будет «срабатывать», а ответы из интернета всё равно не вернутся.</p>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Фундамент до NAT</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip interface brief</code></td><td class="ok">f0/0 и f0/1 up/up, адреса на местах.</td><td class="bad">Интерфейс down — NAT не сработает физически</td></tr>
+<tr><td class="cmd"><code>ping 192.168.10.11</code> с R1</td><td class="ok">Ответы от внутреннего ПК.</td><td class="bad">Нет — сначала чинить внутреннюю сеть, NAT поверх сломанной не спасёт</td></tr>
+<tr><td class="cmd"><code>show ip route</code> на R1</td><td class="ok">Есть маршрут по умолчанию (<code>S 0.0.0.0/0</code> или <code>B</code> от BGP).</td><td class="bad">Нет дефолта — трансляции будут, а интернета не будет: чините маршрутизацию ДО настройки NAT</td></tr>
+<tr><td class="cmd"><code>ping 10.0.0.1</code> с R1</td><td class="ok">ISP отвечает.</td><td class="bad">Не отвечает — проверьте линк к ISP до NAT</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Метки inside/outside и ACL</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip nat statistics</code></td><td class="ok">Счётчик hits растёт, inside f0/0, outside f0/1.</td><td class="bad">Hits = 0 — трафик не попадает под ACL; метки перепутаны — NAT сработает «наоборот» и клиенты потеряют связь</td></tr>
+<tr><td class="cmd"><code>show access-lists NAT</code></td><td class="ok">Match counter растёт.</td><td class="bad">permit не покрывает сеть 192.168.10.0/24</td></tr>
+<tr><td class="cmd"><code>show ip nat translations</code></td><td class="ok">Записи с внутренним IP ПК и внешним 10.0.0.2. Записи <code>icmp</code> — это норма: PAT транслирует все протоколы, для ICMP «порт» — идентификатор запроса.</td><td class="bad">Пусто — NAT не срабатывает</td></tr>
+<tr><td class="cmd"><code>show ip nat translations verbose</code></td><td class="ok">Интерфейсы входа/выхода, таймер записи.</td><td class="bad">Записи не в том направлении</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Сквозной трафик и Static NAT</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>ping 8.8.8.8</code> с ПК</td><td class="ok">Успешно.</td><td class="bad">Не проходит — NAT, ACL или дефолт; смотрите hits в статистике</td></tr>
+<tr><td class="cmd"><code>telnet 10.0.0.2 80</code> с внешнего хоста</td><td class="ok">Попали на сервер 192.168.10.10 (Static NAT).</td><td class="bad">Соединение сброшено — нет static NAT-записи</td></tr>
+<tr><td class="cmd"><code>show ip nat translations</code> во время обращения к серверу извне</td><td class="ok">Появляется запись <code>static</code> для 192.168.10.10 (постоянная, не по таймеру).</td><td class="bad">Записи нет — static NAT не настроен или порт не совпадает (80 vs 8080)</td></tr>
+<tr><td class="cmd">Тест перегрузки: пинги одновременно с двух ПК</td><td class="ok">Обе записи в <code>show ip nat translations</code> с разными source port, оба пинга идут.</td><td class="bad">Один пинг пропадает — проверьте, что включён именно overload</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li>Перепутанные метки inside/outside — самая частая ошибка в NAT-лабах: NAT-записи появляются, а связь нет. Сверяйте <code>show ip nat statistics</code> с фактическими линками.</li>
+<li>Static NAT (проброс порта 80) не «исчезает» по таймеру — в таблице он висит постоянно. Если в выводе его нет вообще, конфиг не применился.</li>
+<li>ICMP-записи в таблице трансляций — норма. PAT мультиплексирует всё, а для ICMP роль «порта» играет query id.</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> PAT — это как вахтёр на проходной завода: все сотрудники выходят через одну дверь (внешний IP), но у каждого свой номерок (source port), чтобы вернуться обратно. Static NAT — это отдельный вход для гостей: если курьер приходит с улицы, его ведут в конкретный кабинет (сервер).</p>
+    </div>
+
+    <!-- ЗАДАЧА 12 -->
+    <div class="script-card">
+        <h2>12. EIGRP + Redistribution <input type="checkbox" class="self-check" data-task="12" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить EIGRP между двумя роутерами и перераспределить маршруты между OSPF и EIGRP на граничном роутере. Это стык двух доменов маршрутизации (например, после слияния компаний или сегментации сети).</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>R1 (OSPF) — сеть 10.0.0.0/24.</li>
+                <li>R2 (граничный) — связь с R1 по OSPF и с R3 по EIGRP.</li>
+                <li>R3 (EIGRP) — сеть 20.0.0.0/24.</li>
+                <li>Настроить OSPF AS 1 и EIGRP AS 100, перераспределить маршруты.</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что R1 и R2 видят друг друга по OSPF (<code>show ip ospf neighbor</code> — FULL), а R2 и R3 — по EIGRP (<code>show ip eigrp neighbors</code> — UP). Если соседство не поднято — redistribution не сработает. Войдите в режим конфигурации.</p>
+            <div class="code-wrap">
+<pre>enable
+show ip ospf neighbor
+show ip eigrp neighbors
+configure terminal
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. Настроить R1 (OSPF):</strong></p>
+            <div class="code-wrap">
+<pre>router ospf 1
+ network 10.0.0.0 0.0.0.255 area 0</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить R3 (EIGRP):</strong></p>
+            <div class="code-wrap">
+<pre>router eigrp 100
+ network 20.0.0.0 0.0.0.255
+ no auto-summary</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Настроить R2 (граничный, redistribution):</strong></p>
+            <div class="code-wrap">
+<pre>router ospf 1
+ network 10.0.0.0 0.0.0.255 area 0
+ redistribute eigrp 100 subnets
+router eigrp 100
+ network 20.0.0.0 0.0.0.255
+ no auto-summary
+ redistribute ospf 1 metric 10000 100 255 1 1500</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Почему нет петли:</strong> внешние маршруты имеют худший тип, чем внутренние (O E2 / D EX), поэтому они не перебивают «родные» маршруты протокола. Плюс внешние EIGRP имеют AD 170 — это выше, чем у внутренних EIGRP (90) и OSPF (110). При <strong>одной</strong> точке redistribution этого достаточно. При <strong>двух</strong> точках (например, R2 и R3 тоже делают mutual redistribution) иерархия типов уже не спасает — нужен <code>route-map</code> с ручным <code>set tag</code> и <code>deny</code> для чужих тегов.</p>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Соседства внутри каждого домена</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip ospf neighbor</code> на R1 и R2</td><td class="ok">Сосед в состоянии <code>FULL</code>.</td><td class="bad">Нет соседа — redistribution не поможет: он переливает уже существующие маршруты</td></tr>
+<tr><td class="cmd"><code>show ip eigrp neighbors</code> на R2 и R3</td><td class="ok">Сосед UP, Q count 0.</td><td class="bad">Down — mismatch AS-номеров, passive-interface</td></tr>
+<tr><td class="cmd"><code>show ip route ospf</code> на R2 (до редистрибуции)</td><td class="ok">Маршруты за R1 видны как <code>O</code>.</td><td class="bad">Пусто — сначала OSPF, потом редистрибуция</td></tr>
+<tr><td class="cmd"><code>show ip route eigrp</code> на R2 (до редистрибуции)</td><td class="ok">Маршруты за R3 видны как <code>D</code>.</td><td class="bad">Пусто — сначала EIGRP, потом редистрибуция</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Перераспределение</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ip route</code> на R2</td><td class="ok">Маршруты OSPF (<code>O</code>) и EIGRP (<code>D</code>), а также внешние (<code>O E2</code>, <code>D EX</code>).</td><td class="bad">Нет внешних меток — redistribution не работает</td></tr>
+<tr><td class="cmd"><code>show ip route 20.0.0.0</code> на R1</td><td class="ok">Метка <code>O E2</code> — перераспределён из EIGRP.</td><td class="bad">Маршрута нет — забыли seed-метрику</td></tr>
+<tr><td class="cmd"><code>show ip route 10.0.0.0</code> на R3</td><td class="ok">Метка <code>D EX</code> — перераспределён из OSPF.</td><td class="bad">Маршрута нет — нет <code>redistribute ospf</code></td></tr>
+<tr><td class="cmd"><code>show ip protocols</code></td><td class="ok">В секции redistribution указаны оба протокола.</td><td class="bad">Нет строки redistribution — редистрибуция не настроена</td></tr>
+<tr><td class="cmd"><code>show run | section router</code> на R2</td><td class="ok">В OSPF — <code>redistribute eigrp 100 subnets</code>; в EIGRP — <code>redistribute ospf 1 metric ...</code>.</td><td class="bad">Без <code>subnets</code> в OSPF классовые сети не переливаются (поймает только /8, /16, /24 с классовой маской)</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Сквозной трафик между доменами</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>ping 20.0.0.X</code> с ПК за R1</td><td class="ok">Успешно — маршрут перелился.</td><td class="bad">Не проходит — на R3 нет обратного маршрута к 10.0.0.0/24 (редистрибуция односторонняя)</td></tr>
+<tr><td class="cmd"><code>ping 10.0.0.X</code> с ПК за R3</td><td class="ok">Успешно.</td><td class="bad">Не проходит — обратная сторона редистрибуции не настроена; помните: маршруты в одну сторону не дают трафика туда-обратно</td></tr>
+<tr><td class="cmd"><code>show ip route</code> на R1 (строка <code>O E2</code>)</td><td class="ok">Метрика 20 по умолчанию (если не меняли) — это норма для O E2.</td><td class="bad">Метрика непонятная/слишком большая — проверьте seed-metric, если задавали route-map</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li>Redistribution работает только по уже существующим маршрутам: если OSPF/EIGRP сами не работают, редистрибуция молча сделает «ничего». Порядок: сначала соседства, потом перелив.</li>
+<li>В OSPF обязательно слово <code>subnets</code> при переливе классовых-неклассовых сетей — без него значительная часть маршрутов молча не перельётся.</li>
+<li>Двусторонняя редистрибуция в одном месте безопасна, в двух — уже потенциальная петля. Для лабы одна точка — норм, для отчёта упомяните route-map с тегами как «что улучшить».</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> Redistribution — это как перевод валюты: OSPF «считает» маршруты в одной валюте (cost), EIGRP — в другой (bandwidth + delay). Команда <code>redistribute</code> с <code>metric</code> говорит: «когда переводишь, вот тебе курс» (5 параметров метрики). Без курса EIGRP не примет маршрут — не знает, сколько он «стоит».</p>
+    </div>
+
+    <!-- ЗАДАЧА 13 -->
+    <div class="script-card">
+        <h2>13. MSTP (Multiple Spanning Tree Protocol) <input type="checkbox" class="self-check" data-task="13" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить MSTP с двумя инстансами (для разных групп VLAN) и балансировкой нагрузки между двумя корневыми коммутаторами. Один экземпляр STP на все VLAN даст простой части сети, а MSTP даёт балансировку по группам VLAN.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>SW1 и SW2 — корневые для разных групп VLAN.</li>
+                <li>Instance 1 — VLAN 100, 102, 104. Instance 2 — VLAN 105, 106, 107, 108.</li>
+                <li>На SW1: Instance 1 — root primary, Instance 2 — root secondary.</li>
+                <li>На SW2: Instance 2 — root primary, Instance 1 — root secondary.</li>
+                <li>VLAN 1 (общий) — корень на SW1, резерв — на SW2.</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что все свитчи в одном режиме STP (<code>show spanning-tree summary</code>). Убедитесь, что имена регионов и ревизии совпадут (это критично для MSTP: если регион разный — свитчи не «увидят» друг друга). Войдите в режим конфигурации.</p>
+            <div class="code-wrap">
+<pre>enable
+show spanning-tree summary
+show spanning-tree mst configuration
+configure terminal
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. Включить MSTP и создать регион на обоих коммутаторах:</strong></p>
+            <div class="code-wrap">
+<pre>spanning-tree mode mst
+spanning-tree mst configuration
+ name LAB
+ revision 1
+ instance 1 vlan 100,102,104
+ instance 2 vlan 105,106,107,108
+ exit</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Настроить корневые мосты на SW1:</strong></p>
+            <div class="code-wrap">
+<pre>spanning-tree mst 1 root primary
+spanning-tree mst 2 root secondary</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Настроить корневые мосты на SW2:</strong></p>
+            <div class="code-wrap">
+<pre>spanning-tree mst 1 root secondary
+spanning-tree mst 2 root primary</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Примечание про VLAN 1:</strong> VLAN, не замапленные ни в один инстанс (в том числе VLAN 1), автоматически попадают в Instance 0 (IST). Корень IST — «региональный корень»: его настраивают отдельно, например <code>spanning-tree mst 0 root primary</code> на SW1 и <code>root secondary</code> на SW2. Если этого не сделать, IST выберет корень по наименьшему MAC — и балансировка Instance 0 не будет предсказуемой.</p>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Регион и режим</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show spanning-tree summary</code> на всех свитчах</td><td class="ok">Режим <code>mst</code> везде одинаков.</td><td class="bad">Один в rapid-pvst, другой в mst — BPDU не согласуются, кольцо рискует штормить</td></tr>
+<tr><td class="cmd"><code>show spanning-tree mst configuration</code></td><td class="ok">Имя региона, revision и mapping инстансов совпадают на всех свитчах.</td><td class="bad">Mismatch name/revision/mapping — соседи в разных регионах</td></tr>
+<tr><td class="cmd"><code>show spanning-tree mst</code> (сводная)</td><td class="ok">Инстансы 0, 1, 2 присутствуют, VLAN замаплены правильно.</td><td class="bad">Инстанса нет — забыл замапить VLAN в <code>spanning-tree mst configuration</code></td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Корни инстансов</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show spanning-tree mst 1</code> на SW1</td><td class="ok">«This bridge is the root».</td><td class="bad">Корень в другом месте — приоритет или регион</td></tr>
+<tr><td class="cmd"><code>show spanning-tree mst 2</code> на SW2</td><td class="ok">Root для instance 2 (на SW1 — нет).</td><td class="bad">Оба primary — корень выберется по MAC, балансировки нет</td></tr>
+<tr><td class="cmd"><code>show spanning-tree mst 0</code> на SW1 и SW2</td><td class="ok">Корень IST — SW1 (secondary SW2), если настроили <code>mst 0 root primary/secondary</code>.</td><td class="bad">Корень IST выбран по MAC — IST не настраивали, VLAN вне инстансов ведут себя непредсказуемо</td></tr>
+<tr><td class="cmd"><code>show spanning-tree mst</code> на третьем свитче (SW3)</td><td class="ok">Для instance 1 корень SW1, для instance 2 — SW2.</td><td class="bad">Оба корня в одном свитче — балансировки нет, проверьте primary/secondary</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Балансировка и failover</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">На одном из избыточных линков SW3: <code>show spanning-tree mst 1</code> и <code>show spanning-tree mst 2</code></td><td class="ok">В одном инстансе порт <code>Altn BLK</code>, в другом <code>Root FWD</code> — балансировка работает.</td><td class="bad">Оба инстанса блокируют один и тот же порт — корни не разнесены</td></tr>
+<tr><td class="cmd">Failover: <code>shutdown</code> линка к SW1; наблюдать за instance 1</td><td class="ok">Заблокированный порт для instance 1 переходит в FWD (Rapid-PVST-style конвергенция, в MST — несколько секунд, не 30–50).</td><td class="bad">Порт не поднимается — secondary не назначен, либо линк физически не тот</td></tr>
+<tr><td class="cmd">Failover: <code>shutdown</code> линка к SW2; наблюдать за instance 2</td><td class="ok">Заблокированный порт для instance 2 переходит в FWD.</td><td class="bad">Нет реакции — secondary для этого инстанса не настроен</td></tr>
+<tr><td class="cmd"><code>no shutdown</code> обратно; проверка возврата</td><td class="ok">Роли возвращаются: SW1 снова root для instance 1 (preempt не нужен — корни MSTP определяются приоритетом, а не «владением»).</td><td class="bad">Роли не вернулись — приоритеты не применились; проверьте <code>spanning-tree mst N root primary</code> (это макрос приоритета 24576/28672)</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li>Регион MSTP определяется тремя параметрами сразу: name, revision, mapping. Несовпадение любого из трёх = свитчи в разных регионах (это не ошибка конфига, а особенность протокола — но межрегиональные вычисления ведутся через CIST, и лаба может повести себя неожиданно).</li>
+<li><code>root primary</code>/<code>secondary</code> — это макросы приоритета (24576 и 28672). В выводе <code>show spanning-tree mst</code> смотрите на Bridge Priority: она должна быть меньше, чем у других свитчей.</li>
+<li>VLAN вне инстансов (например, VLAN 1) живёт в Instance 0. Это не «не замаплен» в смысле ошибки — просто он в IST.</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> MSTP — это как несколько параллельных дорог для разных видов транспорта (инстансов). Грузовики (Instance 1) едут через один мост, легковые (Instance 2) — через другой. <code>root primary</code> на SW1 для Instance 1 = «грузовики едут через SW1». <code>root secondary</code> = «если мост SW1 закрыт, грузовики едут через резервный (SW2)». Так трафик распределяется, а не идёт весь через один свитч. Важно: у каждого инстанса корень ровно один — если оба свитча «primary», STP выберет корень по MAC, и балансировки не будет.</p>
+    </div>
+
+<!-- ЗАДАЧА 14 -->
+    <div class="script-card">
+        <h2>14. NTP (Синхронизация времени) <input type="checkbox" class="self-check" data-task="14" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить синхронизацию времени между сетевыми устройствами, чтобы логи и сертификаты работали корректно. Без синхронизации времени логи разных устройств не сопоставить, а сертификаты/DHCP-lease ломаются.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>Server-PT (192.168.1.100/24, подключён к SW1) — NTP-сервер, централизованный источник времени.</li>
+                <li>R1 и SW1 — NTP-клиенты (синхронизируются с сервером).</li>
+                <li>Часовой пояс — Москва (UTC+3).</li>
+                <li>Бонус-кейс: до синхронизации логи SW1 выглядят как <code>*??? 01, 00:04:55</code> — устройство честно показывает, что времени у него нет. После NTP — нормальные даты.</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка устройств:</strong> задайте имена, базовые настройки и адресацию в LAN (NTP строится поверх IP — пока клиенты не пингуют сервер, синхронизация не заработает). На SW1 после включения <code>service timestamps</code> вы сразу увидите кейс «логи без времени» — это нормально, NTP его исправит.</p>
+            <p><strong>Шаг 0.1. R1 — имя, база, адрес в LAN:</strong></p>
+            <div class="code-wrap">
+<pre>configure terminal
+hostname R1
+no ip domain-lookup
+service timestamps log datetime msec
+line console 0
+ logging synchronous
+ exit
+interface f0/0
+ description Link-to-SW1
+ ip address 192.168.1.5 255.255.255.0
+ no shutdown
+ exit
+end
+clock set 12:00:00 22 Nov 2026
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+ <p><strong>Шаг 0.2. SW1 — имя, база, адрес через SVI:</strong> порт f0/1 остаётся обычным L2-портом VLAN 1, адрес вешается не на физический порт, а на SVI — так R1, SW1 и NTP-сервер окажутся в одном широковещательном домене:</p>
+            <div class="code-wrap">
+<pre>configure terminal
+hostname SW1
+no ip domain-lookup
+service timestamps log datetime msec
+line console 0
+ logging synchronous
+ exit
+interface f0/1
+ description Link-to-R1
+ switchport
+ switchport mode access
+ shutdown
+ no shutdown
+ exit
+interface vlan 1
+ ip address 192.168.1.2 255.255.255.0
+ no shutdown
+ exit
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Почему SVI, а не <code>no switchport</code>:</strong> если сделать f0/1 routed-портом с IP, он выйдет из VLAN 1 — и сервер (который живёт в VLAN 1) не сможет даже разрешить ARP'ом адрес шлюза. Второй IP из той же подсети на <code>interface vlan 1</code> IOS не даст — перекрытие с f0/1. Поэтому для этой топологии единственный рабочий вариант: порты L2 в VLAN 1, адрес управления — на SVI. Порт к серверу (например, f0/2) настройки не требует: default — access в VLAN 1.</p>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Ловушка PT:</strong> если когда-то на порту вводился <code>no switchport</code>, вернуть его в L2 одной командой <code>switchport mode access</code> нельзя — она не убирает routed-режим. Нужен явный <code>switchport</code> (без параметров) плюс <code>switchport mode access</code>; связка <code>shutdown</code>/<code>no shutdown</code> заставляет PT пересобрать линк (после смены режима порта он иногда «зависает» в down). Проверка: в <code>show running-config</code> у блока f0/1 строки <code>no switchport</code> быть не должно, а <code>show ip interface brief</code> показывает f0/1 и Vlan1 в up/up.</p>
+
+            <p><strong>Шаг 0.3. Server-PT — адрес и NTP-сервис:</strong></p>
+            <ul style="font-size: 14px; color: var(--muted);">
+                <li>Подключите Server-PT к SW1 любым свободным портом (VLAN 1 уже несёт нашу подсеть, настраивать порт не нужно).</li>
+                <li>Desktop → IP Configuration: адрес <code>192.168.1.100</code>, маска <code>255.255.255.0</code>, шлюз <code>192.168.1.2</code>.</li>
+                <li>Services → NTP: переключатель <strong>Service: On</strong>. Ключи шифрования не нужны.</li>
+            </ul>
+            <p><strong>Шаг 0.4. Проверка связности (с SW1):</strong></p>
+            <div class="code-wrap">
+<pre>ping 192.168.1.5
+ping 192.168.1.100
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. R1 — таймзона и роль клиента.</strong> Команда <code>ntp master</code> в Packet Tracer 6.2 <em>не поддерживается</em> (каре под командой): серверную роль в старых PT играет только устройство Server-PT. Поэтому R1 — клиент, как и SW1:</p>
+            <div class="code-wrap">
+<pre>configure terminal
+clock timezone MSK 3 0
+ntp server 192.168.1.100
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. SW1 — то же самое:</strong></p>
+            <div class="code-wrap">
+<pre>configure terminal
+clock timezone MSK 3 0
+ntp server 192.168.1.100
+end
+</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Важные нюансы:</strong></p>
+            <ul style="font-size: 14px; color: var(--muted);">
+                <li><code>clock timezone</code> — это только отображение. Источник времени (UTC) приходит по NTP; таймзона переводит его в локальный вид. Задайте её одинаково на обоих устройствах, иначе время «уедет» на 3 часа.</li>
+                <li><code>service timestamps log datetime msec</code>: ключ <code>localtime</code> PT 6.2 не знает (каре под командой) — в реальном IOS строка валидна, в PT пишите без него.</li>
+                <li>В реальном IOS роутер, синхронизированный с внешним источником, сам отвечает на NTP-запросы клиентов даже без <code>ntp master</code> — эта команда нужна лишь, чтобы роутер мог быть «сам себе источником». В PT 6.2 серверная роль на роутере не реализована, поэтому клиенты ходят напрямую к Server-PT. Это отличие стоит отметить в отчёте.</li>
+                <li>Дефолтная точка в PT показывает «1970-й»: клиент синхронизируется «с чем дают», поэтому на сервере время должно быть осмысленным. Ручной <code>clock set</code> на R1 из Шага 0.1 нужен, чтобы его логи имели смысл ещё <em>до</em> синхронизации.</li>
+                <li>Сервер подключён к SW1, а не к R1 напрямую: NTP-сервер в реальной сети — это LAN-хост. Прямой кабель к R1 потребовал бы второй подсети и маршрутов — лишний слой для задачи, которая должна быть простой.</li>
+            </ul>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Связность и база</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>ping 192.168.1.100</code> с SW1 (и с R1)</td><td class="ok">Сервер отвечает с обоих клиентов.</td><td class="bad">Не пингуется — NTP не заработает в принципе: он поверх IP. Проверьте адрес сервера, порт на SW1 и Service: On</td></tr>
+<tr><td class="cmd"><code>ping 192.168.1.5</code> с SW1</td><td class="ok">R1 отвечает.</td><td class="bad">Проблема в адресации LAN — см. ловушку PT в Шаге 0.2</td></tr>
+<tr><td class="cmd"><code>show running-config | include description</code> на R1 и SW1</td><td class="ok">У стыковых интерфейсов есть описания (<code>Link-to-SW1</code> / <code>Link-to-R1</code>), имена устройств заданы.</td><td class="bad">Пусто — базовая дисциплина пропущена; без описаний конфиг через месяц станет нечитаемым</td></tr>
+<tr><td class="cmd"><code>show clock</code> на Server-PT (вкладка Desktop)</td><td class="ok">Время осмысленное (не 1970-й).</td><td class="bad">Клиенты возьмут «что дают» — синхронизация с мусорным временем бесполезна для логов</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Синхронизация (подождать 30–60 с после Шагов 1–2)</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show ntp status</code> на SW1</td><td class="ok">Статус <code>synchronized</code>.</td><td class="bad"><code>unsynchronized</code> — нет ответа сервера: проверьте пинг, Service: On, адрес в <code>ntp server</code></td></tr>
+<tr><td class="cmd"><code>show ntp associations</code></td><td class="ok">Сервер 192.168.1.100 в статусе <code>*</code> (выбран).</td><td class="bad">Нет звёздочки — peer не выбран; подождите ещё минуту</td></tr>
+<tr><td class="cmd"><code>show clock</code> на SW1 и R1</td><td class="ok">Время совпадает с серверным (с точностью до секунды) и имеет осмысленную дату.</td><td class="bad">Расхождение — проверьте, что <code>clock timezone MSK 3 0</code> задана одинаково</td></tr>
+<tr><td class="cmd"><code>show running-config | include ntp</code></td><td class="ok">На обоих устройствах <code>ntp server 192.168.1.100</code>.</td><td class="bad">Неверный IP / команда не принялась — сверьте ввод</td></tr>
+<tr><td class="cmd"><code>show clock detail</code> на SW1</td><td class="ok">Указан источник времени — NTP (ссылка на сервер).</td><td class="bad">Время локальное — синхронизация не прошла</td></tr>
+<tr><td class="cmd">Логи SW1: любое действие с записью в лог</td><td class="ok">Штамп вида <code>*MSK Nov 22 12:xx:xx.xxx</code> — нормальные дата и время вместо <code>*??? 01, 00:04:55</code>.</td><td class="bad">Всё ещё <code>???</code> — синхронизация не прошла; сам по себе это наглядный кейс «логи без NTP» для отчёта</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li><code>ntp master</code> отсутствует в PT 6.2 (каре под командой) — это валидная команда реального IOS. В лабе роль сервера играет Server-PT; в реальной сети роутер без <code>ntp master</code> тоже умеет отвечать клиентам, если сам синхронизирован.</li>
+<li>В Packet Tracer NTP-синхронизация иногда тянется 30–60 секунд — не спешите перенастраивать, подождите и повторите <code>show ntp status</code>.</li>
+<li>Звёздочка <code>*</code> в <code>show ntp associations</code> — признак того, что этот peer выбран как источник. Плюс <code>+</code> — кандидат, но не выбран.</li>
+<li>Если есть доступ к PT поновее (7.x+) — там <code>ntp master</code> поддерживается, и R1 можно оставить сервером: тогда шаги сводятся к «ntp master 1 на R1, ntp server 192.168.1.5 на SW1», а Server-PT не нужен. Проверьте <code>ntp master ?</code> — если каре, работаете по этой карточке.</li>
+<li>После настройки не забудьте <code>write memory</code> на R1 и SW1.</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> NTP — это как служба точного времени: все часы в офисе синхронизируются с одними «главными» часами (NTP-сервер). Без этого логи разных устройств невозможно сопоставить (одни пишут 12:00, другие 12:05), а сертификаты могут «не работать» из-за расхождения времени. А логи вида <code>*???</code> — это часы, у которых вообще не выставлено ни даты, ни стрелок: тикают, но что показывают — непонятно.</p>
+    </div>
+
+
+    <!-- ЗАДАЧА 15 -->
+    <div class="script-card">
+        <h2>15. WLC/AP (Беспроводной сегмент) <input type="checkbox" class="self-check" data-task="15" title="Отметить как решённую"></h2>
+        <p><strong>Задача:</strong> Настроить беспроводную сеть с контроллером (WLC) и точкой доступа (AP), чтобы клиенты подключались по Wi-Fi. Это централизованное управление Wi-Fi: один SSID и одна политика безопасности на сотни AP.</p>
+        <div class="task-block">
+            <h3>📋 Условие</h3>
+            <ul>
+                <li>WLC — контроллер (management IP 192.168.1.100).</li>
+                <li>AP — точка доступа, подключена к SW1.</li>
+                <li>SSID: Corp-WiFi. Шифрование: WPA2-PSK (AES).</li>
+                <li>Клиенты получают IP из VLAN 10 (через DHCP).</li>
+            </ul>
+        </div>
+        <div class="task-block solution">
+            <h3>🛠️ Решение</h3>
+            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что WLC подключён к сети и доступен по management IP (<code>ping 192.168.1.100</code>). Убедитесь, что AP физически подключён к SW1 и порт в trunk-режиме. Войдите в WLC через GUI (браузер) или CLI (SSH).</p>
+            <div class="code-wrap">
+<pre>! На SW1 — проверить, что порт к WLC в trunk
+show interfaces status
+! На WLC (через SSH/GUI) — проверить, что AP виден
+show ap summary</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 1. Настроить WLC (через GUI или CLI):</strong></p>
+            <div class="code-wrap">
+<pre>! Настройка WLC (пример для Packet Tracer)
+! В GUI: Wireless → WLANs → Create New → SSID: Corp-WiFi
+! Security: WPA2-PSK (AES), пароль: MySecretPass
+! Interface: VLAN 10 (192.168.10.1)
+! Management IP: 192.168.1.100</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 2. Подключить AP к SW1:</strong></p>
+            <div class="code-wrap">
+<pre>interface f0/15
+ switchport mode trunk
+ switchport trunk native vlan 1
+ switchport trunk allowed vlan 1,10</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p><strong>Шаг 3. Настроить AP (в Packet Tracer):</strong></p>
+            <div class="code-wrap">
+<pre>! На AP: Config → Wireless → SSID: Corp-WiFi
+! Security: WPA2-PSK, пароль: MySecretPass
+! Канал: 6 (2.4 GHz) или 36 (5 GHz)</pre>
+                <button class="copy-btn">Копировать</button>
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Примечание для Packet Tracer:</strong> полнофункциональные CAPWAP-LAP в PT ограничены. Чаще всего в лабах AP работает в автономном режиме (Home Router / Access Point в списке устройств), а роль «WLC» имитируется. Если в вашем задании есть настоящий WLC (устройство типа Wireless Controller), следуйте его GUI; иначе настройте AP напрямую — логика проверки ниже одинакова для обоих сценариев.</p>
+        </div>
+        <div class="check-block">
+            <h3>✅ Проверка</h3>
+<h3 class="stage">Этап 0. Физика и L2</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>ping 192.168.1.100</code> с SW1</td><td class="ok">WLC отвечает по management IP.</td><td class="bad">Не отвечает — порт к WLC не trunk или не в нужных VLAN; чинить L2 до настройки WLAN</td></tr>
+<tr><td class="cmd"><code>show interfaces status</code> на SW1 (порт к AP)</td><td class="ok">Порт к AP — trunk (или access в VLAN 10, если AP автономный и VLAN один).</td><td class="bad">Порт в access VLAN 1 — клиенты Wi-Fi получат адреса не из той подсети</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 1. Регистрация AP на контроллере</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>show wlan summary</code> на WLC</td><td class="ok">SSID <code>Corp-WiFi</code> активен.</td><td class="bad">WLAN Disabled — неверная security или interface</td></tr>
+<tr><td class="cmd"><code>show ap summary</code> на WLC</td><td class="ok">AP подключён (CAPWAP joined).</td><td class="bad">AP нет — Option 43/DNS, порт не trunk</td></tr>
+<tr><td class="cmd">Индикатор на AP в PT</td><td class="ok">AP виден как «доступная точка» в списке Wi-Fi-устройств.</td><td class="bad">AP не появляется в списке — питание/линейный порт не подняты, конфиг не применился</td></tr>
+</tbody>
+</table>
+<h3 class="stage">Этап 2. Клиенты</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd">Подключение к Corp-WiFi с ноутбука</td><td class="ok">Клиент ассоциируется, пароль принят.</td><td class="bad">Не подключается — WPA2-PSK mismatch</td></tr>
+<tr><td class="cmd"><code>ipconfig</code> на ноутбуке</td><td class="ok">Получен IP из 192.168.10.0/24.</td><td class="bad">169.254.x.x — нет DHCP</td></tr>
+<tr><td class="cmd"><code>ping 192.168.1.5</code></td><td class="ok">Успешно.</td><td class="bad">Не проходит — VLAN/interface на WLAN</td></tr>
+<tr><td class="cmd">Смена канала или шифрование (микро-эксперимент)</td><td class="ok">Клиент разрывает связь при смене шифрования/пароля и переподключается после отката.</td><td class="bad">Связь «умерла» навсегда — WLC/AP держит мёртвую сессию; перезагрузите AP или WLC в PT</td></tr>
+</tbody>
+</table>
+<div class="note"><strong>Примечания:</strong>
+<ul>
+<li>В PT AP, подключённый через trunk к WLC, требует корректного native VLAN — если native на свитче и на AP не совпадают, CAPWAP/SSID могут не завестись.</li>
+<li>WPA2-PSK (AES) — минимально безопасный вариант для лабы. В проде WPA2-Enterprise или WPA3 с RADIUS; для отчёта это можно отметить как «направление улучшения».</li>
+<li>Если клиенты получают адреса, но не ходят дальше своего VLAN — это уже вопрос маршрутизации/L3-шлюза VLAN 10, а не Wi-Fi: возвращайтесь к задачам 5 и 10.</li>
+</ul>
+</div>
+        </div>
+        <p class="analogy"><strong>💡 Аналогия:</strong> WLC — это как диспетчер такси, который управляет всеми машинами (AP): раздаёт заказы, следит за тарифами (SSID, WPA2), маршрутизирует поездки (VLAN). AP — это машины на улицах, а CAPWAP — это рация, по которой диспетчер говорит с водителями.</p>
+    </div>
+
+    <!-- ИТОГ -->
+    <div class="script-card">
+        <h2>📊 Итог практикума</h2>
+        <p>Все задачи охватывают технологии из Лабораторных 1 и 2. Каждая задача содержит условие, пошаговое решение и проверку.</p>
+        <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+            <h3 style="margin-top: 0; color: var(--accent);">📋 Что проверяется</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: var(--accent); color: #fff;">
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">№</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">Технология</th>
+                        <th style="padding: 10px; text-align: left; border: 1px solid var(--border);">Ключевая команда</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">1</td><td style="padding: 8px; border: 1px solid var(--border);">VLAN и Trunk</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show vlan brief</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">2</td><td style="padding: 8px; border: 1px solid var(--border);">EtherChannel LACP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show etherchannel summary</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">3</td><td style="padding: 8px; border: 1px solid var(--border);">EtherChannel PAgP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show etherchannel summary</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">4</td><td style="padding: 8px; border: 1px solid var(--border);">STP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show spanning-tree vlan 1</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">5</td><td style="padding: 8px; border: 1px solid var(--border);">OSPF</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip ospf neighbor</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">6</td><td style="padding: 8px; border: 1px solid var(--border);">HSRP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show standby brief</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">7</td><td style="padding: 8px; border: 1px solid var(--border);">BGP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip bgp summary</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">8</td><td style="padding: 8px; border: 1px solid var(--border);">IPv6/OSPFv3</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ospfv3 neighbor</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">9</td><td style="padding: 8px; border: 1px solid var(--border);">L2-безопасность</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show port-security</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">10</td><td style="padding: 8px; border: 1px solid var(--border);">DHCP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip dhcp binding</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">11</td><td style="padding: 8px; border: 1px solid var(--border);">NAT/PAT</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip nat translations</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">12</td><td style="padding: 8px; border: 1px solid var(--border);">EIGRP/Redistribution</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ip route</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">13</td><td style="padding: 8px; border: 1px solid var(--border);">MSTP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show spanning-tree mst 1</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">14</td><td style="padding: 8px; border: 1px solid var(--border);">NTP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show ntp status</code></td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid var(--border);">15</td><td style="padding: 8px; border: 1px solid var(--border);">WLC/AP</td><td style="padding: 8px; border: 1px solid var(--border);"><code>show wlan summary</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ВОПРОС НА ЗРЕЛОСТЬ -->
+    <div class="script-card">
+        <h2>🌟 Вопрос на зрелость (senior)</h2>
+        <div class="task-block">
+            <h3>Что бы вы сделали иначе, если бы проектировали эту сеть с нуля сегодня? <span class="level-badge level-senior">Senior</span></h3>
+            <details class="qa">
+                <summary>Показать ответ</summary>
+                <p style="margin-top:10px;">Нет правильного ответа — важно, как рассуждаете. Варианты: <strong>MST вместо PVST+</strong> (меньше деревьев, меньше нагрузка на CPU); <strong>VRRP вместо HSRP</strong> (открытый стандарт, мультивендорность); <strong>EVPN/VXLAN</strong> вместо классического L2-домена; <strong>автоматизация</strong> (Ansible/Python вместо ручных конфигов); <strong>российские вендоры</strong> (Eltex, Qtech) — если есть требование импортозамещения; <strong>SD-WAN</strong> вместо классических WAN-линков.
+                <br>Если помните, в Лабе 2 был баг с HSRP в Packet Tracer 6.2: SW1 (транзитный L3-свитч) не мог отправить пакет на виртуальный MAC-адрес HSRP, потому что PT 6.2 криво обрабатывает ARP для виртуальных MAC. Из-за этого трафик от SW1 к R1 «застревал». Мы тогда прописали на SW1 прямой статический маршрут на физический IP R1: <code>ip route 0.0.0.0 0.0.0.0 192.168.1.5</code>. Это обошло баг: SW1 перестал отправлять пакеты на виртуальный MAC и слал их напрямую на физический интерфейс R1. Именно поэтому в задаче 6 (HSRP) в блоке «Аналогия» и в самопроверке упоминается этот случай — это реальное инженерное решение, а не учебная абстракция. И это как раз тот случай, который стоит рассказывать на собеседовании, когда спросят «а что было самым сложным?».</p>
+            </details>
+        </div>
+    </div>
+
+    <!-- СКРЫТЫЙ БЛОК: ОБУЧЕНИЕ -->
+    <details class="secret">
+        <summary></summary>
+        <div style="display: flex; flex-direction: column; gap: 30px;">
+
+            <!-- САМОПРОВЕРКА: ЛАБА 1 -->
+            <div class="script-card">
+                <h2>🧠 Самопроверка: Лаба 1 (фундамент)</h2>
+                <p>Вопросы на понимание, а не на заучивание. Сначала ответьте сами, потом раскройте ответ.</p>
+
+                <div class="task-block">
+                    <h3>1. VLAN/Trunk: native VLAN слева 1, справа 10 <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Tagged-кадры VLAN 10 пройдут нормально: тег 802.1Q сохраняется, свитчи смотрят на него и не трогают native VLAN. Untagged-кадры слева попадут в native VLAN 1, справа — в native VLAN 10. Это <strong>ошибка конфигурации</strong>: один и тот же untagged-трафик будет интерпретироваться по-разному. Правильно — сделать native VLAN одинаковым с обеих сторон (или отключить native VLAN на транке).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>2. EtherChannel: почему трафик между двумя MAC идёт по одному линку <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Работает <strong>хеш-функция</strong> (по умолчанию src-dst-mac, можно src-dst-ip или src-dst-port). Хеш даёт одинаковый результат для одной и той же пары MAC → все кадры этой пары идут по одному физическому линку. «По очереди» нельзя: это нарушит порядок кадров (out-of-order), что ломает TCP и вызывает ретрансмиссии.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>3. Rapid-PVST+: почему RSTP быстрее классического STP <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">В RSTP порт-роли согласуются через <strong>proposal/agreement</strong> (BPDU с флагом proposal), а не через таймеры. Плюс есть <strong>edge-порты (PortFast)</strong> и <strong>Alternate/Backup</strong> — резервные порты уже знают о своей роли и готовы мгновенно стать Root. В классическом STP переход Listening → Learning → Forwarding занимает 30–50 секунд.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>4. HSRP: кто отвечает на ARP и что такое split brain <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">На ARP «кто 192.168.1.254?» отвечает <strong>Active-роутер</strong> (R1) своим <strong>виртуальным MAC</strong> <code>0000.0c07.ac01</code>. Standby молчит. Split brain — если R1 и R2 потеряли связь друг с другом (например, из-за L2-петли или ACL), оба могут считать себя Active и отвечать на ARP. Тогда клиенты получат два разных MAC для одного IP → непредсказуемая маршрутизация. Защита: <strong>выделенный линк</strong> между роутерами, <strong>BFD</strong>, <strong>трекинг аплинков</strong>.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>5. NAT/PAT: как различаются ответы двум ПК <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">PAT меняет <strong>source IP + source port</strong>. Первому ПК назначается, например, <code>10.0.0.2:30001</code>, второму — <code>10.0.0.2:30002</code>. Ответы приходят на эти порты и по таблице трансляций разворачиваются обратно к нужному ПК. Если оба попытаются использовать одинаковый source port — конфликта не будет: PAT выдаст одному из них <strong>другой свободный порт</strong>.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>6. DHCP: последовательность сообщений и несколько Offer <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Последовательность <strong>DORA</strong>: Discover → Offer → Request → Ack. Клиент может получить <strong>несколько Offer</strong> (если в сети несколько DHCP-серверов). Он выбирает один, отправляет <strong>Request</strong> с указанием выбранного сервера, и остальные серверы отзывают свои предложения.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>7. Port-Security: maximum 2, restrict vs shutdown <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Если на порту уже ПК + IP-телефон (2 MAC), а вы ставите <code>maximum 2</code> с <code>violation restrict</code> — всё работает, пока подключены те же 2 устройства. При третьем MAC: <code>restrict</code> <strong>дропает</strong> кадры с чужим MAC и пишет в лог (порт остаётся up), <code>shutdown</code> — переводит порт в <strong>err-disabled</strong> (нужен ручной <code>shutdown</code>/<code>no shutdown</code>).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>8. Floating static route и AD <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Резервный маршрут «всплывает», когда основной пропадает из RIB. AD — это «вес» источника маршрута: чем меньше, тем приоритетнее. Если два маршрута в одну сеть с одинаковой длиной префикса, в RIB ставится тот, у кого <strong>меньше AD</strong>. При равной AD — тот, у кого меньше метрика, а при равной метрике — балансировка (ECMP).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>9. Почему STP не «убивает» сеть, если в ней есть кольцо <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">STP строит <strong>логическое дерево</strong>: выбирает один Root Bridge, для каждого сегмента — один Designated Port, для каждого не-корневого свитча — один Root Port. Все остальные порты, которые могли бы замкнуть кольцо, переводятся в <strong>Blocking/Alternate</strong>. Они не передают данные, но слушают BPDU. Если основной путь упадёт, Alternate станет Root и трафик пойдёт через него.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>10. Что такое BPDU Guard и зачем он на порту с PortFast <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">PortFast переводит порт сразу в Forwarding, не дожидаясь STP. Но если к такому порту подключить <strong>свитч</strong>, он начнёт слать BPDU, и в сети может возникнуть петля (порт-то уже Forwarding). <strong>BPDU Guard</strong> слушает BPDU на PortFast-порту: если пришёл BPDU — порт уходит в <strong>err-disabled</strong>. Это защита от «случайно подключённого свитча».</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>11. Зачем нужен native VLAN и почему его меняют на «мусорный» <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Native VLAN — это VLAN, трафик которого идёт по транку <strong>без тега</strong>. По умолчанию это VLAN 1. Меняют на «мусорный» (например, 999), потому что VLAN 1 часто используется для управления и легко атакуется через <strong>double-tagging</strong> (злоумышленник шлёт кадр с двумя тегами, внешний — native, внутренний — целевой). Если native VLAN отличается от пользовательских, атака не проходит.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>12. Почему <code>speed 100</code> и <code>duplex full</code> обязательны для LACP в PT 6.2 <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">LACP требует, чтобы все порты в канале имели <strong>одинаковые ключевые параметры</strong> (режим trunk/access, native VLAN, allowed VLAN). В <strong>Packet Tracer 6.2</strong> автосогласование speed/duplex часто даёт разные значения на разных концах, и канал не собирается — поэтому <code>speed 100</code> и <code>duplex full</code> приходится задавать явно. В <strong>реальной жизни</strong> LACP технически допускает разные скорости, но это плохая практика: балансировка становится неравномерной, и медленный линк становится «узким местом».</p>
+                    </details>
+                </div>
+            </div>
+
+            <!-- САМОПРОВЕРКА: ЛАБА 2 -->
+            <div class="script-card">
+                <h2>🧠 Самопроверка: Лаба 2 (надстройка)</h2>
+                <p>Вопросы уровня «понимание, а не зубрёжка». Сначала ответьте сами, потом раскройте.</p>
+
+                <div class="task-block">
+                    <h3>1. OSPF: DR/BDR — зачем и где <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">DR/BDR выбираются на <strong>широковещательных (broadcast) и NBMA-сегментах</strong>, чтобы не создавать полную mesh-сеть соседства (N×(N−1)/2). На point-to-point DR/BDR не нужны, потому что там всего два участника. В <strong>Лабе 1</strong> DR — SW1 (приоритет 200, задан явно). В <strong>Лабе 2</strong> приоритет OSPF на интерфейсах явно не задан, поэтому DR выбирается по умолчанию (router-id / MAC). Если нужно, чтобы SW1 стал DR и в Лабе 2, стоит добавить <code>ip ospf priority 200</code> на его интерфейсы.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>2. OSPF: почему Area 1 не видит Area 0 без транзита <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">OSPF требует, чтобы все не-backbone зоны были подключены <strong>к Area 0 через ABR</strong>. Если Area 1 не имеет связи с Area 0, её маршруты не попадут в другие зоны (нет ABR). Если линк SW1–SW2 (транзит в Area 0) порвётся, Area 1 и Area 2 останутся изолированными от backbone: маршруты между ними пропадут, пока не восстановится связь или не появится virtual-link.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>3. EIGRP: feasible successor и loop-free by design <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;"><strong>Feasible Successor</strong> — резервный маршрут, у которого <strong>Reported Distance соседа меньше Feasible Distance текущего Successor</strong> (condition по feasible distance). Это гарантирует отсутствие петли: сосед не может «врать» о лучшем пути через нас. OSPF <strong>корректен по построению</strong>: алгоритм SPF на общей LSDB всегда даёт дерево без петель. Иерархия зон — это про <strong>масштабируемость и границы перерасчёта</strong>, а не про защиту от петель.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>4. BGP: eBGP vs iBGP и next-hop-self <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;"><strong>eBGP</strong> — между разными AS, передаёт маршруты всем соседям. <strong>iBGP</strong> — внутри одной AS, но маршруты <strong>не передаются следующему iBGP-соседу</strong> (split horizon). Поэтому нужен full-mesh или route reflector. <strong>next-hop-self</strong> — команда на iBGP-соседе, которая меняет next-hop на свой IP, чтобы остальные iBGP-соседи могли до него достучаться.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>5. BGP: критерии выбора лучшего пути <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Порядок: <strong>Weight</strong> (Cisco) → <strong>Local Preference</strong> → <strong>Locally Originated</strong> → <strong>AS-Path</strong> (короче = лучше) → <strong>Origin</strong> → <strong>MED</strong> → <strong>eBGP > iBGP</strong> → <strong>IGP metric</strong>. Если R1 получает один префикс от двух ISP, он выберет по этим критериям (чаще всего — по AS-Path или Local Preference).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>6. Redistribution: одна точка vs две точки <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Одна точка безопасна благодаря <strong>иерархии типов маршрутов внутри протокола</strong>: O > O IA > O E1/E2, а в EIGRP internal (D) > external (D EX). Внешние маршруты, вернувшиеся из другого протокола, не перебивают внутренние, потому что у них <strong>худший тип</strong> (O E2 / D EX). Плюс внешние EIGRP имеют AD 170. <strong>Две точки</strong> — классическая мина: маршрут может «гулять» между протоколами через две точки, и иерархия типов уже не спасает. Защита — <strong>route-map с ручным тегированием</strong> (<code>set tag</code>) и <code>deny</code> для чужих тегов.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>7. WLC/AP: CAPWAP и local/remote switching <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">AP находит WLC через <strong>DHCP Option 43</strong> или DNS-имя, затем устанавливает <strong>CAPWAP-туннель</strong> (UDP 5246/5247). По нему идут управляющие пакеты (SSID, безопасность) и, в зависимости от режима, данные. <strong>Local switching</strong> — данные уходят в локальный свитч (меньше нагрузка на WLC). <strong>Remote switching</strong> — данные туннелируются в WLC (централизованный контроль).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>8. IPv6/OSPFv3: link-local и соседство <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;"><strong>Link-local</strong> (<code>fe80::/10</code>) — адрес, который автоматически назначается на каждый IPv6-интерфейс и действует только в пределах линка. OSPFv3 использует его для соседства, потому что link-local всегда есть и не зависит от глобальных префиксов. Два роутера с <strong>несовпадающими глобальными префиксами</strong> могут стать OSPFv3-соседями, если они в одном link-local домене (на одном линке).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>9. Зачем в OSPF нужен router-id и что будет, если он совпадёт у двух роутеров <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;"><strong>Router-id</strong> — уникальный идентификатор OSPF-процесса (обычно IPv4-адрес). Если у двух роутеров он совпадёт, соседство <strong>не встанет</strong> (или будет нестабильным): OSPF не сможет различить LSDB-записи. Настройка: <code>router-id X.X.X.X</code> в процессе OSPF, либо автоматически выбирается по старшему loopback/IP.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>10. Почему BGP не «находит» сети автоматически <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">BGP анонсирует только те сети, которые <strong>явно указаны в <code>network</code></strong> или перелиты через <code>redistribute</code>. Если сеть есть в IGP, но не в <code>network</code> — BGP её не анонсирует. Это отличается от OSPF/EIGRP, где <code>network</code> просто включает интерфейсы в процесс, и протокол сам находит сети.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>11. Что такое LSA Type 3 и Type 5, и кто их генерирует <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;"><strong>Type 3 (Summary LSA)</strong> — генерирует <strong>ABR</strong>, чтобы рассказать одной зоне о сетях другой (межзональные маршруты, метка <code>O IA</code>). <strong>Type 5 (External LSA)</strong> — генерирует <strong>ASBR</strong>, чтобы рассказать о внешних сетях (перелитых из другого протокола, метка <code>O E1/E2</code>).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>12. Почему в iBGP нужен full-mesh или route reflector <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">По правилу <strong>split horizon</strong> iBGP-маршрут, полученный от одного iBGP-соседа, <strong>не передаётся</strong> другому iBGP-соседу. Значит, чтобы все iBGP-роутеры видели все маршруты, они должны быть соединены <strong>полносвязно (full-mesh)</strong>. Альтернатива — <strong>route reflector</strong>: специальный роутер, который «отражает» маршруты всем клиентам, снимая ограничение.</p>
+                    </details>
+                </div>
+            </div>
+
+            <!-- ТРАБЛШУТИНГ -->
+            <div class="script-card">
+                <h2>🛠️ Траблшутинг: настоящая работа</h2>
+
+                <div class="task-block">
+                    <h3>1. ПК не получает IP по DHCP — порядок проверки <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">От клиента к серверу: <code>ipconfig /renew</code> → <code>show ip dhcp snooping</code> (trust на транке) → <code>show ip dhcp binding</code> (есть ли выдачи) → <code>show ip interface brief</code> (SVI up/up) → <code>show vlan brief</code> (порт в нужном VLAN). Чаще всего причина — <strong>отсутствие trust на транке</strong> или <strong>SVI down</strong>.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>2. OSPF-соседство есть, трафик не ходит <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Три команды: <code>show ip route &lt;сеть&gt;</code> (куда смотрит маршрут), <code>show ip ospf database</code> (есть ли LSA), <code>traceroute &lt;IP&gt;</code> (где обрывается). Часто причина — <strong>ACL</strong> или <strong>NAT</strong> на пути.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>3. Маршрут есть, а пинг не ходит — 4 причины <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">1) ACL блокирует ICMP. 2) NAT «съедает» пакеты. 3) Нет обратного маршрута на удалённой стороне. 4) Firewall/Zone-Based Policy. 5) Неверный next-hop (маршрут смотрит в никуда).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>4. После ребута SW1 клиенты теряют связь на 3–4 минуты <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Виноват <strong>STP</strong>: порт проходит Listening → Learning → Forwarding (30–50 секунд). Решение: <code>spanning-tree portfast</code> на портах к ПК (мгновенный Forwarding) + <code>bpduguard</code> (защита от подключения свитча к порту ПК). В <strong>RSTP</strong> резервный uplink подхватывается <strong>сам</strong> (Alternate → Root встроен в протокол).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>5. Соседство OSPF «висит» в EXSTART/EXCHANGE — что проверять <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Чаще всего — <strong>несовпадение MTU</strong> на интерфейсах. Проверить: <code>show ip ospf neighbor</code> (статус), <code>show interface &lt;int&gt;</code> (MTU с обеих сторон). Решение: выровнять MTU (например, <code>ip mtu 1500</code>).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>6. BGP-сессия «висит» в Active/Idle — что проверять <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Проверить: 1) есть ли <strong>IP-связность</strong> до neighbor (ping); 2) <strong>remote-as</strong> совпадает с обеих сторон; 3) <strong>TCP 179</strong> не блокируется ACL; 4) <strong>update-source</strong> (если neighbor — loopback, нужен <code>neighbor X update-source Loopback0</code>); 5) <strong>ebgp-multihop</strong> (если eBGP через несколько хопов).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>7. После включения Port-Security порт ушёл в err-disabled — что делать <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Причина: превышен <code>maximum</code> MAC, или подключено чужое устройство (violation). Решение: <code>shutdown</code> → <code>no shutdown</code> на порту. Если нужно — увеличить <code>maximum</code> или очистить sticky: <code>clear port-security sticky interface f0/10</code>. Проверить: <code>show port-security interface f0/10</code>, <code>show port-security address</code>.</p>
+                    </details>
+                </div>
+            </div>
+
+            <!-- ВОПРОСЫ С СОБЕСЕДОВАНИЙ -->
+            <div class="script-card">
+                <h2>🎤 Вопросы с собеседований (разбор)</h2>
+                <p>Реальные вопросы, которые задают на интервью по темам Лаб 1–2. Сначала ответьте сами, потом раскройте.</p>
+
+                <div class="task-block">
+                    <h3>STP: SW1 и SW2 — корни для разных VLAN. Каким способом это достигнуто? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Через <code>spanning-tree vlan ... root primary</code> на одном свитче и <code>root secondary</code> на другом для разных групп VLAN. Если бы оба были root primary для всех VLAN, корень выбирался бы по Bridge ID (priority + MAC): один свитч стал бы корнем для всех VLAN, балансировки бы не было. Заблокированный порт уходит в Alternate (Altn BLK) — не передаёт данные, но слушает BPDU и готов стать Root при падении основного пути.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>OSPF Multi-Area: какой LSA генерирует ABR, чтобы рассказать Area 0 про 192.168.5.0/24? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">LSA Type 3 (Summary LSA). В таблице маршрутизации на SW2 этот маршрут выглядит как <code>O IA</code> (OSPF Inter-Area).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>Redistribution: почему нет петли, хотя переливаем в обе стороны? Что значит метрика 10000 100 255 1 1500? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Петли нет благодаря иерархии типов маршрутов внутри протокола: O > O IA > O E1/E2, а в EIGRP internal (D) > external (D EX). Внешние маршруты, вернувшиеся из другого протокола, не перебивают внутренние, потому что у них худший тип. Плюс внешние EIGRP имеют AD 170. Метрика — это 5 параметров EIGRP: bandwidth (10000 Кбит/с = 10 Мбит/с), delay (100 × 10 мкс = 1 мс), reliability (255 = 100%), load (1 = минимальная), MTU (1500 байт).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>BGP: что будет, если сеть 192.168.2.0/24 пропадёт из таблицы маршрутизации R1? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">R1 перестанет анонсировать эту сеть соседям ISP. BGP анонсирует только те сети, которые есть в таблице маршрутизации. ISP получит BGP UPDATE с withdrawn route и удалит маршрут из своей таблицы.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>HSRP: почему без preempt у R2 не хватило бы? Что будет, если preempt у обоих? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;"><code>preempt</code> — это разрешение отбирать роль Active у текущего Active, если твой приоритет выше. Если у R1 нет preempt, то после возврата R1 (приоритет 150) он не сможет отобрать роль у R2 (приоритет 100) — R1 останется Standby. Если preempt у обоих — R1 после возврата отберёт роль Active (150 > 100). Виртуальный MAC HSRP: <code>0000.0c07.acXX</code> (XX — номер группы в hex).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>NAT: что будет с узлом 192.168.9.5 при ACL permit ip 192.168.0.0 0.0.255.255 any? Почему видны записи icmp, если NAT — это PAT? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">192.168.9.5 попадёт под ACL: wildcard <code>0.0.255.255</code> — это /16, то есть любой 192.168.X.X. Записи icmp видны потому, что PAT (Overload) — это разновидность NAT, которая транслирует все протоколы, не только TCP/UDP. Для ICMP «порт» — это идентификатор ICMP-запроса, и PAT меняет его так же, как source port.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>EtherChannel: почему LACP и PAgP не смешиваются? Почему active + auto не соберётся? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">LACP и PAgP — разные протоколы согласования. Они не понимают друг друга: если на одном конце LACP, а на другом PAgP, канал не соберётся. <code>active</code> (LACP) отправляет LACPDU, а <code>auto</code> (PAgP) ждёт PAgP-пакеты — они несовместимы. Для LACP нужны active + active или active + passive. Для PAgP — desirable + desirable или desirable + auto.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>L2-безопасность: почему транк Po2 объявлен доверенным, а не «все порты»? Что сломается, если Fa0/10 trusted? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">DHCP Snooping пропускает DHCP-ответы только с trusted-портов. Если сделать все порты trusted, то любой «левый» DHCP-сервер, подключённый к порту ПК, сможет выдать клиентам адреса и шлюз (MITM-атака). Доверенным должен быть только порт к реальному DHCP-серверу (Po2 к SW00). Если Fa0/10 trusted — злоумышленник, подключившись к нему, сможет поднять свой DHCP-сервер, и DHCP Snooping не защитит.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>IPv6+OSPFv3: почему ipv6 ospf 1 area 0 на интерфейсе, а router ospf не главный? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">В OSPFv2 команды <code>network</code> задают, какие интерфейсы включить в процесс. В OSPFv3 <code>network</code>-команд нет — интерфейсы включаются напрямую через <code>ipv6 ospf 1 area 0</code>. Это сделано потому, что OSPFv3 использует link-local адреса для соседства, и «привязка» к IP-сети (как в v2) не имеет смысла.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>STP и LACP вместе: что будет, если один линк в Po1 «зависнет» (дропает кадры)? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">LACP не заметит сразу: он проверяет только физическую связь и факт получения LACPDU. Если порт «висит» и дропает кадры, но LACPDU проходят — LACP будет считать канал живым. STP тоже не сразу заметит: BPDU могут проходить, а данные — дропаться. Решение: <strong>UDLD</strong> (UniDirectional Link Detection) — он как раз для обнаружения односторонних линков, плюс <code>show interface</code> (CRC, input errors) и SPAN для диагностики.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>OSPF и MTU: почему соседство «висит» в EXSTART при разном MTU? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">В состоянии EXSTART роутеры договариваются, кто будет Master, и обмениваются DBD-пакетами (Database Description). Если MTU на интерфейсах не совпадает, больший DBD-пакет не проходит через линк с меньшим MTU — соседство «залипает» в EXSTART/EXCHANGE. Решение: выровнять MTU (например, <code>ip mtu 1500</code>) на обоих интерфейсах. Это классическая ошибка при OSPF over GRE/IPsec.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>HSRP и трекинг: как сделать, чтобы при падении аплинка на R1 роль Active автоматически перешла к R2? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Через HSRP Tracking: <code>standby 1 track FastEthernet0/1 50</code> на R1. Если аплинк (f0/1) упадёт, приоритет R1 снизится на 50 (150 → 100), и R2 (100) станет Active. Без трекинга R1 останется Active, хотя у него нет выхода в интернет — клиенты будут «висеть» без связи.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>BGP и next-hop-self: почему в iBGP нужен next-hop-self? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">В iBGP маршрут, полученный от eBGP-соседа, сохраняет next-hop eBGP-соседа. Но другие iBGP-роутеры могут не иметь маршрута до этого next-hop (он за пределами их IGP). <code>next-hop-self</code> меняет next-hop на свой IP, чтобы остальные iBGP-соседи могли достучаться. Без него маршрут будет в таблице BGP, но не установится в RIB (next-hop unreachable).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>Redistribution и route-map: как защититься от петли при двух точках redistribution? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Через ручное тегирование: при переливе OSPF → EIGRP ставить <code>set tag 100</code>, при EIGRP → OSPF — <code>set tag 200</code>. На каждом redistribute добавлять <code>deny</code> для маршрутов с «чужим» тегом. Тогда маршрут, вернувшийся из другого протокола, будет отброшен по тегу. «Положиться на AD» не работает: при двух точках маршрут может «гулять» между протоколами.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>VLAN vs Subnet: в чём разница? (и почему VLAN — не про безопасность) <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">VLAN — это L2-конструкция (broadcast-домен, теги 802.1Q, trunk, access-порты). Subnet — это L3-конструкция (маршрутизация, таблица маршрутов). VLAN сам по себе не безопасность: трафик между VLAN можно маршрутизировать, если есть SVI или роутер. Изоляция появляется только когда вы не разрешаете маршрутизацию между ними (ACL).</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>Что происходит, когда свитч только загрузился? (MAC-таблица пуста) <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">Свитч начинает с пустой MAC-таблицы. Первый кадр с неизвестным destination MAC он флудит во все порты (кроме входящего). Потом учится по source MAC. Флудит он только в пределах своего VLAN. В кольце такой флудинг и создаёт петлю — поэтому нужен STP.</p>
+                    </details>
+                </div>
+
+                <div class="task-block">
+                    <h3>BGP: чем eBGP отличается от iBGP? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Показать ответ</summary>
+                        <p style="margin-top:10px;">eBGP — между разными AS (стык с провайдером). iBGP — внутри одной AS (между граничными роутерами). Главные отличия: 1) <strong>Split horizon</strong>: в iBGP маршрут, полученный от одного iBGP-соседа, не передаётся другому (нужен full-mesh или route reflector). В eBGP — передаётся. 2) <strong>Next-hop</strong>: в eBGP меняется на IP соседа, в iBGP — сохраняется (нужен <code>next-hop-self</code>). 3) <strong>TTL</strong>: в eBGP — 1 (соседи напрямую), в iBGP — 255 (можно через хопы). 4) <strong>Local Preference</strong>: в eBGP по умолчанию не передаётся, в iBGP передаётся.</p>
+                    </details>
+                </div>
+            </div>
+
+            <!-- БЛИЦ -->
+            <div class="script-card">
+                <h2>⚡ Блиц: 20 вопросов на скорость</h2>
+                <p>Короткие вопросы — ответы в одну строку. Цель: отвечать за 3–5 секунд. Если задумались дольше — вернитесь к соответствующему блоку самопроверки.</p>
+
+                <div class="task-block">
+                    <h3>1. Какой VLAN по умолчанию является native на транке? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">VLAN 1.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>2. Сколько VLAN можно теоретически создать в 802.1Q? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">До 4094 (VLAN ID 1–4094).</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>3. Какой командой проверить, собран ли EtherChannel? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;"><code>show etherchannel summary</code> — искать статус SU и флаг P на портах.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>4. Какая команда показывает корневой мост STP? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;"><code>show spanning-tree vlan 1</code> — искать «This bridge is the root» (или Root ID с MAC корня).</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>5. Что такое BPDU? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Служебный кадр STP, которым коммутаторы обмениваются для построения дерева (приоритет, MAC, стоимость пути).</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>6. Какой протокол агрегации — открытый стандарт: LACP или PAgP? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">LACP (IEEE 802.3ad). PAgP — проприетарный Cisco.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>7. Что делает команда <code>spanning-tree portfast</code>? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Переводит порт сразу в Forwarding, минуя Listening/Learning. Только для портов к конечным устройствам.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>8. Что такое HSRP и зачем он нужен? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Протокол резервирования шлюза: два роутера делят один виртуальный IP, клиенты используют его как шлюз. Если Active падает — Standby перехватывает.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>9. Какой MAC у виртуального IP HSRP группы 1? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;"><code>0000.0c07.ac01</code> (последний байт — номер группы в hex).</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>10. Что такое PAT и чем он отличается от NAT? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">PAT (Overload) — разновидность NAT, которая использует порты для различения сессий. Позволяет многим внутренним IP выходить под одним внешним.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>11. Сколько сообщений в DHCP и как они называются? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">DORA: Discover → Offer → Request → Ack (4 сообщения).</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>12. Что делает DHCP Snooping? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Защищает от «левых» DHCP-серверов: DHCP-ответы пропускаются только с доверенных (trust) портов.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>13. Что такое AD и какое значение у static route? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Administrative Distance — «вес» источника маршрута. У static route AD = 1.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>14. Какой протокол маршрутизации работает поверх TCP 179? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">BGP.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>15. Что такое ABR в OSPF? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Area Border Router — роутер на границе двух зон (например, Area 0 и Area 1). Передаёт маршруты между зонами (LSA Type 3).</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>16. Какой LSA рассказывает одной зоне о сетях другой? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">LSA Type 3 (Summary LSA). Генерирует ABR.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>17. Что такое feasible successor в EIGRP? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Резервный маршрут, у которого RD соседа меньше FD текущего Successor. Готов сразу, без пересчёта.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>18. Что такое split horizon в iBGP? <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Правило: iBGP-маршрут, полученный от одного соседа, не передаётся другому. Поэтому нужен full-mesh или route reflector.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>19. Что такое CAPWAP и зачем он нужен? <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Протокол управления AP через WLC (UDP 5246/5247). Передаёт настройки SSID, безопасность и (опционально) данные.</p></details>
+                </div>
+                <div class="task-block">
+                    <h3>20. Что такое link-local адрес в IPv6? <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>Ответ</summary><p style="margin-top:10px;">Адрес <code>fe80::/10</code>, автоматически назначается на каждый интерфейс и действует только в пределах линка. Используется для соседства OSPFv3.</p></details>
+                </div>
+            </div>
+
+            <!-- КРАСНЫЕ ФЛАГИ -->
+            <div class="script-card">
+                <h2>🚩 Красные флаги на собеседовании (и как переформулировать)</h2>
+                <p>Это не про «правильные ответы», а про то, как звучат ваши формулировки. Одни и те же знания можно подать так, что интервьюер насторожится — или так, что он увидит зрелого инженера.</p>
+
+                <div class="task-block">
+                    <h3>❌ «Я не знаю OSPF» <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Я работал с OSPF в лабораторных условиях: настраивал Area 0, Multi-Area, аутентификацию, разбирал DR/BDR и соседство. На продакшене пока не было, но база есть — готов углубиться». <br><em>Почему:</em> вы честны, но показываете, что у вас есть фундамент, а не «слышал звон».</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я всё знаю» / «Я всё умею» <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Вот что я делал руками: лабы, конфиги, траблшутинг. Вот что знаю теоретически: BGP, QoS. Вот где у меня пробел: SD-WAN, EVPN. Готов закрывать». <br><em>Почему:</em> интервьюер ценит честность и понимание своих границ.</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я делал это по инструкции» <span class="level-badge level-junior">Junior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Я собрал это по инструкции, но потом разобрал, почему именно так: вот тут LACP не собирался без speed/duplex, вот тут был баг HSRP в PT 6.2 — обошёл статикой». <br><em>Почему:</em> «по инструкции» звучит как «не понимаю, что делаю».</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Это не моя вина, это железо/вендор/коллега» <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Проблема была в X. Я сделал Y, чтобы обойти. Вот что можно было сделать иначе, если бы знал Z заранее». <br><em>Почему:</em> интервьюер проверяет, как вы ведёте себя в провале.</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я не читал документацию, мне и так нормально» <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Я обычно начинаю с документации вендора, потом проверяю в лабе. Если чего-то нет в доках — ищу в RFC или на форумах». <br><em>Почему:</em> инженер без привычки читать доки — это человек, который «гадает».</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я не умею программировать» <span class="level-badge level-middle">Middle</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Я пишу Bash/Python для автоматизации: бэкапы, мониторинг, парсинг конфигов. Не разработчик, но скрипты для рутины делаю». <br><em>Почему:</em> «не умею» — красный флаг для современного сетевого инженера.</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я не знаю, что такое SDN / EVPN / VXLAN» <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«С SDN/EVPN я работал только в теории: понимаю концепцию overlay/underlay, VXLAN-туннели, но руками не поднимал. Готов учиться — вот мой план». <br><em>Почему:</em> честное «не поднимал, но понимаю» лучше, чем «не знаю».</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я не хочу развиваться, мне и так нормально» <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Сейчас я закрываю пробелы в BGP и автоматизации, готовлюсь к CCNP. Дальше — SD-WAN и EVPN». <br><em>Почему:</em> «мне и так нормально» — красный флаг: такой человек через год будет саботировать изменения.</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я не задаю вопросов, делаю что сказали» <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Перед тем как делать, я уточняю: зачем, какие ограничения, что будет, если сломается. Так меньше переделок». <br><em>Почему:</em> «делаю что сказали» — это исполнитель, а не инженер.</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я не знаю, что ответить» (и молчание) <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Хороший вопрос, дайте подумать 10 секунд. Вот как я рассуждаю: если X, то Y; если Z, то W. Точного ответа не помню, но логика такая». <br><em>Почему:</em> интервьюер часто проверяет не «знаете ли вы ответ», а «как вы думаете».</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я не смотрел вакансию, расскажите» <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Я прочитал вакансию: вам нужен человек на Cisco + Linux + автоматизацию. Вот что у меня есть по каждому пункту: ...». <br><em>Почему:</em> «не смотрел» — красный флаг: значит, вам всё равно, куда идти.</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «У меня нет вопросов к вам» <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«У меня есть вопросы: как у вас устроен процесс изменений? какие инструменты мониторинга? что будет считаться успехом через 6 месяцев?» <br><em>Почему:</em> «нет вопросов» — красный флаг: человек не вовлечён.</p>
+                    </details>
+                </div>
+                <div class="task-block">
+                    <h3>❌ «Я готов на всё, лишь бы взяли» <span class="level-badge level-senior">Senior</span></h3>
+                    <details class="qa"><summary>✅ Как лучше</summary>
+                        <p style="margin-top:10px;">«Мне интересна эта роль, потому что X. Я готов к Y, но хочу уточнить Z — это важно для меня». <br><em>Почему:</em> «на всё» звучит как отчаяние. Инженер с границами — ценнее, чем «согласен на всё».</p>
+                    </details>
+                </div>
+            </div>
+
+            <!-- ПРОГРЕСС -->
+            <div class="progress-summary" id="progress-summary">
+                <h3>📊 Ваш прогресс</h3>
+                <p><span class="counter" id="progress-counter">0</span> <span class="total">из <span id="progress-total">23</span> задач решено</span></p>
+            </div>
+
+        </div>
+    </details>
+
+</div><!-- /.container -->
+
+<script>
+(function () {
+    'use strict';
+
+    /* ---------- Тема ---------- */
+    var themeBtn = document.getElementById('theme-btn');
+    var body = document.body;
+    if (themeBtn) {
+        themeBtn.addEventListener('click', function () {
+            var isDark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            themeBtn.textContent = isDark ? '🌙 Тема' : '☀️ Тема';
+        });
+    }
+
+    /* ---------- Копирование кода ---------- */
+    function fallbackCopy(text, cb) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); cb(true); }
+        catch (e) { cb(false); }
+        document.body.removeChild(ta);
+    }
+
+    document.querySelectorAll('.copy-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var wrap = btn.closest('.code-wrap');
+            if (!wrap) return;
+            var pre = wrap.querySelector('pre');
+            if (!pre) return;
+            var text = pre.innerText;
+            var done = function (ok) {
+                if (!ok) return;
+                var old = btn.textContent;
+                btn.textContent = 'Скопировано!';
+                btn.classList.add('copied');
+                setTimeout(function () {
+                    btn.textContent = old;
+                    btn.classList.remove('copied');
+                }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () { done(true); }, function () {
+                    fallbackCopy(text, done);
+                });
+            } else {
+                fallbackCopy(text, done);
+            }
+        });
+    });
+
+    /* ---------- Режим обучения ---------- */
+    var learnBtn = document.getElementById('toggle-learn-btn');
+    var solutionBlocks = document.querySelectorAll('.task-block.solution');
+
+    function setLearningMode(on) {
+        if (on) {
+            body.classList.add('learning-mode');
+            solutionBlocks.forEach(function (b) { b.classList.add('hidden-blur'); });
+            if (learnBtn) learnBtn.textContent = '🎓 Выключить режим обучения (показать ответы)';
+        } else {
+            body.classList.remove('learning-mode');
+            solutionBlocks.forEach(function (b) { b.classList.remove('hidden-blur'); });
+            if (learnBtn) learnBtn.textContent = '🎓 Включить режим обучения (скрыть ответы)';
+        }
+    }
+
+    if (learnBtn) {
+        learnBtn.addEventListener('click', function () {
+            setLearningMode(!body.classList.contains('learning-mode'));
+        });
+    }
+
+    /* ---------- Чекбоксы самопроверки + прогресс ---------- */
+    var checks = document.querySelectorAll('.self-check');
+    var counter = document.getElementById('progress-counter');
+    var totalEl = document.getElementById('progress-total');
+
+    function updateProgress() {
+        var total = checks.length;
+        var done = 0;
+        checks.forEach(function (cb) {
+            if (cb.checked) done++;
+            var h2 = cb.closest('h2');
+            if (h2) h2.classList.toggle('checked', cb.checked);
+        });
+        if (counter) counter.textContent = done;
+        if (totalEl) totalEl.textContent = total;
+    }
+
+    checks.forEach(function (cb) {
+        cb.addEventListener('change', updateProgress);
+    });
+
+    // Сохраняем состояние чекбоксов в localStorage (по data-task)
+    try {
+        checks.forEach(function (cb) {
+            var key = 'practice-task-' + cb.getAttribute('data-task');
+            if (localStorage.getItem(key) === '1') {
+                cb.checked = true;
+            }
+            cb.addEventListener('change', function () {
+                try {
+                    localStorage.setItem(key, cb.checked ? '1' : '0');
+                } catch (e) { /* ignore */ }
+            });
+        });
+    } catch (e) { /* localStorage может быть недоступен */ }
+
+    updateProgress();
+})();
+</script>
+</body>
+</html>

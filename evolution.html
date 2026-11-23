@@ -190,6 +190,20 @@ body.learning-mode .progress-summary { display: block; }
     padding: 2px 8px; border-radius: 10px; margin-left: 8px;
     vertical-align: middle;
 }
+
+.is-absent {
+  opacity: .35;
+  filter: grayscale(.6);
+  transition: opacity .3s, filter .3s;
+}
+.is-absent:hover {
+  opacity: 1;
+  filter: none;
+}
+.is-absent-head {
+  opacity: .6;
+}
+
     </style>
 </head>
 <body data-theme="light">
@@ -1675,6 +1689,34 @@ write memory</pre>
         updateProgress();
     })();
 </script>
+<script>
+document.querySelectorAll('p, div, li, h3, h4').forEach(el => {
+  // интересует только «листовой» элемент с чистым текстом «Отсутствует...»
+  if (el.childElementCount !== 0 || !el.textContent.trim().startsWith('Отсутствует')) return;
+
+  // поднимаемся до ближайшего контейнера с рамкой — это и есть карточка
+  let card = el;
+  while (card.parentElement && card.parentElement !== document.body) {
+    card = card.parentElement;
+    const s = getComputedStyle(card);
+    if (s.borderTopWidth !== '0px' || s.boxShadow !== 'none') break;
+  }
+
+  card.classList.add('is-absent');
+});
+
+// стили можно держать прямо в скрипте — CSS править не нужно
+const st = document.createElement('style');
+st.textContent = `
+  .is-absent { opacity: .35; filter: grayscale(.6); transition: opacity .3s, filter .3s; }
+  .is-absent:hover { opacity: .55; }
+`;
+document.head.appendChild(st);
+
+console.log('Скрипт отработал: пустых блоков найдено —',
+  document.querySelectorAll('.is-absent').length);
+</script>
+
 
 </body>
 </html>
