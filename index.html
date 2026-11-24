@@ -143,8 +143,8 @@
     font-size: 1.6em;
     color: var(--accent);
     margin: 40px 0 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--border);
+ /* padding-bottom: 10px;      ← убрать: без границы он больше не нужен */
+ /* border-bottom: 2px solid var(--border);  ← сама линия */
     text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
   }
   [data-theme="dark"] .section-title { text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
@@ -393,7 +393,7 @@
     filter: drop-shadow(0 0 6px var(--accent));
   }
 
-  /* Уважаем настройки пользователя (уменьшенное движение) */
+  /* (уменьшенное движение) */
   @media (prefers-reduced-motion: reduce) {
     .router-antenna {
       animation: none;
