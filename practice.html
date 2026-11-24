@@ -2347,8 +2347,22 @@ show ap summary</pre>
         var done = 0;
         checks.forEach(function (cb) {
             if (cb.checked) done++;
+            
+            // 1. Зачеркиваем заголовок
             var h2 = cb.closest('h2');
             if (h2) h2.classList.toggle('checked', cb.checked);
+            
+            // 2. Убираем блюр с решения, если задача отмечена (и возвращаем, если снята)
+            // Ищем карточку задачи (родительский div .script-card)
+            var card = cb.closest('.script-card');
+            if (card) {
+                var solution = card.querySelector('.task-block.solution');
+                if (solution) {
+                    // Если галочка стоит - блюра нет (класс удаляется), 
+                    // если не стоит - блюр есть (класс добавляется)
+                    solution.classList.toggle('hidden-blur', !cb.checked);
+                }
+            }
         });
         if (counter) counter.textContent = done;
         if (totalEl) totalEl.textContent = total;
@@ -2375,37 +2389,43 @@ show ap summary</pre>
 
     updateProgress();
 
-    /* ---------- Блокировка скрытого блока до решения задач 1 и 15 ---------- */
+    /* ---------- Блокировка скрытого блока ---------- */
     if (secretDetails) {
-        // Находим чекбоксы задач 1 и 15 по атрибуту data-task
-        var task1 = document.querySelector('.self-check[data-task="1"]');
-        var task15 = document.querySelector('.self-check[data-task="15"]');
-
-        // Функция проверки: отмечены ли обе задачи
+        var summary = secretDetails.querySelector('summary');
+        
+        // Функция проверки условий
         function isUnlocked() {
-            return (task1 && task1.checked) && (task15 && task15.checked);
+            // Ищем чекбоксы по data-task
+            var t1 = document.querySelector('.self-check[data-task="1"]');
+            var t15 = document.querySelector('.self-check[data-task="15"]');
+            var t2 = document.querySelector('.self-check[data-task="2"]'); 
+
+            // Если хотя бы один чекбокс не найден — блокируем
+            if (!t1 || !t15 || !t2) return false;
+
+            // Логика: 1, 15,2 нет
+            return t1.checked && t15.checked && !t2.checked;
         }
 
-        // Перехватываем клик по summary
-        var summary = secretDetails.querySelector('summary');
         if (summary) {
             summary.addEventListener('click', function (e) {
                 if (!isUnlocked()) {
-                    e.preventDefault(); // Блокируем открытие
+                    e.preventDefault();
                     alert('🔒 Хватит тыкать!');
                 }
             });
         }
 
-        // Дополнительно: если блок уже открыт, а задачи сняли — закрываем
-        checks.forEach(function (cb) {
+        // Закрываем блок при снятии галочки, если он открыт
+        var allChecks = document.querySelectorAll('.self-check');
+        allChecks.forEach(function (cb) {
             cb.addEventListener('change', function () {
                 if (!isUnlocked() && secretDetails.open) {
                     secretDetails.open = false;
                 }
             });
         });
-    } // <--- Закрывается блок if (secretDetails)
+    }
 })(); // <--- Закрывается вся функция (function () { ... })();
 </script>
 </body>

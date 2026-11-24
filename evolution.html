@@ -204,6 +204,21 @@ body.learning-mode .progress-summary { display: block; }
   opacity: .6;
 }
 
+/* ===== Траблешутинг: таблицы диагностики ===== */
+.ts-table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.9em; }
+.ts-table th { background: rgba(127,127,127,0.15); text-align: left; padding: 8px; border: 1px solid rgba(127,127,127,0.35); }
+.ts-table td { padding: 8px; border: 1px solid rgba(127,127,127,0.25); vertical-align: top; }
+.ts-table code { background: rgba(127,127,127,0.12); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+.ts-note { border-left: 4px solid var(--accent-blue); padding: 8px 14px; margin: 10px 0; background: rgba(74,144,217,0.08); border-radius: 6px; }
+.ts-table-wrap {
+    margin-top: 25px;
+    padding: 20px;
+    /* background убран — просвечивает карточка */
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+.ts-table-wrap h3 { margin-top: 0; color: var(--accent-red); }
+
     </style>
 </head>
 <body data-theme="light">
@@ -342,6 +357,21 @@ body.learning-mode .progress-summary { display: block; }
             📌 Короткий вывод: Base задаёт базовый каркас (VLAN, STP, OSPF, HSRP, NAT, LACP/PAgP, DHCP), а Advanced надстраивает над ним <strong>масштабирование</strong> (Multi-Area, балансировка STP, второй агрегат), <strong>связь с внешним миром</strong> (BGP, IPv6) и <strong>защиту</strong> (Port Security, DHCP Snooping). Каждый блок ниже показывает это в коде и по шагам.
         </div>
     </div>
+
+    <!-- 🧭 Методика траблешутинга (общий каркас для всех разделов) -->
+    <div class="compare-card" id="troubleshooting-method">
+        <h2>🧭 Методика траблешутинга</h2>
+        <p>Диагностику ведём снизу вверх по уровням — не проверяем верхний, пока не подтверждён нижний.</p>
+        <ol>
+            <li><strong>Физика:</strong> линк поднят, нет ошибок, speed/duplex совпадают (<code>show interfaces status</code>).</li>
+            <li><strong>L2:</strong> VLAN/trunk на месте, EtherChannel собран, порты STP в ожидаемых состояниях.</li>
+            <li><strong>L3:</strong> адреса и SVI up (<code>show ip interface brief</code>), таблица маршрутизации (<code>show ip route</code>).</li>
+            <li><strong>Протоколы:</strong> соседство (<code>show ip ospf neighbor</code>, <code>show ip bgp summary</code>), счётчики ACL и NAT.</li>
+            <li><strong>Сервис:</strong> ping/traceroute до цели, DHCP-binding, NAT-трансляции.</li>
+        </ol>
+        <p class="ts-note"><strong>Правило:</strong> не проверяем верхний уровень, пока не подтверждён нижний.</p>
+    </div>
+
     <button id="toggle-learn-btn" class="reveal-btn">🎓 Включить режим обучения (скрыть ответы)</button>
 
     <!-- 0. Подготовка (общая для всех блоков) -->
@@ -495,7 +525,7 @@ write memory</pre>
             📌 Эволюция: от простой сегментации к защите канального уровня.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -516,6 +546,17 @@ write memory</pre>
                 <li>Настраиваем Port Security на порту клиента (f0/10): <code>switchport port-security</code>, <code>maximum 1</code>, <code>mac-address sticky</code>, <code>violation shutdown</code>, <code>no shutdown</code>.</li>
                 <li>Проверяем: <code>show ip dhcp snooping</code>, <code>show port-security interface f0/10</code>.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: VLAN и Trunk -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show vlan brief</code></td><td>Все VLAN на месте, порт в нужном VLAN</td><td>Порт остался в VLAN 1</td><td><code>switchport access vlan X</code> на интерфейсе</td></tr>
+                <tr><td><code>show interfaces trunk</code></td><td>Порт в trunking, allowed VLAN совпадают</td><td>Стороны согласовали разные наборы VLAN или режим</td><td>Сверить <code>switchport mode trunk</code> и <code>allowed vlan</code> на обоих концах</td></tr>
+                <tr><td><code>show interfaces status</code></td><td>Линк up, duplex full</td><td>Порт в err-disabled или полудуплекс</td><td>Разобраться с причиной err-disable; задать <code>speed 100</code> / <code>duplex full</code></td></tr>
+            </table>
         </div>
     </div>
 
@@ -638,7 +679,7 @@ write memory</pre>
             📌 Эволюция: от простой агрегации к отказоустойчивости и балансировке. Показана ответная часть.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -662,6 +703,18 @@ write memory</pre>
                 <li>Добавляем балансировку: <code>port-channel load-balance src-dst-mac</code> (на SW22).</li>
                 <li>Проверяем: <code>show etherchannel summary</code> (оба канала <code>SU</code>), <code>show etherchannel load-balance</code>.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: EtherChannel (общее для LACP и PAgP) -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show etherchannel summary</code></td><td>Статус <code>SU</code>, все порты <code>(P)</code></td><td><code>D</code> — порт down; <code>I</code> — несовместимость параметров</td><td>Сверить speed/duplex/trunk и режимы (active↔passive, desirable↔auto)</td></tr>
+                <tr><td><code>show interfaces trunk</code></td><td>Trunk на Port-channel</td><td>Настройки разъехались: часть — на физ. портах, часть — на Po</td><td>Все L2-настройки править через <code>interface Port-channel N</code></td></tr>
+                <tr><td><code>show run interface</code></td><td>Конфиги членов группы идентичны</td><td>Поменял один порт из группы — канал развалился</td><td>Выровнять конфиги членов группы, канал пересоберётся</td></tr>
+                <tr><td><code>show ip interface brief</code> (SVI)</td><td>Vlan108 up/up (PT 6.2)</td><td>SVI не активируется без активного порта в VLAN</td><td>Порт-заглушка f0/10 в этом VLAN (см. раздел 3)</td></tr>
+            </table>
         </div>
     </div>
 
@@ -761,7 +814,7 @@ write memory</pre>
             📌 Эволюция: от простой агрегации к интеграции с SVI и DHCP.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -784,6 +837,12 @@ write memory</pre>
                 <li>Добавляем <strong>порт-заглушку</strong> на SW00: <code>interface f0/10</code>, <code>switchport mode access</code>, <code>switchport access vlan 108</code>, <code>no shutdown</code>. Это нужно, чтобы SVI Vlan108 «поднялся» (баг PT 6.2: интерфейс не активируется без активного порта в VLAN).</li>
                 <li>Проверяем: <code>show etherchannel summary</code> (SU), <code>show ip interface brief</code> (Vlan108 up/up), <code>show ip dhcp binding</code> (адреса выдаются).</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: отсылка на общую таблицу EtherChannel -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <p class="ts-note">Диагностика EtherChannel — общая для LACP и PAgP. Команды <code>show etherchannel summary</code>, проверка trunk на Port-channel и порт-заглушка для SVI — см. таблицу в разделе 2.</p>
         </div>
     </div>
 
@@ -837,7 +896,7 @@ write memory</pre>
             📌 Эволюция: от простой защиты к оптимизации трафика.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -858,6 +917,17 @@ write memory</pre>
                 <li>Явно назначаем резерв: на SW1 — <code>root secondary</code> для VLAN SW2, на SW2 — <code>root secondary</code> для VLAN SW1. Это убирает неоднозначность по VLAN 1.</li>
                 <li><strong>Проверяем:</strong> <code>show spanning-tree vlan 1</code> на SW1 — «This bridge is the root» для VLAN 1,100,102,104. На SW2 — для VLAN 105-108. Трафик распределяется между двумя корнями.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: STP -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show spanning-tree vlan 1</code></td><td>«This bridge is the root» на назначенном корне</td><td>Приоритет соседа ниже моего</td><td>Задать <code>root primary</code> / меньший priority</td></tr>
+                <tr><td><code>show spanning-tree</code></td><td>Избыточные порты в <code>Altn BLK</code> — как задумано</td><td>Блокируется «нужный» порт</td><td>Сравнить cost и priority: трафик уходит по более дешёвому пути</td></tr>
+                <tr><td><code>show spanning-tree vlan</code> (SW1 и SW2)</td><td>Разные VLAN имеют разные корни</td><td>Назначил primary без secondary — неоднозначность</td><td>Явно задать <code>root primary</code> + <code>root secondary</code> на обоих</td></tr>
+            </table>
         </div>
     </div>
 
@@ -925,7 +995,7 @@ write memory</pre>
             📌 Эволюция: от плоской сети к иерархической маршрутизации с ответной частью.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -947,6 +1017,18 @@ write memory</pre>
                 <li><strong>Добавляем Redistribution на SW2:</strong> <code>redistribute eigrp 100 subnets</code> (OSPF получает маршруты из EIGRP), <code>redistribute ospf 1222 metric 10000 100 255 1 1500</code> (EIGRP получает маршруты из OSPF).</li>
                 <li><strong>Проверяем:</strong> <code>show ip ospf neighbor</code> (соседи <code>FULL</code> в каждой зоне), <code>show ip route</code> (метки <code>O</code>, <code>O IA</code>, <code>O E2</code>, <code>D</code>).</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: OSPF -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show ip ospf neighbor</code></td><td>Все соседи в <code>FULL</code></td><td>Разошлись hello/dead, подсеть или area; не совпал пароль</td><td>Сверить маску, area, таймеры; аутентификацию — <code>show ip ospf interface</code></td></tr>
+                <tr><td><code>show ip ospf neighbor</code></td><td>Сосед есть, но в <code>EXSTART/EXCHANGE</code></td><td>MTU или сбой обмена DBD</td><td>Проверить MTU на интерфейсах, пересоздать соседство</td></tr>
+                <tr><td><code>show ip route ospf</code></td><td>Маршруты с меткой <code>O</code> (и <code>O IA</code> в Advanced)</td><td>Ошибка в network-стейтменте (wildcard-маска)</td><td>Исправить <code>network ... area X</code></td></tr>
+                <tr><td><code>show ip route</code> (Advanced)</td><td>Метки <code>O E2</code> / <code>D EX</code> после redistribution</td><td>Забыл метрику в <code>redistribute</code> или subnets</td><td>Дописать <code>subnets</code> / <code>metric 10000 100 255 1 1500</code></td></tr>
+            </table>
         </div>
     </div>
 
@@ -1027,7 +1109,7 @@ ip route 0.0.0.0 0.0.0.0 192.168.1.5</pre>
             📌 Эволюция: от простого резервирования к обходу ограничений симулятора.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1048,6 +1130,17 @@ ip route 0.0.0.0 0.0.0.0 192.168.1.5</pre>
                 <li><strong>Проверяем:</strong> <code>show standby brief</code> (R1 Active, R2 Standby), <code>show ip route</code> на SW1 (маршрут через 192.168.1.5).</li>
                 <li><strong>Тест Failover:</strong> снова <code>shutdown</code> на R1, проверяем, что R2 становится Active, пинг не прерывается.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: HSRP -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show standby brief</code></td><td>R1 — <code>Active</code>, R2 — <code>Standby</code></td><td>Оба Active/оба Standby: hello не проходят</td><td>Сверить группу, VLAN, IP одного сегмента</td></tr>
+                <tr><td><code>show standby brief</code></td><td>После восстановления R1 снова Active</td><td>Забыт <code>preempt</code> на R1</td><td>Добавить <code>standby 1 preempt</code></td></tr>
+                <tr><td><code>ping 192.168.1.2</code> (с ПК)</td><td>Ответы без потерь при обоих состояниях</td><td>PT 6.2: транзит не ходит на виртуальный MAC</td><td>Обход: статический маршрут на физический IP R1 (см. раздел 6)</td></tr>
+            </table>
         </div>
     </div>
 
@@ -1105,7 +1198,7 @@ write memory</pre>
             📌 Эволюция: от простого NAT к реальному стыку с провайдером.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1121,6 +1214,19 @@ write memory</pre>
                 <li><strong>Сохранение:</strong> <code>end</code>, <code>write memory</code> на каждом устройстве.</li>
                 <li><strong>Практический тест:</strong> с ПК выполняем <code>ping 8.8.8.8</code> — пакеты проходят через NAT и BGP.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: BGP -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show ip bgp summary</code></td><td>Сосед в <code>Established</code>, счётчики растут</td><td>Сосед недостижим или неверный remote-as; TCP 179 закрыт</td><td>Проверить ping до соседа, <code>remote-as</code>, настройки интерфейсов</td></tr>
+                <tr><td><code>show ip bgp summary</code></td><td>Сосед в <code>Idle</code>/<code>Active</code></td><td>Нет маршрута до соседа (соседство не стартует)</td><td>Проверить связность L3 и <code>no shutdown</code> на стыковых интерфейсах</td></tr>
+                <tr><td><code>show ip bgp</code></td><td>Анонсированные сети в таблице</td><td>Сети нет в RIB — <code>network</code> не работает</td><td>Проверить <code>show ip route</code>, добавить статический маршрут или connected</td></tr>
+                <tr><td><code>show ip route</code></td><td>Строка <code>B* 0.0.0.0/0</code> — дефолт от провайдера</td><td>Провайдер не анонсирует дефолт</td><td>На ISP проверить <code>show ip bgp</code>, соглашение о дефолте</td></tr>
+                <tr><td><code>ping 8.8.8.8</code> (с ПК)</td><td>Пакеты проходят через NAT и BGP</td><td>NAT не транслирует или нет маршрута возврата</td><td><code>show ip nat translations</code>, проверка ACL NAT и <code>ip nat inside/outside</code></td></tr>
+            </table>
         </div>
     </div>
 
@@ -1163,7 +1269,7 @@ write memory</pre>
             📌 Эволюция: от IPv4-only к современному двухстековому решению.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1179,6 +1285,17 @@ write memory</pre>
                 <li><strong>Сохранение:</strong> <code>end</code>, <code>write memory</code>.</li>
                 <li><strong>Практический тест:</strong> с Router1 выполняем <code>ping ipv6 2001:DB8:1::254</code> (SW2) — пинг проходит.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: IPv6 / OSPFv3 (новое) -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show ipv6 interface brief</code></td><td>Интерфейсы <code>up/up</code>, адреса назначены</td><td>Забыт <code>ipv6 unicast-routing</code> или адрес</td><td>Включить глобально, назначить <code>ipv6 address …/64</code></td></tr>
+                <tr><td><code>show ospfv3 neighbor</code></td><td>Соседи в <code>FULL</code></td><td>Не включён OSPFv3 на интерфейсе или разошлись area/router-id</td><td><code>ipv6 ospf 1 area 0</code> на интерфейсе, сверить <code>router-id</code></td></tr>
+                <tr><td><code>show ipv6 route ospf</code></td><td>Маршруты OSPFv3</td><td>Сеть не анонсирована (нет <code>ipv6 ospf</code> на интерфейсе)</td><td>Включить OSPFv3 на нужных интерфейсах</td></tr>
+            </table>
         </div>
     </div>
 
@@ -1226,7 +1343,7 @@ write memory</pre>
             📌 Эволюция: от открытого доступа к защите от атак на канальном уровне.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1244,6 +1361,18 @@ write memory</pre>
                 <li><strong>Сохранение:</strong> <code>end</code>, <code>write memory</code>.</li>
                 <li><strong>Практический тест:</strong> меняем MAC на ПК, делаем <code>ping</code> — порт уходит в <code>err-disabled</code>. Возвращаем: <code>shutdown</code> / <code>no shutdown</code>.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: Безопасность L2 + DHCP -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show ip dhcp snooping</code></td><td>Po2 в trust, VLAN 1 и 108 включены</td><td>Забыл доверенный порт или VLAN</td><td><code>ip dhcp snooping trust</code> на Po2, <code>ip dhcp snooping vlan</code></td></tr>
+                <tr><td><code>show ip dhcp snooping binding</code></td><td>Записи MAC↔IP клиентов</td><td>Записей нет: option 82 ломает в PT</td><td><code>no ip dhcp snooping information option</code></td></tr>
+                <tr><td><code>show port-security interface f0/10</code></td><td><code>Secure-up</code>, sticky MAC</td><td>Порт в <code>err-disabled</code> — превышение limit / другой MAC</td><td>Разобраться с нарушителем, вернуть: <code>shutdown</code> / <code>no shutdown</code></td></tr>
+                <tr><td><code>ping</code> с клиента в VLAN 108</td><td>Клиент получил адрес и пингует шлюз</td><td>Ответы дропаются: порт не trust в сторону сервера</td><td>Пометить trust только порт к реальному DHCP-серверу</td></tr>
+            </table>
         </div>
     </div>
 
@@ -1314,7 +1443,7 @@ write memory</pre>
             📌 Эволюция: от простой выдачи адресов к защите DHCP-сервиса.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1336,6 +1465,12 @@ write memory</pre>
                 <li><strong>Проверяем:</strong> <code>show ip dhcp snooping</code> (Po2 — trust), <code>show ip dhcp snooping binding</code> (MAC-адреса клиентов).</li>
                 <li><strong>Практический тест:</strong> если подключить «левый» DHCP-сервер, его ответы будут дропаться.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: отсылка на таблицу безопасности L2 -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <p class="ts-note">Диагностика DHCP Snooping и Port Security — см. таблицу в разделе 9. Проверка выдачи адресов: <code>show ip dhcp binding</code> на SW11/SW00.</p>
         </div>
     </div>
 
@@ -1412,7 +1547,7 @@ write memory</pre>
             📌 Эволюция: от простого NAT к интеграции с BGP.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1434,6 +1569,17 @@ write memory</pre>
                 <li><strong>Проверяем:</strong> <code>show ip nat translations</code> (записи icmp), <code>show ip bgp summary</code> (Established).</li>
                 <li><strong>Сохранение:</strong> <code>end</code>, <code>write memory</code>.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: NAT/PAT -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show ip nat translations</code></td><td>Записи icmp/tcp с внутренними и внешними IP</td><td>Пусто: не помечены интерфейсы или ACL не покрывает сети</td><td><code>ip nat inside/outside</code>, расширить ACL NAT</td></tr>
+                <tr><td><code>show access-lists NAT</code></td><td>Счётчики hits растут</td><td>Wildcard-маска не покрывает все внутренние сети</td><td>Сверить <code>permit ip 192.168.0.0 0.0.255.255 any</code> с реальными подсетями</td></tr>
+                <tr><td><code>ping 30.30.30.30</code> (с ПК)</td><td>Пакеты уходят с внешним IP</td><td>Нет маршрута по умолчанию или NAT не применён</td><td>Проверить <code>ip route 0.0.0.0 0.0.0.0</code> и <code>ip nat inside source list</code></td></tr>
+            </table>
         </div>
     </div>
 
@@ -1484,7 +1630,7 @@ write memory</pre>
             📌 Эволюция: от одной протокольной среды к мультипротокольной.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1505,6 +1651,17 @@ write memory</pre>
                 <li><strong>Сохранение:</strong> <code>end</code>, <code>write memory</code>.</li>
                 <li><strong>Практический тест:</strong> с ПК в сети 1.0 <code>ping</code> до сети, которая находится за EIGRP (например, 192.168.8.1) — пакеты проходят через перераспределение.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: EIGRP -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show ip route eigrp</code></td><td>Маршруты с меткой <code>D</code></td><td>Забыл <code>network</code> или <code>no auto-summary</code></td><td>Дописать network-стейтменты, отключить авто-суммаризацию</td></tr>
+                <tr><td><code>show ip route</code> (после redistribution)</td><td>Маршруты из обоих протоколов</td><td>Не задана метрика при <code>redistribute</code></td><td>Указать метрику: <code>redistribute ospf 1222 metric ...</code></td></tr>
+                <tr><td><code>ping</code> из сети 1.0 в 192.168.8.1</td><td>Пакеты проходят через redistribution</td><td>Петля маршрутов / дубли между протоколами</td><td>Проверить оба направления redistribution, при необходимости фильтровать</td></tr>
+            </table>
         </div>
     </div>
 
@@ -1548,7 +1705,7 @@ write memory</pre>
             📌 Эволюция: от простого PVST+ к MSTP для больших сетей.
         </div>
 
-        <div style="margin-top: 25px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="margin-top: 25px; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
             <h3 style="margin-top: 0; color: var(--accent);">📖 Как это делается: пошагово</h3>
 
             <p><strong>Base Legacy:</strong></p>
@@ -1564,6 +1721,17 @@ write memory</pre>
                 <li><strong>Проверяем:</strong> <code>show spanning-tree mst</code> (для каждого инстанса — свой корень), <code>show spanning-tree mst 1 root</code>.</li>
                 <li><strong>Сохранение:</strong> <code>end</code>, <code>write memory</code>.</li>
             </ol>
+        </div>
+
+        <!-- 🔧 Траблешутинг: MSTP (новое) -->
+        <div class="ts-table-wrap">
+            <h3>🔧 Если не заработало</h3>
+            <table class="ts-table">
+                <tr><th>Команда</th><th>Что должно быть</th><th>Если не так — причина</th><th>Как чинить</th></tr>
+                <tr><td><code>show spanning-tree mst</code></td><td>Для каждого инстанса — свой корень</td><td>Все инстансы на одном корне</td><td>Задать <code>root primary/secondary</code> по инстансам на SW1 и SW2</td></tr>
+                <tr><td><code>show spanning-tree mst configuration</code></td><td><code>name LAB</code>, <code>revision 1</code> совпадают на всех свитчах</td><td>Разные имя/ревизия — регион не собирается</td><td>Выровнять <code>name</code> и <code>revision</code> на всех свитчах</td></tr>
+                <tr><td><code>show spanning-tree mst 1 root</code></td><td>Корень для instance 1 — на SW1</td><td>Приоритет не задан</td><td><code>spanning-tree mst 1 root primary</code> на SW1</td></tr>
+            </table>
         </div>
     </div>
 
@@ -1605,9 +1773,9 @@ write memory</pre>
         const learnBtn = document.getElementById('toggle-learn-btn');
         if (!learnBtn) return;
 
-        // Карточки, которые участвуют в режиме обучения (все, кроме обзора)
+        // Карточки, которые участвуют в режиме обучения (все, кроме обзора и методики)
         const cards = Array.from(document.querySelectorAll('.compare-card'))
-            .filter(c => c.id !== 'overview');
+            .filter(c => c.id !== 'overview' && c.id !== 'troubleshooting-method');
 
         // Создаём чекбоксы рядом с h2 (один раз)
         cards.forEach(card => {
@@ -1623,14 +1791,14 @@ write memory</pre>
             cb.addEventListener('change', () => {
                 if (cb.checked) {
                     h2.classList.add('checked');
-                    card.querySelectorAll('.code-wrap, .steps-block').forEach(el => {
+                    card.querySelectorAll('.code-wrap, .steps-block, .ts-table-wrap, .ts-note').forEach(el => {
                         el.classList.remove('hidden-blur');
                     });
                 } else {
                     h2.classList.remove('checked');
                     // вернуть размытие, если режим обучения включён
                     if (document.body.classList.contains('learning-mode')) {
-                        card.querySelectorAll('.code-wrap, .steps-block').forEach(el => {
+                        card.querySelectorAll('.code-wrap, .steps-block, .ts-table-wrap, .ts-note').forEach(el => {
                             el.classList.add('hidden-blur');
                         });
                     }
@@ -1651,6 +1819,10 @@ write memory</pre>
                     }
                 }
             });
+            // NEW: обёртки траблешутинга тоже участвуют в режиме обучения
+            card.querySelectorAll('.ts-table-wrap').forEach(w => {
+                if (!w.classList.contains('steps-block')) w.classList.add('steps-block');
+            });
         });
 
         function updateProgress() {
@@ -1669,7 +1841,7 @@ write memory</pre>
                 const h2 = card.querySelector('h2');
                 const isChecked = h2 && h2.classList.contains('checked');
 
-                card.querySelectorAll('.code-wrap, .steps-block').forEach(el => {
+                card.querySelectorAll('.code-wrap, .steps-block, .ts-table-wrap, .ts-note').forEach(el => {
                     if (on && !isChecked) {
                         el.classList.add('hidden-blur');
                     } else {
@@ -1716,7 +1888,6 @@ document.head.appendChild(st);
 console.log('Скрипт отработал: пустых блоков найдено —',
   document.querySelectorAll('.is-absent').length);
 </script>
-
 
 </body>
 </html>
