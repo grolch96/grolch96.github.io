@@ -25,7 +25,7 @@
         background-color: var(--bg);
         background-image:
             linear-gradient(var(--bg-overlay), var(--bg-overlay)),
-            url('img/bg-cisco4obr.jpg');
+            url('img/bg-mam.jpg');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -56,9 +56,27 @@
     .script-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
 
     .task-block {
-        margin-top: 15px; padding: 15px;
-        background: var(--bg); border-radius: 8px;
-        border: 1px solid var(--border);
+        margin-top: 15px; 
+        padding: 15px;
+        /* Очень прозрачный фон — почти стекло */
+        background: rgba(255, 255, 255, 0.3); 
+        border-radius: 8px;
+        
+        /* Рамка чуть темнее, чтобы границы были видны */
+        border: 1px solid rgba(127, 168, 212, 0.4); 
+        
+        /* Эффект размытия заднего фона */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        
+        /* Легкая тень для объема */
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Тёмная тема: делаем фон тёмно-серым полупрозрачным */
+    [data-theme="dark"] .task-block {
+        background: rgba(42, 42, 42, 0.4);
+        border: 1px solid rgba(163, 196, 232, 0.2);
     }
     .task-block h3 { margin-top: 0; color: var(--accent-blue); }
     .check-block {
