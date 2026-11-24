@@ -213,9 +213,12 @@ body.learning-mode .progress-summary { display: block; }
 .ts-table-wrap {
     margin-top: 25px;
     padding: 20px;
-    /* background убран — просвечивает карточка */
+    background: rgba(198, 40, 40, 0.07);   /* полупрозрачный красный (light) */
     border-radius: 8px;
     border: 1px solid var(--border);
+}
+[data-theme="dark"] .ts-table-wrap {
+    background: rgba(239, 154, 154, 0.10);  /* полупрозрачный красный (dark) */
 }
 .ts-table-wrap h3 { margin-top: 0; color: var(--accent-red); }
 
