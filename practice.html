@@ -2446,5 +2446,126 @@ show ap summary</pre>
     }
 })(); // <--- Закрывается вся функция (function () { ... })();
 </script>
+
+<script>
+(function () {
+  let userEngaged = false; // после клика по кнопке режима блюром управляет сама страница
+
+  function isDark() {
+    return /dark|night/i.test(document.body.className);
+  }
+
+  // Помощник: разбирает "rgb(255, 255, 255)" и "rgba(255,255,255,0.85)" без регэкспов
+  function parseColor(str) {
+    if (str.indexOf('(') === -1) return null;
+    const inner = str.slice(str.indexOf('(') + 1, str.lastIndexOf(')'));
+    const p = inner.split(',').map(x => parseFloat(x));
+    return p.length >= 3 ? p : null;
+  }
+
+  // --- Снятие блюра при загрузке (до первого клика) ---
+  function clearBlur() {
+    let n = 0;
+    document.querySelectorAll('body, body *').forEach(el => {
+      const s = getComputedStyle(el);
+      if (s.filter.includes('blur') || s.backdropFilter.includes('blur')) {
+        el.style.setProperty('filter', 'none', 'important');
+        el.style.setProperty('backdrop-filter', 'none', 'important');
+        el.setAttribute('data-blur-cleared', '');
+        n++;
+      }
+    });
+    return n;
+  }
+
+  // --- Белые фоны → полупрозрачные ---
+  function translucify() {
+    if (isDark()) return;
+    let n = 0;
+    document.querySelectorAll('body *').forEach(el => {
+      if (el.hasAttribute('data-glassed')) return;
+      const s = getComputedStyle(el);
+
+      // белый градиент поверх цвета — сносим картинку фона
+      if (s.backgroundImage.includes('gradient')) {
+        el.style.setProperty('background-image', 'none', 'important');
+      }
+
+      const p = parseColor(s.backgroundColor);
+      if (p && p[0] > 235 && p[1] > 235 && p[2] > 235 &&
+          (p[3] === undefined || p[3] > 0.9)) {
+        el.style.setProperty('background-color',
+          'rgba(' + p[0] + ', ' + p[1] + ', ' + p[2] + ', 0.6)', 'important');
+        el.setAttribute('data-glassed', 'bg');
+        n++;
+      }
+    });
+    console.log('Полупрозрачных фонов обработано:', n);
+  }
+
+  // --- Картинки: белый фон становится прозрачным (режим «кальки») ---
+  function glassImages() {
+    document.querySelectorAll('img').forEach(img => {
+      if (isDark()) {
+        // в тёмной теме multiply сделает картинку тёмным пятном — откатываем
+        if (img.hasAttribute('data-glass-img')) {
+          img.style.removeProperty('mix-blend-mode');
+          img.style.removeProperty('opacity');
+          img.removeAttribute('data-glass-img');
+        }
+        return;
+      }
+      if (img.hasAttribute('data-glass-img')) return;
+      img.style.setProperty('mix-blend-mode', 'multiply', 'important');
+      img.style.setProperty('opacity', '0.9', 'important');
+      img.setAttribute('data-glass-img', '');
+    });
+    console.log('Картинок обработано:', document.querySelectorAll('[data-glass-img]').length);
+  }
+
+  // CSS для случая, когда белый фон живёт на псевдоэлементе ::before
+  const styleFix = document.createElement('style');
+  styleFix.textContent = '.glass-fix::before { background: rgba(255,255,255,0.6) !important; }';
+  document.head.appendChild(styleFix);
+
+  // --- Загрузка: страница всегда стартует чистой ---
+  window.addEventListener('DOMContentLoaded', () => {
+    console.log('Блюр снят при загрузке у элементов:', clearBlur());
+    translucify();
+    glassImages();
+    setTimeout(() => { if (!userEngaged) clearBlur(); }, 1500);
+  });
+
+  // --- Клик по кнопке режима обучения ---
+  const learnBtn = [...document.querySelectorAll('button, a, label')]
+    .find(b => /режим обучения/i.test(b.textContent));
+  if (learnBtn) {
+    learnBtn.addEventListener('click', () => {
+      userEngaged = true;
+      document.querySelectorAll('[data-blur-cleared]').forEach(el => {
+        el.style.removeProperty('filter');
+        el.style.removeProperty('backdrop-filter');
+        el.removeAttribute('data-blur-cleared');
+      });
+    });
+  } else {
+    console.warn('Кнопка режима обучения не найдена');
+  }
+
+  // --- Переключение темы: пересчёт прозрачности ---
+  const themeBtn = [...document.querySelectorAll('button, a, label')]
+    .find(b => /тема/i.test(b.textContent));
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => setTimeout(() => {
+      translucify();
+      glassImages();
+    }, 300));
+  }
+})();
+</script>
+
+
+
+
 </body>
 </html>
