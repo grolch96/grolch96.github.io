@@ -249,14 +249,92 @@
         border: none; outline: none;
     }
     details.secret > summary::-webkit-details-marker { display: none; }
+    
+        /* ---------- Оглавление (сайдбар) ---------- */
+    .layout-wrapper {
+        display: flex;
+        gap: 3%;
+        align-items: flex-start;
+        max-width: 1400px;
+        margin: 0; /* <-- было margin: 0 auto */
+        padding-left: 20px; /* отступ от левого края */
+        width: 100%;
+    }
+    .sidebar {
+        width: 25%;          /* 25% от ширины экрана */
+        min-width: 220px;    /* Защита от слишком узкого экрана */
+        max-width: 350px;    /* Защита от слишком широкого */
+        flex-shrink: 0;
+        position: sticky;    /* Панель "прилипает" и всегда на виду */
+        top: 20px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .sidebar h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .sidebar ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar li { margin-bottom: 6px; }
+    .sidebar a { color: var(--fg); text-decoration: none; font-size: 14px; display: block; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+    .sidebar a:hover { background: rgba(127, 168, 212, 0.1); color: var(--accent); }
+
+    /* Основной контент занимает остаток */
+    main.container {
+        flex: 1;
+        min-width: 0; /* Важно для корректного сжатия */
+    }
+
+    /* На мобильных — панель сверху на всю ширину */
+    @media (max-width: 900px) {
+        .layout-wrapper { flex-direction: column; gap: 20px; }
+        .sidebar { 
+            width: 100%; 
+            max-width: none; 
+            position: static; 
+            max-height: none; 
+            margin-bottom: 20px; 
+        }
+    }
+    
 </style>
 </head>
 <body data-theme="light">
 
 <button class="theme-btn" id="theme-btn">🌙 Тема</button>
 
-<div class="container">
-    <a href="index.html" class="back-link">← На главную</a>
+<div class="layout-wrapper">
+    <!-- ОГЛАВЛЕНИЕ -->
+    <aside class="sidebar">
+        <h3>📚 Навигация</h3>
+        <ul>
+            <li><a href="#task1">1. VLAN и Trunk</a></li>
+            <li><a href="#task2">2. EtherChannel LACP</a></li>
+            <li><a href="#task3">3. EtherChannel PAgP</a></li>
+            <li><a href="#task4">4. STP (Защита от петель)</a></li>
+            <li><a href="#task5">5. OSPF (Маршрутизация)</a></li>
+            <li><a href="#task6">6. HSRP (Резервирование)</a></li>
+            <li><a href="#task7">7. BGP (Стык с провайдером)</a></li>
+            <li><a href="#task8">8. IPv6 и OSPFv3</a></li>
+            <li><a href="#task9">9. Безопасность L2</a></li>
+            <li><a href="#task10">10. DHCP</a></li>
+            <li><a href="#task11">11. NAT/PAT</a></li>
+            <li><a href="#task12">12. EIGRP + Redistribution</a></li>
+            <li><a href="#task13">13. MSTP</a></li>
+            <li><a href="#task14">14. NTP</a></li>
+            <li><a href="#task15">15. WLC/AP</a></li>
+            <li style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;"><a href="#lab1">📝 Самопроверка: Лаба 1</a></li>
+            <li><a href="#lab2">📝 Самопроверка: Лаба 2</a></li>
+        </ul>
+    </aside>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main class="container" style="flex: 1; min-width: 0;">
+        <a href="index.html" class="back-link">← На главную</a>
+
     <h1>🎯 Практикум: решение задач по технологиям Cisco</h1>
 
     <p>Здесь собраны практические задачи по каждой технологии из Лабораторных 1 и 2. Для каждой — условие, пошаговое решение и проверка. Это не просто теория, а отработка навыков на конкретных сценариях.</p>
@@ -267,7 +345,7 @@
     </div>
 
 <!-- ЗАДАЧА 1 -->
-<div class="script-card">
+<div class="script-card" id="task1">
     <h2>1. VLAN и Trunk <input type="checkbox" class="self-check" data-task="1" title="Отметить как решённую"></h2>
     <p><strong>Задача:</strong> Разделить сеть на два VLAN (10 — IT, 20 — Бухгалтерия) и настроить trunk между коммутаторами. Разделение отделов в одном физическом свитче + один аплинк между свитчами. Без trunk пришлось бы тянуть отдельный кабель на каждый VLAN.</p>
     <img src="img/task1.png" alt="Схема VLAN и Trunk" class="task-img">
@@ -368,7 +446,7 @@ interface f0/2
 </div>
 
 <!-- ЗАДАЧА 2 -->
-<div class="script-card">
+<div class="script-card" id="task2">
     <h2>2. EtherChannel LACP <input type="checkbox" class="self-check" data-task="2" title="Отметить как решённую"></h2>
     <p><strong>Задача:</strong> Объединить 4 физических линка между SW1 и SW2 в один логический канал (Po1) с помощью LACP. Агрегация полосы и резервирование: 4×100 Мбит = 400 Мбит, падение одного линка не рвёт связь.</p>
     <img src="img/task2.png" alt="Схема EtherChannel LACP" class="task-img">
@@ -461,7 +539,7 @@ interface port-channel 1
 </div>
 
 <!-- ЗАДАЧА 3 -->
-<div class="script-card">
+<div class="script-card" id="task3">
     <h2>3. EtherChannel PAgP <input type="checkbox" class="self-check" data-task="3" title="Отметить как решённую"></h2>
     <p><strong>Задача:</strong> Объединить 4 физических линка между SW3 и SW4 в один логический канал (Po2) с помощью PAgP. То же, что LACP, но в чисто Cisco-среде (легаси-протокол, в новых сетях почти не встретите).</p>
     <img src="img/task3.png" alt="Схема EtherChannel PAgP" class="task-img">
@@ -553,7 +631,7 @@ interface port-channel 2
 </div>
 
 <!-- ЗАДАЧА 4 -->
-<div class="script-card">
+<div class="script-card" id="task4">
     <h2>4. STP (Защита от петель) <input type="checkbox" class="self-check" data-task="4" title="Отметить как решённую"></h2>
     <p><strong>Задача:</strong> Настроить Rapid-PVST+ так, чтобы SW1 был корневым мостом, а избыточные порты на SW3 заблокировались. Без STP кольцо из свитчей = broadcast-шторм за секунды и падение всей L2-сети.</p>
     <img src="img/task4.png" alt="Схема STP" class="task-img">
@@ -629,7 +707,7 @@ configure terminal
 </div>
 
 <!-- ЗАДАЧА 5 -->
-<div class="script-card">
+<div class="script-card" id="task5">
     <h2>5. OSPF (Динамическая маршрутизация) <input type="checkbox" class="self-check" data-task="5" title="Отметить как решённую"></h2>
     <p><strong>Задача:</strong> Настроить OSPF между двумя роутерами (R1 и R2) и проверить, что они видят сети друг друга. Автоматический обмен маршрутами между роутерами; ручные статики не масштабируются.</p>
     <img src="img/task5.png" alt="Схема OSPF" class="task-img">
@@ -756,7 +834,7 @@ int range f0/0-1
   .hsrp-note li { margin-bottom: 6px; }
 </style>
 
-<div class="script-card">
+<div class="script-card" id="task6">
     <h2>6. HSRP (Резервирование шлюза) <input type="checkbox" class="self-check" data-task="6" title="Отметить как решённую"></h2>
 
     <p><strong>Задача:</strong> Настроить HSRP на двух роутерах (R1 и R2), чтобы при падении R1 трафик перехватывал R2 без обрыва связи у клиентов. Шлюз по умолчанию не должен быть single point of failure — тогда клиенты не заметят падения R1.</p>
@@ -899,7 +977,7 @@ interface f0/0
 </div>
 
 <!-- ЗАДАЧА 7 -->
-    <div class="script-card">
+    <div class="script-card" id="task7">
         <h2>7. BGP (Стык с провайдером) <input type="checkbox" class="self-check" data-task="7" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить eBGP между корпоративными роутерами (R1, R2 2811 — AS 65002) и провайдером (ISP 2911 — AS 65001), чтобы R1 и R2 получали маршрут в интернет и анонсировали ISP свою сеть. Два аплинка дают резервирование: отказ одного стыка не разрывает связность — трафик уходит через второй.</p>
         <img src="img/task7.png" alt="Схема BGP" class="task-img">
@@ -1039,7 +1117,7 @@ end
         <p class="analogy"><strong>💡 Аналогия:</strong> BGP — это как дипломатические переговоры между странами (автономными системами). Каждая страна рассказывает соседям, какие дороги у неё есть, и договаривается, как пропускать чужие фуры. Внутренние дороги (OSPF) — это местные улицы, а BGP — международные трассы. Два стыка к ISP — как два погранперехода: закрылся один, фуры едут через второй.</p>
     </div>
     <!-- ЗАДАЧА 8 -->
-    <div class="script-card">
+    <div class="script-card" id="task8">
         <h2>8. IPv6 и OSPFv3 (Двухстековая маршрутизация) <input type="checkbox" class="self-check" data-task="8" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить IPv6-адресацию и OSPFv3 между двумя роутерами, проверить связность по IPv6. Двухстековая сеть — стандарт; OSPFv3 даёт ту же динамику, что OSPFv2, но для IPv6.</p>
         <img src="img/task8.png" alt="Схема IPv6 и OSPFv3" class="task-img">
@@ -1133,7 +1211,7 @@ router ospfv3 1
     </div>
 
     <!-- ЗАДАЧА 9 -->
-    <div class="script-card">
+    <div class="script-card" id="task9">
         <h2>9. Безопасность L2 (Port Security + DHCP Snooping) <input type="checkbox" class="self-check" data-task="9" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Защитить порт коммутатора от подключения чужих устройств в офисный порт и включить DHCP Snooping для защиты от левых DHCP-серверов.</p>
         <img src="img/task9.png" alt="Схема Безопасность L2" class="task-img">
@@ -1226,7 +1304,7 @@ no ip dhcp snooping information option</pre>
     </div>
 
     <!-- ЗАДАЧА 10 -->
-    <div class="script-card">
+    <div class="script-card" id="task10">
         <h2>10. DHCP (Автоматизация выдачи адресов) <input type="checkbox" class="self-check" data-task="10" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить DHCP-сервер на L3-коммутаторе для выдачи адресов клиентам в VLAN 10 и VLAN 20. Ручная выдача IP не масштабируется; DHCP + excluded-address = предсказуемость.</p>
         <img src="img/task10.png" alt="Схема DHCP" class="task-img">
@@ -1318,7 +1396,7 @@ ip dhcp pool VLAN20
     </div>
 
     <!-- ЗАДАЧА 11 -->
-    <div class="script-card">
+    <div class="script-card" id="task11">
         <h2>11. NAT/PAT (Выход в интернет) <input type="checkbox" class="self-check" data-task="11" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить PAT (Overload) на граничном роутере, чтобы все клиенты внутренней сети выходили в интернет под одним внешним IP. Частные адреса (RFC1918) не маршрутизируются в интернете — нужен выход под одним публичным IP.</p>
         <img src="img/task11.png" alt="Схема NAT/PAT" class="task-img">
@@ -1399,7 +1477,7 @@ ip nat inside source list NAT interface f0/1 overload</pre>
     </div>
 
     <!-- ЗАДАЧА 12 -->
-    <div class="script-card">
+    <div class="script-card" id="task12">
         <h2>12. EIGRP + Redistribution <input type="checkbox" class="self-check" data-task="12" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить EIGRP между двумя роутерами и перераспределить маршруты между OSPF и EIGRP на граничном роутере. Это стык двух доменов маршрутизации (например, после слияния компаний или сегментации сети).</p>
         <img src="img/task12.png" alt="Схема EIGRP + Redistribution" class="task-img">
@@ -1474,7 +1552,7 @@ router eigrp 100
     </div>
 
     <!-- ЗАДАЧА 13 -->
-    <div class="script-card">
+    <div class="script-card" id="task13">
         <h2>13. MSTP (Multiple Spanning Tree Protocol) <input type="checkbox" class="self-check" data-task="13" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить MSTP с двумя инстансами (для разных групп VLAN) и балансировкой нагрузки между двумя корневыми коммутаторами. Один экземпляр STP на все VLAN даст простой части сети, а MSTP даёт балансировку по группам VLAN.</p>
         <img src="img/task13.png" alt="Схема MSTP" class="task-img">
@@ -1546,7 +1624,7 @@ spanning-tree mst 2 root primary</pre>
     </div>
 
     <!-- ЗАДАЧА 14 -->
-    <div class="script-card">
+    <div class="script-card" id="task14">
         <h2>14. NTP (Синхронизация времени) <input type="checkbox" class="self-check" data-task="14" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить синхронизацию времени между сетевыми устройствами, чтобы логи и сертификаты работали корректно. Без синхронизации времени логи разных устройств не сопоставить, а сертификаты/DHCP-lease ломаются.</p>
         <img src="img/task14.png" alt="Схема NTP" class="task-img">
@@ -1606,7 +1684,7 @@ ntp server 192.168.1.5</pre>
     </div>
 
     <!-- ЗАДАЧА 15 -->
-    <div class="script-card">
+    <div class="script-card" id="task15">
         <h2>15. WLC/AP (Беспроводной сегмент) <input type="checkbox" class="self-check" data-task="15" title="Отметить как решённую"></h2>
         <p><strong>Задача:</strong> Настроить беспроводную сеть с контроллером (WLC) и точкой доступа (AP), чтобы клиенты подключались по Wi-Fi. Это централизованное управление Wi-Fi: один SSID и одна политика безопасности на сотни AP.</p>
         <img src="img/task15.png" alt="Схема WLC/AP" class="task-img">
@@ -1714,32 +1792,8 @@ show ap summary</pre>
         </div>
     </div>
 
-    <!-- ВОПРОС НА ЗРЕЛОСТЬ -->
-    <div class="script-card">
-        <h2>🌟 Вопрос на зрелость (senior)</h2>
-        <div class="task-block">
-            <h3>Что бы вы сделали иначе, если бы проектировали эту сеть с нуля сегодня? <span class="level-badge level-senior">Senior</span></h3>
-            <details class="qa">
-                <summary>Показать ответ</summary>
-                <p style="margin-top:10px;">Нет правильного ответа — важно, как рассуждаете. Варианты: <strong>MST вместо PVST+</strong> (меньше деревьев, меньше нагрузка на CPU); <strong>VRRP вместо HSRP</strong> (открытый стандарт, мультивендорность); <strong>EVPN/VXLAN</strong> вместо классического L2-домена; <strong>автоматизация</strong> (Ansible/Python вместо ручных конфигов); <strong>российские вендоры</strong> (Eltex, Qtech) — если есть требование импортозамещения; <strong>SD-WAN</strong> вместо классических WAN-линков.
-                <br>Если помните, в Лабе 2 был баг с HSRP в Packet Tracer 6.2: SW1 (транзитный L3-свитч) не мог отправить пакет на виртуальный MAC-адрес HSRP, потому что PT 6.2 криво обрабатывает ARP для виртуальных MAC. Из-за этого трафик от SW1 к R1 «застревал». Мы тогда прописали на SW1 прямой статический маршрут на физический IP R1: <code>ip route 0.0.0.0 0.0.0.0 192.168.1.5</code>. Это обошло баг: SW1 перестал отправлять пакеты на виртуальный MAC и слал их напрямую на физический интерфейс R1. Именно поэтому в задаче 6 (HSRP) в блоке «Аналогия» и в самопроверке упоминается этот случай — это реальное инженерное решение, а не учебная абстракция. И это как раз тот случай, который стоит рассказывать на собеседовании, когда спросят «а что было самым сложным?».</p>
-            </details>
-        </div>
-    </div>
-
-                    <!-- ПРОГРЕСС -->
-            <div class="progress-summary" id="progress-summary">
-                <h3>📊 Ваш прогресс</h3>
-                <p><span class="counter" id="progress-counter">0</span> <span class="total">из <span id="progress-total">15</span> задач решено</span></p>
-            </div>
-
-    <!-- СКРЫТЫЙ БЛОК: ОБУЧЕНИЕ -->
-    <details class="secret">
-        <summary></summary>
-        <div style="display: flex; flex-direction: column; gap: 30px;">
-
-            <!-- САМОПРОВЕРКА: ЛАБА 1 -->
-            <div class="script-card">
+           <!-- САМОПРОВЕРКА: ЛАБА 1 -->
+            <div class="script-card" id="lab1">
                 <h2>🧠 Самопроверка: Лаба 1 (фундамент)</h2>
                 <p>Вопросы на понимание, а не на заучивание. Сначала ответьте сами, потом раскройте ответ.</p>
 
@@ -1829,7 +1883,7 @@ show ap summary</pre>
             </div>
 
             <!-- САМОПРОВЕРКА: ЛАБА 2 -->
-            <div class="script-card">
+            <div class="script-card" id="lab2">
                 <h2>🧠 Самопроверка: Лаба 2 (надстройка)</h2>
                 <p>Вопросы уровня «понимание, а не зубрёжка». Сначала ответьте сами, потом раскройте.</p>
 
@@ -1917,6 +1971,30 @@ show ap summary</pre>
                     </details>
                 </div>
             </div>
+
+    <!-- ВОПРОС НА ЗРЕЛОСТЬ -->
+    <div class="script-card">
+        <h2>🌟 Вопрос на зрелость (senior)</h2>
+        <div class="task-block">
+            <h3>Что бы вы сделали иначе, если бы проектировали эту сеть с нуля сегодня? <span class="level-badge level-senior">Senior</span></h3>
+            <details class="qa">
+                <summary>Показать ответ</summary>
+                <p style="margin-top:10px;">Нет правильного ответа — важно, как рассуждаете. Варианты: <strong>MST вместо PVST+</strong> (меньше деревьев, меньше нагрузка на CPU); <strong>VRRP вместо HSRP</strong> (открытый стандарт, мультивендорность); <strong>EVPN/VXLAN</strong> вместо классического L2-домена; <strong>автоматизация</strong> (Ansible/Python вместо ручных конфигов); <strong>российские вендоры</strong> (Eltex, Qtech) — если есть требование импортозамещения; <strong>SD-WAN</strong> вместо классических WAN-линков.
+                <br>Если помните, в Лабе 2 был баг с HSRP в Packet Tracer 6.2: SW1 (транзитный L3-свитч) не мог отправить пакет на виртуальный MAC-адрес HSRP, потому что PT 6.2 криво обрабатывает ARP для виртуальных MAC. Из-за этого трафик от SW1 к R1 «застревал». Мы тогда прописали на SW1 прямой статический маршрут на физический IP R1: <code>ip route 0.0.0.0 0.0.0.0 192.168.1.5</code>. Это обошло баг: SW1 перестал отправлять пакеты на виртуальный MAC и слал их напрямую на физический интерфейс R1. Именно поэтому в задаче 6 (HSRP) в блоке «Аналогия» и в самопроверке упоминается этот случай — это реальное инженерное решение, а не учебная абстракция. И это как раз тот случай, который стоит рассказывать на собеседовании, когда спросят «а что было самым сложным?».</p>
+            </details>
+        </div>
+    </div>
+
+                    <!-- ПРОГРЕСС -->
+            <div class="progress-summary" id="progress-summary">
+                <h3>📊 Ваш прогресс</h3>
+                <p><span class="counter" id="progress-counter">0</span> <span class="total">из <span id="progress-total">15</span> задач решено</span></p>
+            </div>
+
+    <!-- СКРЫТЫЙ БЛОК: ОБУЧЕНИЕ -->
+    <details class="secret">
+        <summary></summary>
+        <div style="display: flex; flex-direction: column; gap: 30px;">
 
             <!-- ТРАБЛШУТИНГ -->
             <div class="script-card">
@@ -2274,7 +2352,7 @@ show ap summary</pre>
         </div> <!-- конец flex-контейнера -->
     </details> <!-- конец скрытого блока -->
 
-</div><!-- /.container -->
+</main><!-- /. Бывший container, теперь main -->
 
 <script>
 (function () {
@@ -2449,13 +2527,13 @@ show ap summary</pre>
 
 <script>
 (function () {
-  let userEngaged = false; // после клика по кнопке режима блюром управляет сама страница
-
+  // Тема: у страницы она в data-theme на body, а не в классе
   function isDark() {
+    const t = document.body.getAttribute('data-theme');
+    if (t) return t === 'dark';
     return /dark|night/i.test(document.body.className);
   }
 
-  // Помощник: разбирает "rgb(255, 255, 255)" и "rgba(255,255,255,0.85)" без регэкспов
   function parseColor(str) {
     if (str.indexOf('(') === -1) return null;
     const inner = str.slice(str.indexOf('(') + 1, str.lastIndexOf(')'));
@@ -2463,34 +2541,38 @@ show ap summary</pre>
     return p.length >= 3 ? p : null;
   }
 
-  // --- Снятие блюра при загрузке (до первого клика) ---
-  function clearBlur() {
+  // 1) Снять «скрытие ответов» при загрузке.
+  //    .hidden-blur даёт и blur(6px), и opacity: 0.6 — второе и делало терминалы светлыми.
+  function unhideAnswers() {
     let n = 0;
-    document.querySelectorAll('body, body *').forEach(el => {
-      const s = getComputedStyle(el);
-      if (s.filter.includes('blur') || s.backdropFilter.includes('blur')) {
-        el.style.setProperty('filter', 'none', 'important');
-        el.style.setProperty('backdrop-filter', 'none', 'important');
-        el.setAttribute('data-blur-cleared', '');
-        n++;
-      }
+    document.querySelectorAll('.hidden-blur').forEach(el => {
+      el.classList.remove('hidden-blur');
+      // на случай остатков от прошлых версий патча
+      el.style.removeProperty('filter');
+      el.style.removeProperty('backdrop-filter');
+      el.style.removeProperty('opacity');
+      n++;
     });
     return n;
   }
 
-  // --- Белые фоны → полупрозрачные ---
+  // 2) Смыв наших красок (нужен при переходе в тёмную тему)
+  function unGlass() {
+    document.querySelectorAll('[data-glassed]').forEach(el => {
+      el.style.removeProperty('background-color');
+      el.style.removeProperty('background-image');
+      el.removeAttribute('data-glassed');
+    });
+  }
+
+  // 3) Белые фоны → полупрозрачные (терминалы и код не трогаем)
   function translucify() {
-    if (isDark()) return;
+    if (isDark()) { unGlass(); return; }
     let n = 0;
     document.querySelectorAll('body *').forEach(el => {
       if (el.hasAttribute('data-glassed')) return;
+      if (el.closest('pre, code, .code-wrap, .check-table')) return;
       const s = getComputedStyle(el);
-
-      // белый градиент поверх цвета — сносим картинку фона
-      if (s.backgroundImage.includes('gradient')) {
-        el.style.setProperty('background-image', 'none', 'important');
-      }
-
       const p = parseColor(s.backgroundColor);
       if (p && p[0] > 235 && p[1] > 235 && p[2] > 235 &&
           (p[3] === undefined || p[3] > 0.9)) {
@@ -2503,11 +2585,10 @@ show ap summary</pre>
     console.log('Полупрозрачных фонов обработано:', n);
   }
 
-  // --- Картинки: белый фон становится прозрачным (режим «кальки») ---
+  // 4) Картинки: белый фон становится прозрачным («калька»)
   function glassImages() {
     document.querySelectorAll('img').forEach(img => {
       if (isDark()) {
-        // в тёмной теме multiply сделает картинку тёмным пятном — откатываем
         if (img.hasAttribute('data-glass-img')) {
           img.style.removeProperty('mix-blend-mode');
           img.style.removeProperty('opacity');
@@ -2520,52 +2601,30 @@ show ap summary</pre>
       img.style.setProperty('opacity', '0.9', 'important');
       img.setAttribute('data-glass-img', '');
     });
-    console.log('Картинок обработано:', document.querySelectorAll('[data-glass-img]').length);
   }
 
-  // CSS для случая, когда белый фон живёт на псевдоэлементе ::before
-  const styleFix = document.createElement('style');
-  styleFix.textContent = '.glass-fix::before { background: rgba(255,255,255,0.6) !important; }';
-  document.head.appendChild(styleFix);
-
-  // --- Загрузка: страница всегда стартует чистой ---
+  // Загрузка: снимаем hidden-blur (с повторами — на случай, если родной скрипт
+  // вешает класс позже нашего первого прохода)
   window.addEventListener('DOMContentLoaded', () => {
-    console.log('Блюр снят при загрузке у элементов:', clearBlur());
+    console.log('Скрытие ответов снято у блоков:', unhideAnswers());
     translucify();
     glassImages();
-    setTimeout(() => { if (!userEngaged) clearBlur(); }, 1500);
+    [100, 500, 1500].forEach(ms => setTimeout(() => {
+      const n = unhideAnswers();
+      if (n) { translucify(); }
+    }, ms));
   });
 
-  // --- Клик по кнопке режима обучения ---
-  const learnBtn = [...document.querySelectorAll('button, a, label')]
-    .find(b => /режим обучения/i.test(b.textContent));
-  if (learnBtn) {
-    learnBtn.addEventListener('click', () => {
-      userEngaged = true;
-      document.querySelectorAll('[data-blur-cleared]').forEach(el => {
-        el.style.removeProperty('filter');
-        el.style.removeProperty('backdrop-filter');
-        el.removeAttribute('data-blur-cleared');
-      });
-    });
-  } else {
-    console.warn('Кнопка режима обучения не найдена');
-  }
-
-  // --- Переключение темы: пересчёт прозрачности ---
-  const themeBtn = [...document.querySelectorAll('button, a, label')]
-    .find(b => /тема/i.test(b.textContent));
+  // Переключение темы: полное пересоответствие
+  const themeBtn = document.getElementById('theme-btn');
   if (themeBtn) {
     themeBtn.addEventListener('click', () => setTimeout(() => {
-      translucify();
+      translucify(); // в тёмной теме сам смоет краски, в светлой — покрасит заново
       glassImages();
     }, 300));
   }
 })();
 </script>
-
-
-
 
 </body>
 </html>
