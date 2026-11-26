@@ -1395,61 +1395,118 @@ ip dhcp pool VLAN20
         <p class="analogy"><strong>💡 Аналогия:</strong> DHCP — это как администратор гостиницы, который выдаёт гостям (ПК) ключи от номеров (IP). Гость говорит «хочу номер» (Discover), администратор предлагает варианты (Offer), гость выбирает (Request), администратор подтверждает (Ack).</p>
     </div>
 
-    <!-- ЗАДАЧА 11 -->
-    <div class="script-card" id="task11">
-        <h2>11. NAT/PAT (Выход в интернет) <input type="checkbox" class="self-check" data-task="11" title="Отметить как решённую"></h2>
-        <p><strong>Задача:</strong> Настроить PAT (Overload) на граничном роутере, чтобы все клиенты внутренней сети выходили в интернет под одним внешним IP. Частные адреса (RFC1918) не маршрутизируются в интернете — нужен выход под одним публичным IP.</p>
-        <img src="img/task11.png" alt="Схема NAT/PAT" class="task-img">
-        <div class="task-block">
-            <h3>📋 Условие</h3>
-            <ul>
-                <li>R1: f0/0 — внутренний (192.168.10.0/24), f0/1 — внешний (10.0.0.2/30, к ISP).</li>
-                <li>Внутренняя сеть 192.168.10.0/24.</li>
-                <li>Все клиенты должны выходить в интернет под IP 10.0.0.2.</li>
-                <li>Сервер 192.168.10.10 должен быть доступен извне (Static NAT).</li>
-            </ul>
-        </div>
-        <div class="task-block solution">
-            <h3>🛠️ Решение</h3>
-            <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что интерфейсы f0/0 и f0/1 в статусе up/up. Убедитесь, что внутренняя сеть 192.168.10.0/24 реально доступна (пинг с R1 до ПК). Войдите в режим конфигурации.</p>
-            <div class="code-wrap">
+<!-- ЗАДАЧА 11 -->
+<div class="script-card" id="task11">
+    <h2>11. NAT/PAT (Выход в интернет) + ACL <input type="checkbox" class="self-check" data-task="11" title="Отметить как решённую"></h2>
+    <p><strong>Задача:</strong> Настроить PAT (Overload) на граничном роутере, чтобы все клиенты внутренней сети выходили в интернет под одним внешним IP. Частные адреса (RFC1918) не маршрутизируются в интернете — нужен выход под одним публичным IP. Дополнительно — ограничить исходящий трафик ACL (политика выхода) и защитить проброс порта входящим ACL на внешнем интерфейсе.</p>
+    <img src="img/task11.png" alt="Схема NAT/PAT" class="task-img">
+    <div class="task-block">
+        <h3>📋 Условие</h3>
+        <ul>
+            <li>R1: f0/0 — внутренний (192.168.10.0/24), f0/1 — внешний (10.0.0.2/30, к ISP).</li>
+            <li>Внутренняя сеть 192.168.10.0/24.</li>
+            <li>Все клиенты должны выходить в интернет под IP 10.0.0.2.</li>
+            <li>Сервер 192.168.10.10 должен быть доступен извне (Static NAT, порт 80) и способен сам инициировать TCP-сессии наружу.</li>
+            <li><strong>ACL1 (политика выхода):</strong> сервер 192.168.10.10 — весь трафик наружу; PC1 (192.168.10.11) — только ICMP.</li>
+            <li><strong>ACL3 (защита проброса):</strong> извне разрешены только HTTP к 10.0.0.2:80, ICMP для диагностики и ответный трафик уже установленных сессий; всё остальное — запрещено.</li>
+        </ul>
+    </div>
+    <div class="task-block solution">
+        <h3>🛠️ Решение</h3>
+        <p style="margin-bottom: 10px;"><strong>Шаг 0. Подготовка:</strong> проверьте, что интерфейсы f0/0 и f0/1 в статусе up/up. Убедитесь, что внутренняя сеть 192.168.10.0/24 реально доступна (пинг с R1 до ПК). Войдите в режим конфигурации.</p>
+        <div class="code-wrap">
 <pre>enable
 show ip interface brief
-ping 192.168.10.11
 configure terminal
+! Чтобы не завешивать консоль при ошибках команд
+no ip domain-lookup
+! Внутренний интерфейс в сторону LAN
+interface fastEthernet 0/0
+ description LAN -> 192.168.10.0/24
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+ exit
+! Внешний интерфейс в сторону ISP
+interface fastEthernet 0/1
+ description WAN -> ISP
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+ exit
+
+! Маршрут по умолчанию: NAT превращает адреса, но сам не даёт путь наружу
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+! Проверка связности (префикс do — из режима конфигурации)
+do ping 192.168.10.11
+do show ip interface brief
 </pre>
-                <button class="copy-btn">Копировать</button>
-            </div>
-            <p><strong>Шаг 1. Пометить интерфейсы inside/outside:</strong></p>
-            <div class="code-wrap">
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 1. Пометить интерфейсы inside/outside:</strong></p>
+        <div class="code-wrap">
 <pre>interface f0/0
  ip nat inside
+ exit
 interface f0/1
- ip nat outside</pre>
-                <button class="copy-btn">Копировать</button>
-            </div>
-            <p><strong>Шаг 2. Создать ACL для NAT и включить PAT:</strong></p>
-            <div class="code-wrap">
+ ip nat outside
+ exit</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 2. Создать ACL для NAT и включить PAT:</strong> без ACL команда трансляции ссылается в пустоту и IOS молча не транслирует ни один пакет — таблица будет пустой без всякой ошибки. После включения PAT очистите таблицу трансляций — в Packet Tracer старые записи могут «залипать» и мешать новым сессиям.</p>
+        <div class="code-wrap">
 <pre>ip access-list extended NAT
  permit ip 192.168.10.0 0.0.0.255 any
-ip nat inside source list NAT interface f0/1 overload</pre>
-                <button class="copy-btn">Копировать</button>
-            </div>
-            <p><strong>Шаг 3. Static NAT для сервера (проброс порта):</strong></p>
-            <div class="code-wrap">
-<pre>ip nat inside source static tcp 192.168.10.10 80 interface f0/1 80</pre>
-                <button class="copy-btn">Копировать</button>
-            </div>
-            <p style="margin-top: 12px; font-size: 14px; color: var(--muted);"><strong>Не забудьте про маршрут по умолчанию:</strong> NAT превращает адреса, но сам не даёт путь наружу. На R1 нужна строка вида <code>ip route 0.0.0.0 0.0.0.0 10.0.0.1</code> (или дефолт от ISP по BGP из задачи 7). Без неё NAT будет «срабатывать», но пакеты никуда не уйдут.</p>
+ exit
+ip nat inside source list NAT interface f0/1 overload
+do clear ip nat translation *</pre>
+            <button class="copy-btn">Копировать</button>
         </div>
-        <div class="check-block">
-            <h3>✅ Проверка</h3>
+        <p><strong>Шаг 3. Static NAT для сервера (проброс порта):</strong></p>
+        <div class="code-wrap">
+<pre>ip nat inside source static tcp 192.168.10.10 80 10.0.0.2 80</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 4. ACL1 — политика выхода из внутренней сети:</strong> серверу разрешаем всё, PC1 — только ICMP. Вешаем на f0/0 <em>inbound</em>: для роутера трафик «наружу из LAN» приходит на внутренний интерфейс. Ответный трафик NAT-сессий ACL1 не заденет — он приходит на f0/1.</p>
+        <div class="code-wrap">
+<pre>ip access-list extended ACL1
+ permit ip host 192.168.10.10 any
+ permit icmp host 192.168.10.11 any
+! неявный deny ip any any в конце
+ exit
+interface fastEthernet 0/0
+ ip access-group ACL1 in
+ exit</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 5. ACL3 — фильтр на внешнем интерфейсе, защищающий проброс:</strong> разрешаем HTTP к публичному адресу 10.0.0.2:80, ICMP и ответный трафик установленных сессий (строка <code>established</code> — пакеты без флага SYN, то есть ответы уже открытых сессий; без неё сервер с политикой ACL1 «всё наружу» не сможет инициировать TCP: SYN уйдёт, а SYN-ACK отрежет ACL3). Важно: входящий ACL на outside-интерфейсе видит пакет <em>до</em> трансляции, поэтому адрес — публичный 10.0.0.2, а не 192.168.10.10. Сам static NAT в ACL не нуждается.</p>
+        <div class="code-wrap">
+<pre>ip access-list extended ACL3
+ permit tcp host 10.0.0.1 host 10.0.0.2 eq 80
+ permit icmp host 10.0.0.1 host 10.0.0.2
+ permit tcp host 10.0.0.1 host 10.0.0.2 established
+! неявный deny ip any any в конце
+ exit
+interface fastEthernet 0/1
+ ip access-group ACL3 in
+ exit
+end</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p><strong>Шаг 6. Сохранить конфиг:</strong> без этого всё сотрётся при перезагрузке роутера.</p>
+        <div class="code-wrap">
+<pre>write memory</pre>
+            <button class="copy-btn">Копировать</button>
+        </div>
+        <p style="margin-top: 8px; font-size: 14px; color: var(--muted);"><strong>Примечание про нумерацию:</strong> ACL1 и ACL3 здесь — именованные extended ACL (в PT работают). Нумерованные списки с номерами 1 и 3 в IOS — стандартные (1–99); расширенные нумерованные начинаются со 100. Если методичка требует номера — замените на 100 и 103.</p>
+    </div>
+    <div class="check-block">
+        <h3>✅ Проверка</h3>
+        <p style="font-size: 14px;">Команды выполняются из привилегированного режима <code>Router#</code> (после <code>end</code> или Ctrl+Z).</p>
 <h3 class="stage">Этап 0. Базовая связность</h3>
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
 <tr><td class="cmd"><code>show ip interface brief</code></td><td class="ok">f0/0 и f0/1 up/up, IP на месте.</td><td class="bad">down/down — кабель; administratively down — <code>no shutdown</code></td></tr>
-<tr><td class="cmd"><code>ping 192.168.10.11</code> с R1</td><td class="ok">Ответ ПК.</td><td class="bad">Не пингуется — сначала L2/L3, потом NAT</td></tr>
+<tr><td class="cmd"><code>ping 192.168.10.11</code> с R1</td><td class="ok">Ответ ПК.</td><td class="bad">Не пингуется — сначала L2/L3, потом NAT. Также проверьте Default Gateway на ПК</td></tr>
 <tr><td class="cmd"><code>show ip route</code></td><td class="ok">Есть connected-сети и маршрут по умолчанию (или BGP из задачи 7).</td><td class="bad">Нет дефолта — пакет после NAT уйдёт в никуда</td></tr>
 </tbody>
 </table>
@@ -1458,23 +1515,36 @@ ip nat inside source list NAT interface f0/1 overload</pre>
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
 <tr><td class="cmd"><code>show ip nat statistics</code></td><td class="ok">Inside: f0/0, Outside: f0/1.</td><td class="bad">Inside/outside перепутаны — NAT будет работать не в ту сторону</td></tr>
-<tr><td class="cmd"><code>show access-lists NAT</code></td><td class="ok">permit ip 192.168.10.0 0.0.0.255 any.</td><td class="bad">Маска не та (например, /24 без wildcard) — трафик не попадёт под NAT</td></tr>
+<tr><td class="cmd"><code>show access-lists NAT</code></td><td class="ok">permit ip 192.168.10.0 0.0.0.255 any.</td><td class="bad">Пусто — ACL не создан, NAT молча не работает: введите блок Шага 2</td></tr>
 </tbody>
 </table>
 <h3 class="stage">Этап 2. Трансляция и выход</h3>
 <table class="check-table">
 <thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
 <tbody>
-<tr><td class="cmd"><code>show ip nat translations</code></td><td class="ok">Записи с внутренним IP ПК и внешним 10.0.0.2. Записи <code>icmp</code> — это норма: PAT транслирует все протоколы, для ICMP «порт» — идентификатор запроса.</td><td class="bad">Пусто — NAT не срабатывает</td></tr>
+<tr><td class="cmd"><code>ping 10.0.0.1</code> с PC1, затем <code>show ip nat translations</code></td><td class="ok">Запись icmp: внутренний IP ПК → 10.0.0.2. Для ICMP «порт» — идентификатор запроса.</td><td class="bad">Пусто — ACL не создан или трафик режется ACL1; запись есть, а пинг не идёт — удалите и заново введите правило overload, затем <code>clear ip nat translation *</code></td></tr>
 <tr><td class="cmd"><code>show ip nat statistics</code></td><td class="ok">Счётчик hits растёт, inside f0/0, outside f0/1.</td><td class="bad">Hits = 0 — трафик не попадает под ACL</td></tr>
 <tr><td class="cmd"><code>show ip nat translations verbose</code></td><td class="ok">Интерфейсы входа/выхода, таймер записи.</td><td class="bad">Записи не в том направлении</td></tr>
-<tr><td class="cmd"><code>show access-lists NAT</code></td><td class="ok">Match counter растёт.</td><td class="bad">permit не покрывает сеть 192.168.10.0/24</td></tr>
+<tr><td class="cmd"><code>show access-lists NAT</code></td><td class="ok">Match counter растёт.</td><td class="bad">Matches = 0 — permit не покрывает сеть 192.168.10.0/24, проверьте wildcard-маску</td></tr>
 <tr><td class="cmd"><code>telnet 10.0.0.2 80</code> с внешнего хоста</td><td class="ok">Попали на сервер 192.168.10.10 (Static NAT).</td><td class="bad">Соединение сброшено — нет static NAT-записи</td></tr>
 </tbody>
 </table>
-        </div>
-        <p class="analogy"><strong>💡 Аналогия:</strong> PAT — это как вахтёр на проходной завода: все сотрудники выходят через одну дверь (внешний IP), но у каждого свой номерок (source port), чтобы вернуться обратно. Static NAT — это отдельный вход для гостей: если курьер приходит с улицы, его ведут в конкретный кабинет (сервер).</p>
+<h3 class="stage">Этап 3. ACL-политики</h3>
+<table class="check-table">
+<thead><tr><th>Команда / действие</th><th>✅ Должно быть</th><th>📌 Если не так</th></tr></thead>
+<tbody>
+<tr><td class="cmd"><code>ping 10.0.0.1</code> с PC1</td><td class="ok">Ответы — ICMP под ACL1 разрешён.</td><td class="bad">Не пингуется — проверьте permit icmp в ACL1 и наличие ACL NAT</td></tr>
+<tr><td class="cmd">Браузер PC1: <code>http://10.0.0.2</code></td><td class="ok">Не открывается — ACL1 отсекает не-ICMP трафик PC1 (это ожидаемое поведение).</td><td class="bad">Открывается — политика выхода не работает, проверьте <code>ip access-group ACL1 in</code> на f0/0</td></tr>
+<tr><td class="cmd"><code>ping 10.0.0.1</code> с сервера</td><td class="ok">Ответы — сервер выпущен наружу.</td><td class="bad">Не пингуется — проверьте permit ip host 192.168.10.10 any в ACL1</td></tr>
+<tr><td class="cmd">Браузер PC2: <code>http://10.0.0.2</code></td><td class="ok">Страница Packet Tracer открывается.</td><td class="bad">Request Timeout — проверьте ACL3, static NAT и шлюз на сервере</td></tr>
+<tr><td class="cmd"><code>telnet 10.0.0.2 23</code> с PC2</td><td class="ok">Отказ — ACL3 пускает только порт 80, ICMP и established (SYN под него не попадает).</td><td class="bad">Залогинился — ACL3 не применён к f0/1</td></tr>
+<tr><td class="cmd"><code>show access-lists ACL1</code> / <code>show access-lists ACL3</code></td><td class="ok">Счётчики matches растут по нужным permit-строкам.</td><td class="bad">Matches = 0 — трафик не попадает под строки, проверьте hosts и маски</td></tr>
+</tbody>
+</table>
     </div>
+    <p class="analogy"><strong>💡 Аналогия:</strong> PAT — это как вахтёр на проходной завода: все сотрудники выходят через одну дверь (внешний IP), но у каждого свой номерок (source port), чтобы вернуться обратно. Static NAT — это отдельный вход для гостей: если курьер приходит с улицы, его ведут в конкретный кабинет (сервер). ACL1 — это же вахтёр, но проверяющий, кого выпускают: у сервера — все двери открыты, у PC1 — только калитка для звонков (ICMP). ACL3 — охрана у входа для гостей: пускают лишь к конкретной двери кабинета (порт 80), дают постучать для проверки связи (ICMP) и пропускают обратно тех, кто уже вышел (established).
+<br>В Packet Tracer при одновременной работе статического проброса порта и PAT на одном интерфейсе таблица трансляций может «залипать» на повреждённых записях, что проявляется как Server Reset Connection в браузере или пропадающий пинг. Решение в эмуляторе: удалить и заново добавить правило overload — это пересобирает таблицу трансляций. Если проблема повторяется, альтернатива — ограничить ACL PAT хостами, не являющимися целевым сервером проброса. В реальном IOS такое сочетание работает без этих оговорок.</p>
+</div>
 
     <!-- ЗАДАЧА 12 -->
     <div class="script-card" id="task12">
