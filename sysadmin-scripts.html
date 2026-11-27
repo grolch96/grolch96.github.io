@@ -15,12 +15,87 @@
             --accent: #a3c4e8; --accent-green: #81c784; --accent-blue: #64b5f6;
             --term-bg: #111; --term-fg: #e0e0e0;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg); color: var(--fg); line-height: 1.6;
-            margin: 0; padding: 20px; transition: background 0.3s, color 0.3s;
+            color: var(--fg); 
+            line-height: 1.6;
+            margin: 0; 
+            padding: 20px; 
+            transition: background 0.3s, color 0.3s;
+            min-height: 100vh;
+            
+            /* --- НАСТРОЙКА ФОНА И МАТОВОГО СТЕКЛА --- */
+            background-color: var(--bg); 
+            background-image: 
+                linear-gradient(rgba(244, 244, 246, 0.85), rgba(244, 244, 246, 0.85)), 
+                url('img/bg-cisco4obr.jpg'); 
+            background-size: cover;         
+            background-position: center;    
+            background-attachment: fixed;   
+            background-repeat: no-repeat;   
         }
-        .container { max-width: 1000px; margin: 0 auto; }
+
+        .container {
+            max-width: 1300px; /* Расширили, чтобы поместилось меню */
+            margin: 0 auto;
+            display: flex;         /* Ставим меню и контент в ряд */
+            align-items: flex-start;
+            gap: 30px;             /* Отступ между ними */
+        }
+
+        /* ОБЕРТКА ДЛЯ КАРТОЧЕК (чтобы они не растягивались) */
+        .main-content {
+            flex: 1;               /* Занимает всё оставшееся место */
+            min-width: 0;          /* Защита от вылезания кода за края */
+        }
+
+        /* СТИЛИ ДЛЯ ПРАВОГО МЕНЮ */
+        .sidebar-toc {
+            width: 260px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 80px; 
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+
+        .sidebar-toc h3 {
+            margin: 0 0 10px 0;
+            color: var(--accent);
+            font-size: 1.1em;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .sidebar-toc a {
+            color: var(--fg);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+            line-height: 1.4;
+        }
+
+        .sidebar-toc a:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        /* АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ (в самый конец style) */
+        @media (max-width: 900px) {
+            .container { flex-direction: column; }
+            .sidebar-toc { width: 100%; position: static; max-height: none; }
+        }
         h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
         .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
         .back-link:hover { text-decoration: underline; }
@@ -39,7 +114,13 @@
             border-radius: 12px; padding: 25px; margin-bottom: 30px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .script-card h2 { margin-top: 0; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .script-card h2 { 
+            margin-top: 0; 
+            color: var(--accent); 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+            scroll-margin-top: 20px; /* <-- ДОБАВИТЬ ЭТО */
+        }
 
         .layer {
             display: flex;
@@ -88,6 +169,10 @@
             background: rgba(41, 128, 185, 0.1); border-left: 4px solid var(--accent-blue);
             border-radius: 6px; font-style: italic; font-size: 14px;
         }
+       
+               html {
+            scroll-behavior: smooth;
+        } 
     </style>
 </head>
 <body data-theme="light">
@@ -95,8 +180,14 @@
 <button class="theme-btn" id="theme-btn">🌙 Тема</button>
 
 <div class="container">
-    <a href="index.html" class="back-link">← На главную</a>
-    <h1>💻 Скрипты системного администрирования (Linux + Windows)</h1>
+    
+    <!-- ЛЕВАЯ ЧАСТЬ: Контент -->
+    <div class="main-content">
+        <a href="index.html" class="back-link">← На главную</a>
+        <h1>💻 Скрипты системного администрирования (Linux + Windows)</h1>
+        
+        <!-- ВАШ ТЕКСТ И КАРТОЧКИ ИДУТ ДАЛЬШЕ... -->
+        <!-- Не забудьте добавить id к заголовкам h2 (см. ниже) -->
     
     <p>Сборник скриптов для автоматизации рутинных задач системного администратора. Все примеры проверены, содержат обработку ошибок и режим безопасного тестирования (<code>dry-run</code>), чтобы не сломать систему при первом запуске.</p>
 
@@ -106,7 +197,7 @@
 
     <!-- Блок 1: Резервное копирование -->
     <div class="script-card">
-        <h2>1. Резервное копирование файлов и базы данных</h2>
+ <h2 id="backup">1. Резервное копирование и базы данных</h2>
         <p>Автоматическое резервное копирование важных данных с ротацией старых архивов (храним последние N дней).</p>
         
         <div class="layer">
@@ -167,7 +258,7 @@ echo ✅ Резервное копирование завершено: %BACKUP_D
 
     <!-- Блок 2: Мониторинг -->
     <div class="script-card">
-        <h2>2. Мониторинг дискового пространства и нагрузки</h2>
+        <h2 id="monitoring">2. Мониторинг дискового пространства и загрузки</h2>
         <p>Проверка свободного места на дисках и отправка уведомления при превышении порога (например, 80%).</p>
         
         <div class="layer">
@@ -221,7 +312,7 @@ for /f "skip=1 tokens=1,2,3" %%a in ('wmic logicaldisk get caption^,size^,freesp
 
     <!-- Блок 3: Управление пользователями -->
     <div class="script-card">
-        <h2>3. Массовое управление пользователями и группами</h2>
+        <h2 id="users">3. Массовое управление пользователями и группами</h2>
         <p>Создание пользователей, добавление в группы, блокировка неактивных учётных записей.</p>
         
         <div class="layer">
@@ -281,7 +372,7 @@ for /f "tokens=1,2 delims=:" %%a in (%USER_LIST%) do (
 
     <!-- Блок 4: Безопасное тестирование -->
     <div class="script-card">
-        <h2>4. Режим безопасного тестирования (dry-run)</h2>
+        <h2 id="dry-run">4. Режим безопасного тестирования (dry-run)</h2>
         <p>Любой скрипт можно запустить в тестовом режиме, чтобы проверить его логику, не внося изменений в систему.</p>
         
         <div class="layer">
@@ -335,7 +426,7 @@ goto :eof</pre>
     </div>
     <!-- Блок 5: Управление службами -->
     <div class="script-card">
-        <h2>5. Управление службами (запуск, остановка, перезапуск)</h2>
+        <h2 id="services">5. Управление службами (запуск, остановка, перезапуск)</h2>
         <p>Скрипты для проверки статуса служб и автоматического перезапуска при падении. Работают и в Linux (systemctl), и в Windows (sc/net).</p>
         
         <div class="layer">
@@ -398,7 +489,7 @@ echo Проверьте логи: eventvwr.msc</pre>
 
     <!-- Блок 6: Работа с логами -->
     <div class="script-card">
-        <h2>6. Работа с логами (анализ и ротация)</h2>
+        <h2 id="logs">6. Работа с логами (анализ и ротация)</h2>
         <p>Поиск ошибок в логах за последние сутки и автоматическая ротация (архивирование старых логов).</p>
         
         <div class="layer">
@@ -454,7 +545,7 @@ echo ✅ Анализ и ротация логов завершены</pre>
     </div>
         <!-- Блок 7: Сетевые проверки -->
     <div class="script-card">
-        <h2>7. Сетевые проверки (пинг, порты, трассировка)</h2>
+        <h2 id="network">7. Сетевые проверки (пинг, порты, трассировка)</h2>
         <p>Автоматическая проверка доступности узлов, открытых портов и пути следования пакетов.</p>
         
         <div class="layer">
@@ -521,7 +612,7 @@ tracert -h 10 -w 1000 8.8.8.8</pre>
 
     <!-- Блок 8: Инвентаризация железа -->
     <div class="script-card">
-        <h2>8. Инвентаризация железа (сбор информации о системе)</h2>
+        <h2 id="inventory">8. Инвентаризация железа (сбор информации о системе)</h2>
         <p>Сбор данных о процессоре, памяти, дисках, сетевых интерфейсах и сохранение в отчёт для дальнейшего анализа.</p>
         
         <div class="layer">
@@ -608,7 +699,7 @@ type "%REPORT%"</pre>
     </div>
         <!-- Блок 9: Обработка ошибок и логирование -->
     <div class="script-card">
-        <h2>9. Обработка ошибок и логирование</h2>
+        <h2 id="errors">9. Обработка ошибок и логирование</h2>
         <p>Правильная обработка ошибок: скрипт не «падает» молча, а пишет понятное сообщение в лог и продолжает работу (или корректно завершается).</p>
         
         <div class="layer">
@@ -707,7 +798,7 @@ exit /b 1</pre>
 
     <!-- Блок 10: Автоматизация через планировщик -->
     <div class="script-card">
-        <h2>10. Автоматизация через планировщик (cron / Task Scheduler)</h2>
+        <h2 id="cron">10. Автоматизация через планировщик (cron / Task Scheduler)</h2>
         <p>Настройка автоматического запуска скриптов по расписанию: ежедневно, еженедельно или по событию.</p>
         
         <div class="layer">
@@ -779,7 +870,7 @@ schtasks /query /tn "%TASK_NAME%" /v /fo list</pre>
     </div>
         <!-- Блок 11: Проверка безопасности -->
     <div class="script-card">
-        <h2>11. Проверка безопасности (базовый аудит)</h2>
+        <h2 id="security">11. Проверка безопасности (базовый аудит)</h2>
         <p>Быстрая проверка системы на наличие типичных проблем: открытые порты, слабые пароли, устаревшие пакеты, неактивные учётные записи.</p>
         
         <div class="layer">
@@ -857,7 +948,7 @@ type "%LOG_FILE%"</pre>
 
     <!-- Блок 12: Управление Active Directory -->
     <div class="script-card">
-        <h2>12. Управление Active Directory (пользователи и компьютеры)</h2>
+        <h2 id="ad">12. Управление Active Directory (пользователи и компьютеры)</h2>
         <p>Автоматическое отключение неактивных учётных записей, массовое создание пользователей, управление группами.</p>
         
         <div class="layer">
@@ -934,7 +1025,7 @@ echo ✅ Аудит AD завершён. Лог: %LOG_FILE%</pre>
 
     <!-- Блок 13: Управление питанием -->
     <div class="script-card">
-        <h2>13. Управление питанием (перезагрузка, выключение, гибернация)</h2>
+        <h2 id="power">13. Управление питанием (перезагрузка, выключение, гибернация)</h2>
         <p>Скрипты для автоматического выключения, перезагрузки и перевода компьютеров в спящий режим по расписанию или команде.</p>
         
         <div class="layer">
@@ -1031,7 +1122,7 @@ echo Использование: %0 {reboot^|shutdown^|hibernate^|sleep^|status}
 
     <!-- Блок 14: Сетевые диски -->
     <div class="script-card">
-        <h2>14. Сетевые диски (подключение, отключение, проверка)</h2>
+        <h2 id="mount">14. Сетевые диски (подключение, отключение, проверка)</h2>
         <p>Скрипты для автоматического подключения сетевых дисков (SMB/CIFS) с проверкой доступности и переподключением при сбое.</p>
         
         <div class="layer">
@@ -1121,7 +1212,7 @@ if %errorlevel% EQU 0 (
 
     <!-- Блок 15: SMTP-уведомления -->
     <div class="script-card">
-        <h2>15. SMTP-уведомления (отправка почты при сбоях)</h2>
+        <h2 id="smtp">15. SMTP-уведомления (отправка почты при сбоях)</h2>
         <p>Автоматическая отправка писем администратору при срабатывании тревоги (ошибка в логах, переполнение диска, падение службы).</p>
         
         <div class="layer">
@@ -1197,7 +1288,7 @@ if exist "%BLAT%" (
 
     <!-- Блок 16: Справка оркестратора OCTOPUS -->
     <div class="script-card">
-        <h2>16. Оркестратор миграции OCTOPUS (справка по командам)</h2>
+        <h2 id="octopus">16. Оркестратор миграции OCTOPUS (справка по командам)</h2>
         <p>Полная справка по командам оркестратора миграции. Скопируйте нужную команду или используйте её как шпаргалку.</p>
         
         <div class="side side-linux" style="margin-top: 20px;">
@@ -1279,7 +1370,7 @@ if exist "%BLAT%" (
 
     <!-- Блок 17: Итоговое резюме -->
     <div class="script-card">
-        <h2>17. Итог: какие навыки показаны</h2>
+        <h2 id="summary">17. Итог: какие навыки показаны</h2>
         <p>Этот раздел — не просто скрипты, а демонстрация системного мышления и практических навыков администрирования.</p>
         
         <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border);">
@@ -1299,11 +1390,35 @@ if exist "%BLAT%" (
             
             <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
             
-            <p><strong>Что это даёт для портфолио:</strong> Вы показали не просто «я умею писать скрипты». Вы показали <strong>инженерную зрелость</strong>: безопасность, обработка ошибок, кроссплатформенность, автоматизация. Это именно то, что ищут работодатели на удалёнку для позиций системного администратора или DevOps-инженера.</p>
             
             <p><strong>Связь с другими разделами:</strong> Эти скрипты дополняют сетевые лабораторные (Cisco) и страницу эволюции конфигураций. Вместе они показывают полный стек: от настройки сети до её автоматизации и мониторинга.</p>
-        </div>
-    </div>
+        </div> <!-- Закрывается внутренний блок (серый фон) -->
+    </div> <!-- Закрывается карточка 17 (.script-card) -->
+    </div> <!-- ЗАКРЫВАЕТСЯ .main-content -->
+
+    <!-- ПРАВАЯ ЧАСТЬ: Оглавление -->
+
+    <!-- ПРАВАЯ ЧАСТЬ: Оглавление -->
+    <nav class="sidebar-toc">
+        <h3>📑 Содержание</h3>
+        <a href="#backup">1. Резервное копирование</a>
+        <a href="#monitoring">2. Мониторинг диска</a>
+        <a href="#users">3. Управление пользователями</a>
+        <a href="#dry-run">4. Безопасное тестирование</a>
+        <a href="#services">5. Управление службами</a>
+        <a href="#logs">6. Работа с логами</a>
+        <a href="#network">7. Сетевые проверки</a>
+        <a href="#inventory">8. Инвентаризация</a>
+        <a href="#errors">9. Обработка ошибок</a>
+        <a href="#cron">10. Планировщик задач</a>
+        <a href="#security">11. Проверка безопасности</a>
+        <a href="#ad">12. Active Directory</a>
+        <a href="#power">13. Управление питанием</a>
+        <a href="#mount">14. Сетевые диски</a>
+        <a href="#smtp">15. SMTP-уведомления</a>
+        <a href="#octopus">16. OCTOPUS</a>
+        <a href="#summary">17. Итог</a>
+    </nav>
 </div>
 
 <script>

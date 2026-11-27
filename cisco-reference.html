@@ -161,8 +161,8 @@
   .card .diagram {
     font-family: "Consolas", "Courier New", monospace;
     font-size: 12.5px;
-    background: #1e1e2e !important;
-    color: #cdd6f4 !important;
+    background: var(--bg) !important; /* Светлый фон (как карточка) */
+    color: var(--fg) !important;      /* Темный текст (в светлой теме) */
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 14px 18px;
@@ -173,8 +173,10 @@
     tab-size: 4;
     font-variant-ligatures: none;
   }
-  .card .diagram .hl { color: #89b4fa !important; font-weight: 700; }
-  .code-wrap {
+  .card .diagram .hl { 
+    color: var(--accent) !important; 
+    font-weight: 700; 
+  }  .code-wrap {
     position: relative; margin: 12px 0 0; border-radius: 8px; overflow: hidden;
     border: 1px solid var(--border);
   }
