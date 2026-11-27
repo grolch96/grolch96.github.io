@@ -7,11 +7,12 @@
 <style>
   :root {
     --bg: #f4f4f6; --fg: #1a1a2e; 
-    --card: rgba(255, 255, 255, 0.85);
+    --card: rgba(255, 255, 255, 0.5);
     --border: #d0d7de;
     --accent: #7fa8d4; --accent2: #e8a0a8; --muted: #57606a; --tag: #eaf0f8;
     --bg-overlay: rgba(244, 244, 246, 0.8);
-    --term-bg: #f9f9fb; --term-fg: #1a1a2e;
+    --term-bg: #1e1e2e; /* Почти черный (как в темной теме) */
+    --term-fg: #cdd6f4; /* Светлый текст */
   }
   [data-theme="dark"] {
     --bg: #1a1a1a; --fg: #c9d1d9; 
@@ -52,20 +53,66 @@
   header button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
   header button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   
-  /* Навигация */
+  /* Навигация (новая боковая панель) */
+  .layout-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;        /* Занимает всю ширину экрана */
+    max-width: none;    /* Убираем ограничение по центру */
+    margin: 0;          /* Прижимаем к левому краю */
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
   .top-nav {
-    display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 20px 0;
-    padding: 10px 14px; background: var(--card); border: 1px solid var(--border);
-    border-radius: 8px; font-size: 13px; align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    top: 80px;
+    width: 260px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.35); /* Прозрачность */
+    backdrop-filter: blur(12px);          /* Эффект стекла */
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    padding: 16px 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
   }
+
+  /* Тёмная тема для панели */
+  [data-theme="dark"] .top-nav {
+    background: rgba(42, 42, 42, 0.35);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
   .top-nav a {
-    color: var(--accent); text-decoration: none; font-weight: 600;
-    padding: 4px 10px; border-radius: 6px; transition: background 0.2s;
+    color: var(--fg);
+    text-decoration: none; 
+    font-weight: 600;
+    padding: 8px 12px; 
+    border-radius: 8px; 
+    transition: background 0.2s, color 0.2s;
+    display: block;
   }
-  .top-nav a:hover { background: var(--tag); }
-  .top-nav a.active { background: var(--accent); color: #fff; }
-  .top-nav .sep { color: var(--muted); }
   
+  .top-nav a:hover { background: var(--accent); color: #fff; }
+  .top-nav a.active { background: var(--accent); color: #fff; }
+  
+  /* Прячем точки-разделители, т.к. меню теперь вертикальное */
+  .top-nav .sep { display: none; }
+
+  /* Переопределяем main, чтобы он занял оставшееся место */
+  main {
+    flex: 1;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .chip {
     padding: 4px 10px; border-radius: 12px; background: var(--tag);
@@ -75,9 +122,6 @@
   .chip:hover { border-color: var(--accent); }
   .chip.active { background: var(--accent); color: #fff; }
   
-  main {
-    width: 95%; max-width: 1200px; margin: 0 auto; padding: 20px 0;
-  }
   .stats { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
   
   .card {
@@ -157,6 +201,25 @@
     header h1 { font-size: 1em; width: 100%; }
     main { padding: 12px; }
   }
+    @media (max-width: 768px) {
+    .layout-wrapper {
+      flex-direction: column; /* Меню встаёт над контентом */
+      padding: 10px;
+    }
+    .top-nav {
+      width: 100%;
+      position: static; /* Отключаем "прилипание" */
+      flex-direction: row; /* Ссылки в ряд */
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .top-nav .sep {
+      display: inline; /* Возвращаем разделители-точки, если они нужны */
+    }
+    main {
+      padding: 0; /* Убираем лишние отступы */
+    }
+  }
 </style>
 </head>
 <body data-theme="light">
@@ -235,13 +298,19 @@
   </div>
 </header>
 
-<nav class="top-nav">
-  <a href="glossary.html">📖 Словарь</a><span class="sep">·</span>
-  <a href="cisco-reference.html" class="active">📘 Справочник</a><span class="sep">·</span>
-  <a href="evolution.html">📈 Эволюция</a><span class="sep">·</span>
-  <a href="practice.html">🎯 Практикум</a><span class="sep">·</span>
-  <a href="osi-model.html">🧱 OSI</a>
-</nav>
+<!-- Находится сразу после </header> -->
+<div class="layout-wrapper">
+  
+  <nav class="top-nav">
+    <!-- ... ваши ссылки остаются без изменений ... -->
+    <a href="glossary.html">📖 Словарь</a><span class="sep">·</span>
+    <a href="cisco-reference.html" class="active">📘 Справочник</a><span class="sep">·</span>
+    <a href="evolution.html">📈 Эволюция</a><span class="sep">·</span>
+    <a href="practice.html">🎯 Практикум</a><span class="sep">·</span>
+    <a href="osi-model.html">🧱 OSI</a>
+    <a href="cisco-windows.html">🌐 Маршруты в Windows</a>
+    <a href="sysadmin-scripts.html">📃 Скрипты</a>
+  </nav>
 
 <main>
   <div class="stats" id="stats">Загрузка...</div>
@@ -1340,6 +1409,8 @@ reload</pre><button class="copy-btn">Копировать</button></div>
   
   <div class="empty hidden" id="empty">Ничего не найдено. Попробуйте другой запрос или выберите тему из списка.</div>
 </main>
+
+</div> <!-- Закрываем layout-wrapper перед footer -->
 
 <footer>
   Cisco IOS Справочник · 38 тем · Работает офлайн · Выберите тему из списка или начните вводить
