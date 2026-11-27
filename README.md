@@ -6,7 +6,7 @@
 - 🌐 **Сайт-портфолио:** [grolch96.github.io](https://grolch96.github.io/)
 - 🔭 Сейчас работаю над: **Развитием интерактивного портфолио (лабы, справочники, практикум, задачи)**
 - 🎯 **Цели:** Углубить навыки в сетевой автоматизации и DevOps.
-- 💻 Стек технологий: **Cisco IOS, OSPF (Multi-Area), EIGRP, BGP, HSRP, NAT/PAT, IPv6, L2 Security, Linux (Debian/Ubuntu), Windows Server (AD/GPO), Bash, CMD, PHP/MySQL.**
+- 💻 Стек технологий: **Cisco IOS, OSPF (Multi-Area), EIGRP, BGP, HSRP, NAT/PAT, L2 Security, Linux (Debian/Ubuntu), Windows Server (AD/GPO), Bash, CMD, PHP/MySQL.**
 
 ---
 
